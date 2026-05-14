@@ -1,0 +1,25 @@
+meta(charset="UTF-8")
+meta(name="viewport", content="width=device-width,initial-scale=1")
+title NYONDO | Logged Out
+.page-wrapper
+  .brand-header.
+    
+    NYONDO GENERAL HARDWARE LTD
+    
+  section.logout-card
+    .success-icon ✓
+    h2 Logged Out
+    p You have successfully ended your session. Thank you for your hard work today.
+    a.btn-return(href="login.html") Login Again
+    .redirect-notice.
+      
+      Securing your connection...
+      
+script.
+  
+  // Optional: Auto-redirect to login after 5 seconds
+          setTimeout(() => {
+              console.log("Redirecting to login...");
+              // window.location.href = 'login.html';
+          }, 5000);
+  

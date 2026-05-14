@@ -1,0 +1,163 @@
+
+        /* Global Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: #1e3a8a;
+            min-height: 100vh;
+        }
+
+        /* Main Container */
+        .page-wrapper {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(30, 58, 138, 0.95)), 
+                        url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-position: center;
+            padding: 40px 20px;
+        }
+
+        /* Centered Brand Header */
+        .brand-header {
+            font-weight: 500;
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 25px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Signup Card */
+        .signup-card {
+            max-width: 480px;
+            width: 100%;
+            padding: 40px;
+            background: #1e293b; /* Solid Dark Slate for visibility */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+        }
+
+        .signup-card h2 {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .signup-card p {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        /* Form Visibility Styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #38bdf8; /* Bright Sky Blue for Labels */
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* High Visibility Inputs */
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            background: #0f172a; /* Very dark background for contrast */
+            border: 2px solid #334155; /* Clearly visible border */
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #38bdf8;
+            background: #1e293b;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
+        }
+
+        /* Phone Input Layout */
+        .phone-container {
+            display: flex;
+        }
+
+        .phone-prefix {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            background: #334155;
+            border: 2px solid #334155;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .phone-input {
+            border-radius: 0 8px 8px 0 !important;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            margin-top: 10px;
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer-text {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .footer-text a {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }

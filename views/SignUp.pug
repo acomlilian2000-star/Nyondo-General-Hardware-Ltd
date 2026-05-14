@@ -1,0 +1,56 @@
+meta(charset="UTF-8")
+meta(name="viewport", content="width=device-width,initial-scale=1")
+title NYONDO | Staff Registration
+link(rel="stylesheet", href="/css/signup.css")
+
+.page-wrapper
+  .brand-header.
+    
+    NYONDO GENERAL HARDWARE LTD
+    
+  section.signup-card
+    h2 Staff Signup
+    p Enter your details to register
+
+    form(action="/SignUp" method="post")
+      .form-group
+        label Full Name
+        input(type="text", name="fullName" placeholder="e.g. John Musoke", required)
+
+      .form-group
+        label Email Address
+        input(type="email", name="email" placeholder="name@company.com", required)
+
+      .form-group
+        label NIN Number (14 Characters)
+        input(type="text", name="ninNumber" placeholder="CM000000000000", minlength="14", maxlength="14", required, style="text-transform: uppercase;")
+
+      .form-group
+        label Phone Number
+        .phone-container
+          span.phone-prefix +256
+          input(type="tel", name="phoneNumber" placeholder="770000000", pattern="[0-9]{9}", maxlength="9", required)
+
+      // ✅ ROLE SECTION ADDED HERE (NO CHANGES ELSEWHERE)
+      .form-group
+        label User Role
+        select(name="role" required)
+          option(value="") -- Select Role --
+          option(value="admin") Admin
+          option(value="stock_manager") Stock Manager
+          option(value="sales_attendant") Sales Attendant
+
+      .form-group
+        label Residential Address
+        input(type="text", name="address" placeholder="Nansana, Wakiso", required)
+
+      .form-group
+        label Temporal Password
+        input(type="password", name="password" placeholder="••••••••", required)
+
+      button.btn-submit(type="submit") Create Account
+
+    //- .footer-text
+    //-   | 
+    //-   Already registered? 
+    //-   a(href="/login") Login Here
