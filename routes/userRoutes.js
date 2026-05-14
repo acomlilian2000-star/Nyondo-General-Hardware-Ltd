@@ -3,78 +3,124 @@ const router = express.Router();
 const User = require("../models/User");
 const passport = require("passport");
 
-// 🔐 Middleware (FIXED)
-function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect("/login");
-}
+// 🏠 Homepage
+router.get('/', (req, res) => {
+  res.render('index');
+});
 
-// login page
+// 🚪 Login GET
 router.get("/login", (req, res) => {
   res.render("login");
 });
 
-// homepage
-router.get("/", (req, res) => {
-  res.render("index");
-});
+// 🛡️ Secure Account GET (FIXED)
+router.get('/secureAcc', (req, res) => {
 
-// secure account
-router.get('/secureAcc', isLoggedIn, (req, res) => {
-  res.render('secureAcc');
-});
-
-// login
-router.post(
-  "/login",
-  passport.authenticate("local", { failureRedirect: "/login" }),
-  (req, res) => {
-    if (req.user.isFirstLogin) {
-      return res.redirect("/secureAcc");
-    }
-    if (req.user.role === "admin") {
-      res.redirect("/Dashboard");
-    } 
-    else if (req.user.role === "sales_attendant") {
-      res.redirect("/salesDash");
-    } 
-    else if (req.user.role === "stock_manager") {
-      res.redirect("/StockDash");
-    } 
-    else {
-      res.redirect("/login");
-    }
+  if (!req.isAuthenticated()) {
+    return res.redirect("/login");
   }
-);
 
-// logout
-router.get('/logout', (req, res, next) => {
-  console.log("Logout request received...");
-  
-  req.logout((err) => {
-    if (err) {
-      console.error("Logout error:", err);
-      return next(err);
+  return res.render("secureAcc");
+});
+
+
+// 🛡️ Secure Account POST (ONLY ONE - FIXED)
+router.post("/secureAcc", async (req, res) => {
+
+  try {
+
+    const user = await User.findById(req.user._id);
+
+    // mark first login completed
+    user.isFirstLogin = false;
+
+    await user.save();
+
+    console.log("UPDATED SUCCESSFULLY");
+
+    // role redirect
+    if (user.role === "admin") {
+      return res.redirect("/Dashboard");
     }
 
-    req.session.destroy(() => {
-      res.clearCookie('connect.sid');
-      console.log("Session destroyed. Redirecting to login.");
-      res.redirect('/home');
+    if (user.role === "sales_attendant") {
+      return res.redirect("/salesDash");
+    }
+
+    if (user.role === "stock_manager") {
+      return res.redirect("/StockDash");
+    }
+
+    return res.redirect("/");
+
+  } catch (error) {
+    console.log(error);
+    return res.redirect("/secureAcc");
+  }
+});
+
+
+// 🔑 Login POST (FIXED SAFER LOGIC)
+router.post("/login", (req, res, next) => {
+
+  console.log("BODY:", req.body);
+
+  passport.authenticate("local", (err, user, info) => {
+
+    console.log("USER:", user);
+
+    if (err) return next(err);
+
+    if (!user) {
+      console.log("AUTH FAILED");
+      return res.redirect("/login");
+    }
+
+    req.logIn(user, (err) => {
+
+      if (err) return next(err);
+
+      console.log("LOGIN SUCCESS");
+      console.log("FIRST LOGIN:", user.isFirstLogin);
+
+      // FIRST LOGIN CHECK (FIXED)
+      if (user.isFirstLogin !== false) {
+        console.log("Redirecting to secureAcc");
+        return res.redirect("/secureAcc");
+      }
+
+      // ROLE ROUTING
+      if (user.role === "admin") {
+        return res.redirect("/Dashboard");
+      }
+
+      if (user.role === "sales_attendant") {
+        return res.redirect("/salesDash");
+      }
+
+      if (user.role === "stock_manager") {
+        return res.redirect("/StockDash");
+      }
+
+      return res.redirect("/");
+
     });
-  });
+
+  })(req, res, next);
 });
 
-// signup page
-router.get("/SignUpform", (req, res) => {
-  res.render("SignUp");
+
+// 📝 Signup GET
+router.get('/SignUpform', (req, res) => {
+  res.render('SignUp');
 });
 
-// signup
+
+// 📝 Signup POST (FIXED PROMISE STYLE)
 router.post("/SignUp", async (req, res) => {
+
   try {
+
     const {
       fullName,
       email,
@@ -82,46 +128,57 @@ router.post("/SignUp", async (req, res) => {
       role,
       phoneNumber,
       password,
-      address,
-
+      address
     } = req.body;
 
-    // check existing user
-    let existingUser = await User.findOne({
-      email: email.toLowerCase(),
+    const existingUser = await User.findOne({
+      email: email.toLowerCase()
     });
 
     if (existingUser) {
-      return res.render("SignUp", { error: "Email is already registered" });
+      return res.render("SignUp", {
+        error: "Email already exists"
+      });
     }
 
-    // create new user
     const newUser = new User({
       fullName,
-      email,
-      password,
+      email: email.toLowerCase(),
       ninNumber: ninNumber.toUpperCase(),
-      address,
-      phoneNumber: phoneNumber,
       role,
-      
-
+      phoneNumber,
+      address,
+      isFirstLogin: true
     });
 
-    console.log(newUser);
-    console.log("Password:", req.body.password);
+    await User.register(newUser, password);
 
-    User.register(newUser, req.body.password, (err) => {
-      if (err) {
-        console.log(err);
-        return res.redirect("/SignUpform");
-      }
-      res.redirect("/login");
-    });
+    console.log("USER REGISTERED SUCCESSFULLY");
+
+    return res.redirect("/login");
 
   } catch (error) {
-    console.error(error);
+    console.log(error);
+    return res.status(500).send("Registration Failed");
   }
+
+});
+
+
+// 🚪 Logout
+router.get('/logout', (req, res, next) => {
+
+  req.logout((err) => {
+
+    if (err) return next(err);
+
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.redirect('/login');
+    });
+
+  });
+
 });
 
 module.exports = router;

@@ -1,25 +1,46 @@
-meta(charset="UTF-8")
-meta(name="viewport", content="width=device-width,initial-scale=1")
-title NYONDO | Staff Login
-link(rel="stylesheet", href="/css/login.css")
-.page-wrapper
-  //  Brand Centered Top 
-  .brand-header NYONDO GENERAL HARDWARE LTD
-  section.login-card
-    h2 Staff Login
-    p Welcome back to the portal
-    form(action="/login", method="POST")
-      //  User Email 
-      .form-group
-        label Email Address
-        input(type="email", placeholder="name@company.com", required)
-      //  Password 
-      .form-group
-        label Password
-        input(type="password", placeholder="••••••••", required)
-        a.forgot-password(href="#") Forgot password?
-      button.btn-login(type="submit") Sign In
-    .footer-links
-      | 
-New staff member? 
-      a(href="/SignUpform") Create Account
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    title NYONDO | Staff Login
+    link(rel="stylesheet", href="/css/login.css")
+
+  body
+    .page-wrapper
+
+      .brand-header NYONDO GENERAL HARDWARE LTD
+
+      section.login-card
+
+        h2 Staff Login
+        p Welcome back to the portal
+
+        form(action="/login", method="POST")
+
+          .form-group
+            label Email Address
+            input(
+              type="email"
+              name="email"
+              placeholder="name@company.com"
+              required
+            )
+
+          .form-group
+            label Password
+            input(
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              required
+            )
+
+          a.forgot-password(href="#") Forgot password?
+
+          button.btn-login(type="submit")
+            Sign In
+
+        .footer-links
+          | New staff member?
+          a(href="/SignUpform") Create Account
