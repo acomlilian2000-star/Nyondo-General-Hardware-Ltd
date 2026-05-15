@@ -52,7 +52,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use("/", require("./routes/userRoutes"));
 app.use("/", require("./routes/salesRoutes"));
 // app.use("/", require("./routes/depositeRoutes"));
-// app.use("/", require("./routes/stockRoutes"));
+app.use("/", require("./routes/stockRoutes"));
 // app.use("/", require("./routes/supplierRoutes"));
 
 // 7. 404 handler

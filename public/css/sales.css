@@ -1,0 +1,102 @@
+body {
+  background-color: #1e3a8a;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+}
+
+.sales-container {
+  background: #ffffff;
+  width: 100%;
+  max-width: 700px;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+h1 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 25px;
+  border-bottom: 3px solid skyblue;
+  padding-bottom: 10px;
+}
+
+.form-section {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #34495e;
+}
+
+select,
+input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dcdde1;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 15px;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 15px;
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#addItem {
+  margin-bottom: 20px;
+  padding: 10px;
+  background: skyblue;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.summary-box {
+  background: #f4f9ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.extra-item {
+  border-top: 1px solid #ccc;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+.phone-input-container{
+  display:flex;
+  align-items:center;
+  width:100%;
+}
+
+.country-code{
+  background:#f1f1f1;
+  padding:12px 15px;
+  border:1px solid #ccc;
+  border-right:none;
+  border-radius:6px 0 0 6px;
+  font-weight:600;
+}
+
+#phoneNumber{
+  flex:1;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:0 6px 6px 0;
+  outline:none;
+}

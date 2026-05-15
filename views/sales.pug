@@ -1,0 +1,348 @@
+doctype html
+html
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title NYONDO Sales Desk
+
+    // External CSS
+    link(rel='stylesheet' href='/css/sales.css')
+
+  body
+
+    .sales-container
+
+      h1 Sales Entry 🧾
+
+      form#salesForm(action='/Sales' method='POST')
+
+        .form-section
+          label(for='sale-date') Date of Sale:
+          input#sale-date(type='date' name='date' required)
+
+        // ================= PRODUCTS =================
+        #itemsContainer
+
+          .item-group
+
+            .form-section
+              label Product:
+              select.product(name='product[]' required)
+                option(value='' disabled selected) select product
+
+                each product in products
+                  option(
+                    value=product._id
+                    data-price=product.unitPrice
+                  )
+                    | #{product.itemName}
+                    | (Stock: #{product.quantity}
+                    | | Price: #{product.unitPrice} UGX)
+
+            // ================= SPECIFICATION =================
+            .form-section
+              label Specification / Units:
+              input.specification(
+                type='text'
+                name='specification[]'
+                placeholder='e.g 32 Gauge, 16mm, 10 Bags'
+                required
+              )
+
+            // ================= UNIT PRICE =================
+            .form-section
+              label Unit Price:
+              input.unitPrice(
+                type='number'
+                name='unitPrice[]'
+                readonly
+              )
+
+            .form-section
+              label Quantity:
+              input.quantity(
+                type='number'
+                name='quantity[]'
+                min='1'
+                required
+              )
+
+        button#addItem(
+          type='button'
+        ) + Add Another Item
+
+        // ================= CUSTOMER =================
+        .form-section
+          label(for='customerName') Customer Name:
+          input#CustomerName(
+            type='text'
+            name='customerName'
+            required
+          )
+
+        // ================= PHONE NUMBER =================
+        .form-section
+          label(for='phoneNumber') Phone Number:
+
+          .phone-input-container
+
+            .country-code
+              | +256
+
+            input#phoneNumber(
+              type='tel'
+              name='phoneNumber'
+              maxlength='9'
+              pattern='[0-9]{9}'
+              placeholder='7XXXXXXXX'
+              required
+            )
+
+        // ================= CUSTOMER ADDRESS =================
+        .form-section
+          label(for='customerAddress') Customer Address:
+          textarea#customerAddress(
+            name='customerAddress'
+            rows='3'
+            required
+          )
+
+        // ================= CUSTOMER TYPE =================
+        .form-section
+          label(for='customerType') Category:
+          select#customerType(
+            name='customerType'
+            required
+          )
+            option(value='individual') Individual
+            option(value='retailer') Retailer
+            option(value='wholesaler') Wholesaler
+
+        // ================= DELIVERY =================
+        .form-section
+          label(for='distance') Delivery Distance (KM):
+          input#distance(
+            type='number'
+            name='distance'
+            min='0'
+            value='0'
+            required
+          )
+
+        .form-section
+          label(for='transportCost') Transport Cost:
+          input#transportCost(
+            type='number'
+            name='transportCost'
+            readonly
+          )
+
+        // ================= TOTALS =================
+        .summary-box
+
+          .form-section
+            label(for='subTotal') Sub Total:
+            input#subTotal(
+              type='number'
+              name='subTotal'
+              readonly
+            )
+
+          .form-section
+            label(for='grandTotal') Grand Total:
+            input#grandTotal(
+              type='number'
+              name='grandTotal'
+              readonly
+            )
+
+        // ================= PAYMENT =================
+        .form-section
+          label(for='paymentMethod') Payment Method:
+          select#paymentMethod(
+            name='paymentMethod'
+            required
+          )
+            option(value='cash') Cash
+            option(value='mobile-money') Mobile Money
+            option(value='bank-transfer') Bank Transfer
+
+        button.btn-submit(type='submit')
+          | Process Sale
+
+    script.
+
+      const addItemBtn = document.getElementById('addItem');
+      const itemsContainer = document.getElementById('itemsContainer');
+
+      const subTotalInput = document.getElementById('subTotal');
+      const transportInput = document.getElementById('transportCost');
+      const grandTotalInput = document.getElementById('grandTotal');
+      const distanceInput = document.getElementById('distance');
+
+      // ================= ADD MULTIPLE ITEMS =================
+      addItemBtn.addEventListener('click', () => {
+
+        const firstSelect = document.querySelector('.product');
+
+        const optionsHTML = Array.from(firstSelect.options)
+          .map(option => {
+
+            if(option.value === '') {
+              return '<option value="" disabled selected>select product</option>';
+            }
+
+            return `
+              <option value="${option.value}" data-price="${option.dataset.price}">
+                ${option.text}
+              </option>
+            `;
+          })
+          .join('');
+
+        const itemHTML = `
+          <div class="item-group extra-item">
+
+            <div class="form-section">
+              <label>Another Product:</label>
+
+              <select class="product" name="product[]" required>
+                ${optionsHTML}
+              </select>
+            </div>
+
+            <div class="form-section">
+              <label>Specification / Units:</label>
+
+              <input
+                class="specification"
+                type="text"
+                name="specification[]"
+                placeholder="e.g 32 Gauge, 16mm, 10 Bags"
+                required
+              >
+            </div>
+
+            <div class="form-section">
+              <label>Unit Price:</label>
+
+              <input
+                class="unitPrice"
+                type="number"
+                name="unitPrice[]"
+                readonly
+              >
+            </div>
+
+            <div class="form-section">
+              <label>Quantity:</label>
+
+              <input
+                class="quantity"
+                type="number"
+                name="quantity[]"
+                min="1"
+                required
+              >
+            </div>
+
+          </div>
+        `;
+
+        itemsContainer.insertAdjacentHTML('beforeend', itemHTML);
+
+        attachEvents();
+      });
+
+      // ================= CALCULATE TOTALS =================
+      function calculateTotals() {
+
+        let subTotal = 0;
+
+        const products = document.querySelectorAll('.product');
+        const quantities = document.querySelectorAll('.quantity');
+        const unitPrices = document.querySelectorAll('.unitPrice');
+
+        products.forEach((product, index) => {
+
+          const selectedOption =
+            product.options[product.selectedIndex];
+
+          const price =
+            Number(selectedOption?.dataset?.price || 0);
+
+          // SHOW UNIT PRICE
+          if(unitPrices[index]) {
+            unitPrices[index].value = price;
+          }
+
+          const qty =
+            Number(quantities[index]?.value || 0);
+
+          subTotal += price * qty;
+        });
+
+        // ================= TRANSPORT LOGIC =================
+        let transportCost = 30000;
+
+        const distance =
+          Number(distanceInput.value || 0);
+
+        // FREE transport
+        if (subTotal >= 500000 && distance <= 10) {
+          transportCost = 0;
+        }
+
+        // GRAND TOTAL
+        const grandTotal =
+          subTotal + transportCost;
+
+        subTotalInput.value = subTotal;
+        transportInput.value = transportCost;
+        grandTotalInput.value = grandTotal;
+      }
+
+      // ================= PHONE NUMBER VALIDATION =================
+      const phoneInput =
+        document.getElementById('phoneNumber');
+
+      phoneInput.addEventListener('input', () => {
+
+        // allow only numbers
+        phoneInput.value =
+          phoneInput.value.replace(/\D/g, '');
+
+        // limit to only 9 digits
+        if(phoneInput.value.length > 9) {
+
+          phoneInput.value =
+            phoneInput.value.slice(0, 9);
+        }
+      });
+
+      // ================= EVENTS =================
+      function attachEvents() {
+
+        document.querySelectorAll('.product')
+          .forEach(product => {
+            product.addEventListener(
+              'change',
+              calculateTotals
+            );
+          });
+
+        document.querySelectorAll('.quantity')
+          .forEach(quantity => {
+            quantity.addEventListener(
+              'input',
+              calculateTotals
+            );
+          });
+
+        distanceInput.addEventListener(
+          'input',
+          calculateTotals
+        );
+      }
+
+      attachEvents();

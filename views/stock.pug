@@ -1,0 +1,243 @@
+doctype html
+html
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title NYONDO Stock Registration
+
+    // External CSS
+    link(rel='stylesheet' href='/css/stock.css')
+
+  body
+
+    .form-container
+
+      h1 NYONDO General Hardware LTD
+
+      p.subtitle Official Stock Arrival & Finance Portal
+
+      form#stockForm(action='/Stock' method='POST')
+
+        // ================= PRODUCTS CONTAINER =================
+        #itemsContainer
+
+          // ================= STOCK ITEM =================
+          .stock-item
+
+            .section-title Product Information
+
+            .form-group
+              label Product Name
+
+              select.productSelect(
+                name='itemName[]'
+                required
+              )
+
+                option(value='' disabled selected)
+                  | -- Select Product --
+
+                optgroup(label='Construction Materials')
+
+                  option(value='Cement CEM II')
+                    | Cement (CEM II)
+
+                  option(value='Cement CEM III')
+                    | Cement (CEM III)
+
+                  option(value='Iron Bars 10mm')
+                    | Iron Bars (10mm)
+
+                  option(value='Iron Bars 12mm')
+                    | Iron Bars (12mm)
+
+                  option(value='Iron Bars 16mm')
+                    | Iron Bars (16mm)
+
+                optgroup(label='Fasteners & Tools')
+
+                  option(value='Nails Assorted')
+                    | Nails (Assorted)
+
+                  option(value='Roofing Nails')
+                    | Roofing Nails
+
+                  option(value='Wheelbarrow')
+                    | Wheelbarrows
+
+                optgroup(label='Fencing & Roofing')
+
+                  option(value='Barbed Wire')
+                    | Barbed Wire
+
+                  option(value='Wire Mesh')
+                    | Wire Mesh
+
+                  option(value='Iron Sheets')
+                    | Iron Sheets
+
+            .input-row
+
+              .form-group
+                label Quantity
+
+                input.quantity(
+                  type='number'
+                  name='quantity[]'
+                  placeholder='Enter Quantity'
+                  required
+                )
+
+              .form-group
+                label Unit Cost (UGX)
+
+                input.unitCost(
+                  type='number'
+                  name='unitCost[]'
+                  placeholder='Enter Unit Cost'
+                  required
+                )
+
+            .input-row
+
+              .form-group
+                label Selling Price (UGX)
+
+                input.unitPrice(
+                  type='number'
+                  name='unitPrice[]'
+                  placeholder='Selling Price'
+                  required
+                )
+
+                p.helper-text
+                  | Selling price must be greater than unit cost.
+
+              .form-group
+                label Supplier Name
+
+                input(
+                  type='text'
+                  name='supplierName[]'
+                  placeholder='Supplier Name'
+                  required
+                )
+
+            .input-row
+
+              .form-group
+                label Supplier Phone
+
+                input(
+                  type='text'
+                  name='supplierPhone[]'
+                  placeholder='Supplier Phone Number'
+                  required
+                )
+
+              .form-group
+                label Factory Name
+
+                input(
+                  type='text'
+                  name='factoryName[]'
+                  placeholder='Factory Name'
+                  required
+                )
+
+        // ================= ADD ITEM BUTTON =================
+        button#addItemBtn(
+          type='button'
+        )
+          | + Add Another Product
+
+        // ================= PAYMENT SECTION =================
+        .section-title Payment Information
+
+        .payment-box
+
+          .form-group
+            label Payment Status
+
+            select(
+              name='paymentStatus'
+              required
+            )
+
+              option(value='' disabled selected)
+                | -- Select Payment Status --
+
+              option(value='cash-at-hand')
+                | Cash At Hand
+
+              option(value='credit')
+                | Credit
+
+        // ================= SUBMIT =================
+        button.btn-submit(type='submit')
+          | Complete Stock Entry
+
+    script.
+
+      const addItemBtn =
+        document.getElementById('addItemBtn');
+
+      const itemsContainer =
+        document.getElementById('itemsContainer');
+
+      // ================= ADD NEW PRODUCT =================
+      addItemBtn.addEventListener('click', () => {
+
+        const firstItem =
+          document.querySelector('.stock-item');
+
+        const clonedItem =
+          firstItem.cloneNode(true);
+
+        // CLEAR INPUTS
+        clonedItem.querySelectorAll('input')
+          .forEach(input => {
+            input.value = '';
+          });
+
+        // RESET SELECTS
+        clonedItem.querySelectorAll('select')
+          .forEach(select => {
+            select.selectedIndex = 0;
+          });
+
+        itemsContainer.appendChild(clonedItem);
+      });
+
+      // ================= VALIDATION =================
+      document
+        .getElementById('stockForm')
+        .addEventListener('submit', function(e) {
+
+          const unitCosts =
+            document.querySelectorAll('.unitCost');
+
+          const unitPrices =
+            document.querySelectorAll('.unitPrice');
+
+          for (let i = 0; i < unitCosts.length; i++) {
+
+            const cost =
+              Number(unitCosts[i].value);
+
+            const price =
+              Number(unitPrices[i].value);
+
+            // SELLING PRICE VALIDATION
+            if (price <= cost) {
+
+              e.preventDefault();
+
+              alert(
+                'Selling price must be greater than Unit Cost.'
+              );
+
+              return;
+            }
+          }
+        });
