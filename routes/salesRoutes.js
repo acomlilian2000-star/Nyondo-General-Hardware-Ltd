@@ -1,4 +1,3 @@
-
 const express = require("express");
 const router = express.Router();
 const Sales = require("../models/Sales");
@@ -37,13 +36,14 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
     let totalSalesToday = 0;
 
     todaySales.forEach((sale) => {
-      totalSalesToday += Number(sale.total || 0);
+      totalSalesToday += Number(sale.total) || 0;
     });
 
     res.render("salesDash", {
       dbSales,
       totalSalesToday,
     });
+
   } catch (err) {
     console.error(err);
     res.render("salesDash", {
@@ -71,24 +71,40 @@ router.get("/salesform", isLoggedIn, async (req, res) => {
 ========================= */
 router.post("/Sales", isLoggedIn, async (req, res) => {
   try {
+
     console.log("🔥 POST /Sales HIT");
     console.log("BODY:", req.body);
-    console.log("USER:", req.user);
-    const { product, quantity, unitPrice, total, paymentMethod, customerName } = req.body;
 
-    // 🔴 VALIDATIONS
+    const {
+      product,
+      quantity,
+      unitPrice,
+      paymentMethod,
+      customerName
+    } = req.body;
+
+    /* =========================
+       VALIDATION
+    ========================= */
     if (!product || !quantity || !unitPrice || !paymentMethod || !customerName) {
       return res.status(400).send("All required fields must be filled");
     }
 
-    // Find stock item
+    const quantityToSell = Number(quantity);
+    const price = Number(unitPrice);
+
+    if (isNaN(quantityToSell) || isNaN(price)) {
+      return res.status(400).send("Invalid quantity or price");
+    }
+
+    /* =========================
+       CHECK STOCK
+    ========================= */
     const stockItem = await Stock.findById(product);
 
     if (!stockItem) {
       return res.status(404).send("Product not found in database");
     }
-
-    const quantityToSell = Number(quantity);
 
     if (stockItem.quantity < quantityToSell) {
       return res
@@ -96,23 +112,30 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
         .send(`Not enough stock. Available: ${stockItem.quantity}`);
     }
 
-    // ✅ Reduce stock safely
+    /* =========================
+       UPDATE STOCK
+    ========================= */
     stockItem.quantity -= quantityToSell;
     await stockItem.save();
 
-    // ✅ Create sale
+    /* =========================
+       CALCULATE TOTAL (SAFE)
+    ========================= */
+    const safeTotal = quantityToSell * price;
+
+    /* =========================
+       CREATE SALE
+    ========================= */
     const newSale = new Sales({
       customerName,
       product,
       customerType: req.body.customerType,
       quantity: quantityToSell,
-      unitPrice: Number(unitPrice),
+      unitPrice: price,
       paymentMethod,
       color: req.body.color,
       guage: req.body.guage,
-      total: Number(total),
-
-      // 🔐 SAFE: user is guaranteed by middleware
+      total: safeTotal,
       Attendant: req.user._id,
     });
 

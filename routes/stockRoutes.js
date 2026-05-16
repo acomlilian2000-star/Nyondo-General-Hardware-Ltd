@@ -8,47 +8,73 @@ router.get("/Stockform", (req, res) => {
 
 router.post("/Stock", async (req, res) => {
   try {
-    // 1. ADD ALL FIELDS to the destructuring so they are "defined"
+
     const {
       itemName,
       quantity,
       supplier,
+      contactPerson,
+      supplierPhone,
+      factoryName,
       unitCost,
       unitPrice,
       amountPaid,
       paymentMethod,
     } = req.body;
 
-    // 2. Calculate the total FIRST
-    const total = Number(quantity) * Number(unitPrice);
+    // Convert arrays properly
+    const toArray = (value) => {
+      if (!value) return [];
+      return Array.isArray(value) ? value : [value];
+    };
 
-    // 3. Create ONE instance (Capital 'S' Stock)
-    const newStock = new Stock({
-      itemName,
-      quantity: Number(quantity),
-      supplier,
-      paymentMethod,
-      amountPaid: Number(amountPaid),
-      unitCost: Number(unitCost),
-      unitPrice: Number(unitPrice),
-      total: total // Now the total is actually included!
+    const items = toArray(itemName);
+    const qtys = toArray(quantity);
+    const costs = toArray(unitCost);
+    const prices = toArray(unitPrice);
+    const suppliers = toArray(supplier);
+    const contacts = toArray(contactPerson);
+    const phones = toArray(supplierPhone);
+    const factories = toArray(factoryName);
+
+    const stocks = items.map((_, i) => {
+
+      const qtyRaw = parseFloat(qtys[i]);
+      const priceRaw = parseFloat(prices[i]);
+      const costRaw = parseFloat(costs[i]);
+
+      const qty = isNaN(qtyRaw) ? 0 : qtyRaw;
+      const price = isNaN(priceRaw) ? 0 : priceRaw;
+      const cost = isNaN(costRaw) ? 0 : costRaw;
+
+      return {
+        itemName: items[i],
+        quantity: qty,
+        supplier: suppliers[i] || "",
+        contactPerson: contacts[i] || "",
+        supplierPhone: String(phones[i] || ""),
+        factoryName: factories[i] || "",
+        unitCost: cost,
+        unitPrice: price,
+        paymentMethod,
+        amountPaid: Number(amountPaid) || 0,
+        total: qty * price
+      };
     });
 
-    console.log("Saving to DB:", newStock);
+    await Stock.insertMany(stocks);
 
-    await newStock.save();
+    console.log("Saved successfully:", stocks);
 
-    // 4. Success: Use RETURN to stop the function here
     return res.redirect("/Stockform");
 
   } catch (error) {
     console.error("Error caught:", error.message);
 
-    // 5. Error: Use RETURN and check headers to prevent the 'Headers Sent' crash
     if (!res.headersSent) {
-      // Pick ONE response method. 
-      // Rendering the form again with the error is usually best.
-      return res.status(400).render('Stock', { error: error.message });
+      return res.status(400).render("Stock", {
+        error: error.message
+      });
     }
   }
 });

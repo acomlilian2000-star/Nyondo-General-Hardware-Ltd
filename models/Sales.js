@@ -21,7 +21,7 @@ const SalesSchema = new mongoose.Schema({
 
   Attendant: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Registration',
+    ref: 'User',
     required: true
   },
 
@@ -44,7 +44,6 @@ const SalesSchema = new mongoose.Schema({
    
   },
 
-  color: String,
 
   guage: Number,
 

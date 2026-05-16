@@ -30,7 +30,7 @@ html
               label Product Name
 
               select.productSelect(
-                name='itemName[]'
+                name='itemName'
                 required
               )
 
@@ -92,7 +92,7 @@ html
                 label Unit Cost (UGX)
 
                 input.unitCost(
-                  type='number'
+                  type='Number'
                   name='unitCost[]'
                   placeholder='Enter Unit Cost'
                   required
@@ -104,7 +104,7 @@ html
                 label Selling Price (UGX)
 
                 input.unitPrice(
-                  type='number'
+                  type='Number'
                   name='unitPrice[]'
                   placeholder='Selling Price'
                   required
@@ -120,7 +120,7 @@ html
                 label Supplier
 
                 select(
-                  name='supplier[]'
+                  name='supplier'
                   required
                 )
 
@@ -152,8 +152,8 @@ html
                 label Contact Person
 
                 input(
-                  type='text'
-                  name='contactPerson[]'
+                  type='String'
+                  name='contactPerson'
                   placeholder='Contact Person'
                   required
                 )
@@ -169,7 +169,7 @@ html
 
                   input(
                     type='tel'
-                    name='supplierPhone[]'
+                    name='supplierPhone'
                     placeholder='7XXXXXXXX'
                     pattern='[0-9]{9}'
                     maxlength='9'
@@ -180,8 +180,8 @@ html
                 label Factory Name
 
                 input(
-                  type='text'
-                  name='factoryName[]'
+                  type='String'
+                  name='factoryName'
                   placeholder='Factory Name'
                   required
                 )
@@ -201,7 +201,7 @@ html
             label Payment Status
 
             select(
-              name='paymentStatus'
+              name='paymentMethod'
               required
             )
 

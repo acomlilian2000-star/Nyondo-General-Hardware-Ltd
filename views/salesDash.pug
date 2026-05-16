@@ -1,4 +1,3 @@
-
 doctype html
 html
   head
@@ -134,15 +133,11 @@ html
           p UGX #{totalSalesToday}
 
         .stat-card
-          h3 Active Debt
+          h3 Total Sales
           p --
 
         .stat-card
-          h3 Salary Scheme
-          p --
-
-        .stat-card
-          h3 Pending Deliveries
+          h3 Low Stock Items
           p --
 
       // ================= MAIN DASHBOARD =================
@@ -173,7 +168,6 @@ html
                   each sale in dbSales
                     tr
                       td #{sale.customerName}
-                      // SAFE PRODUCT DISPLAY (NO ?. operator)
                       td #{sale.product && sale.product.itemName ? sale.product.itemName : sale.product}
                       td #{sale.customerType}
                       td #{sale.quantity}
@@ -182,8 +176,6 @@ html
                       td #{sale.color}
                       td #{sale.guage}
                       td #{sale.total}
-
-                      // SAFE ATTENDANT DISPLAY
                       td #{sale.Attendant && sale.Attendant.fullName ? sale.Attendant.fullName : 'Acom lilian'}
 
         // RIGHT SIDE
@@ -192,8 +184,7 @@ html
           .section-box
             h3 ⚡ Sales Quick Actions
             button.btn.btn-blue(type="button" onclick="goTo('/salesform')") 📝 New Standard Sale
-           
-          
+
     script.
       function handleLogout() {
         if (confirm("Logout?")) {
@@ -203,17 +194,4 @@ html
 
       function goTo(url) {
         window.location.href = url;
-      }
-
-      function calcTransport() {
-        const amt = document.getElementById('tAmount').value;
-        const res = document.getElementById('tResult');
-
-        if (amt >= 500000) {
-          res.innerHTML = "✅ FREE Delivery";
-        } else if (amt > 0) {
-          res.innerHTML = "⚠️ Add UGX 30,000 transport";
-        } else {
-          res.innerHTML = "Enter a valid amount";
-        }
       }

@@ -13,6 +13,18 @@ const StockSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  contactPerson: {
+    type: String,
+    trim: true,
+  },
+  supplierPhone: {
+    type: Number,
+    trim: true,
+  },
+  factoryName: {
+    type: String,
+    trim: true,
+  },
   unitCost: {
     type: Number,
     trim: true,
@@ -29,10 +41,10 @@ const StockSchema = new mongoose.Schema({
   }
 
   },
-  amountPaid: {
-    type: Number,
-    trim: true,
-  },
+  // amountPaid: {
+  //   type: Number,
+  //   trim: true,
+  // },
   paymentMethod: {
     type: String,
     trim: true,
