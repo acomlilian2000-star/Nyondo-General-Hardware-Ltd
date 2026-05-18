@@ -1,0 +1,224 @@
+:root {
+  --sky-blue: #1e3a8a;
+  --nyondo-dark: #003049;
+  --nyondo-gold: #f77f00;
+  --danger: #d62828;
+  --success: #2a9d8f;
+  --white: #ffffff;
+  --soft-blue: #e1f5fe;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  background: var(--sky-blue);
+}
+
+/* NAVBAR */
+.navbar {
+  background: var(--nyondo-dark);
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* PAGE CONTAINER */
+.container {
+  padding: 12px;
+}
+
+/* STATS (SMALLER CLEAN CARDS) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat-card {
+  background: white;
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+  border-bottom: 3px solid var(--nyondo-gold);
+}
+
+.stat-card h3 {
+  font-size: 10px;
+  margin: 0;
+  color: #666;
+}
+
+.stat-card p {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 3px;
+}
+
+/* MAIN LAYOUT */
+.main-layout {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* TABLE AREA */
+.content-left {
+  flex: 3;
+  min-width: 0;
+}
+
+/* =========================
+   QUICK ACTIONS (VERY SMALL FIX)
+========================= */
+.content-right {
+  flex: 0.25;           /* VERY SMALL PANEL */
+  min-width: 120px;
+  max-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky;
+  top: 10px;
+}
+
+/* BOX INSIDE QUICK ACTIONS */
+.content-right .section-box {
+  padding: 6px;
+}
+
+/* QUICK ACTION BUTTONS */
+.content-right .btn {
+  display: block;
+  width: 100%;
+  padding: 5px;
+  font-size: 11px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+/* =========================
+   TABLE STYLING (NO LOSS OF COLUMNS)
+========================= */
+.section-box {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto; /* IMPORTANT: prevents column breaking */
+}
+
+th {
+  background: var(--soft-blue);
+  padding: 6px;
+  font-size: 11px;
+  text-align: left;
+}
+
+td {
+  padding: 6px;
+  font-size: 11px;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+/* =========================
+   BUTTONS (UNIFORM SIZE FIX)
+========================= */
+.btn {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 5px;
+  text-decoration: none;
+  color: white;
+  font-size: 11px;
+  margin-right: 3px;
+  min-width: 55px;
+  text-align: center;
+}
+
+/* COLORS */
+.btn-blue { background: #007bff; }
+.btn-red { background: #dc3545; }
+.btn-green { background: #28a745; }
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+/* QUICK ACTION BUTTONS FULL WIDTH */
+.content-right .btn {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 900px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .content-right {
+    position: static;
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+/* ================= NAVBAR ================= */
+.navbar {
+  background: #003049;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* LEFT BRAND */
+.nav-left .brand {
+  font-weight: bold;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+/* CENTER TIME */
+.nav-center {
+  font-size: 13px;
+  background: rgba(255,255,255,0.1);
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+/* RIGHT USER AREA */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-status {
+  font-size: 12px;
+  background: rgba(255,255,255,0.15);
+  padding: 4px 8px;
+  border-radius: 5px;
+}
+
+/* LOGOUT BUTTON */
+.nav-right button {
+  background: #d62828;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.nav-right button:hover {
+  opacity: 0.85;
+}

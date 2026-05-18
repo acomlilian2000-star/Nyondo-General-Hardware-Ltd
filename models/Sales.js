@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const SalesSchema = new mongoose.Schema({
@@ -9,8 +8,23 @@ const SalesSchema = new mongoose.Schema({
 
   customerName: {
     type: String,
-    trim: true,
-    required: true
+    required: true,
+    trim: true
+  },
+
+  phoneNumber: {
+    type: String,
+    trim: true
+  },
+
+  customerAddress: {
+    type: String,
+    trim: true
+  },
+
+  customerType: {
+    type: String,
+    default: 'individual'
   },
 
   product: {
@@ -19,18 +33,18 @@ const SalesSchema = new mongoose.Schema({
     required: true
   },
 
-  Attendant: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
+  /* =========================
+     FIXED: NO ARRAYS
+  ========================= */
 
-  customerType: String,
+  specification: {
+    type: String,
+    default: "-"
+  },
 
   quantity: {
     type: Number,
-    required: true,
-    min: 1
+    required: true
   },
 
   unitPrice: {
@@ -38,16 +52,41 @@ const SalesSchema = new mongoose.Schema({
     required: true
   },
 
-  paymentMethod: {
-    type: String,
-    required: true,
-   
+  distance: {
+    type: Number,
+    default: 0
   },
 
+  transportCost: {
+    type: Number,
+    default: 0
+  },
 
-  guage: Number,
+  subTotal: {
+    type: Number,
+    default: 0
+  },
 
-  total: Number
+  grandTotal: {
+    type: Number,
+    default: 0
+  },
+
+  paymentMethod: {
+    type: String,
+    required: true
+  },
+  image: {
+  type: String,
+  default: ""
+},
+
+  Attendant: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  }
+
 }, {
   timestamps: true
 });

@@ -2,13 +2,14 @@ const express = require("express");
 const router = express.Router();
 const Stock = require("../models/Stock");
 
-router.get("/Stockform", (req, res) => {
-  res.render("Stock");
+// GET stock form page
+router.get("/stockform", (req, res) => {
+  res.render("stock");
 });
 
-router.post("/Stock", async (req, res) => {
+// POST stock data
+router.post("/stock", async (req, res) => {
   try {
-
     const {
       itemName,
       quantity,
@@ -22,7 +23,7 @@ router.post("/Stock", async (req, res) => {
       paymentMethod,
     } = req.body;
 
-    // Convert arrays properly
+    // Convert to arrays safely
     const toArray = (value) => {
       if (!value) return [];
       return Array.isArray(value) ? value : [value];
@@ -38,14 +39,9 @@ router.post("/Stock", async (req, res) => {
     const factories = toArray(factoryName);
 
     const stocks = items.map((_, i) => {
-
-      const qtyRaw = parseFloat(qtys[i]);
-      const priceRaw = parseFloat(prices[i]);
-      const costRaw = parseFloat(costs[i]);
-
-      const qty = isNaN(qtyRaw) ? 0 : qtyRaw;
-      const price = isNaN(priceRaw) ? 0 : priceRaw;
-      const cost = isNaN(costRaw) ? 0 : costRaw;
+      const qty = parseFloat(qtys[i]) || 0;
+      const price = parseFloat(prices[i]) || 0;
+      const cost = parseFloat(costs[i]) || 0;
 
       return {
         itemName: items[i],
@@ -56,9 +52,9 @@ router.post("/Stock", async (req, res) => {
         factoryName: factories[i] || "",
         unitCost: cost,
         unitPrice: price,
-        paymentMethod,
+        paymentMethod: paymentMethod || "",
         amountPaid: Number(amountPaid) || 0,
-        total: qty * price
+        total: qty * price,
       };
     });
 
@@ -66,16 +62,14 @@ router.post("/Stock", async (req, res) => {
 
     console.log("Saved successfully:", stocks);
 
-    return res.redirect("/Stockform");
+    return res.redirect("/stockform");
 
   } catch (error) {
-    console.error("Error caught:", error.message);
+    console.error("Error caught:", error);
 
-    if (!res.headersSent) {
-      return res.status(400).render("Stock", {
-        error: error.message
-      });
-    }
+    return res.status(500).render("stock", {
+      error: error.message,
+    });
   }
 });
 

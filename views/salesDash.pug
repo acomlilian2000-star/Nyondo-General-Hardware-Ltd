@@ -5,185 +5,107 @@ html
     meta(name="viewport" content="width=device-width,initial-scale=1")
     title NYONDO | Sales Attendant Dashboard
 
-    style.
-      :root {
-        --sky-blue: #87CEEB;
-        --nyondo-dark: #003049;
-        --nyondo-gold: #f77f00;
-        --danger: #d62828;
-        --success: #2a9d8f;
-        --white: #ffffff;
-        --soft-blue: #e1f5fe;
-      }
-
-      body {
-        font-family: 'Segoe UI', sans-serif;
-        margin: 0;
-        background: var(--sky-blue);
-      }
-
-      .navbar {
-        background: var(--nyondo-dark);
-        color: white;
-        padding: 10px 20px;
-        display: flex;
-        justify-content: space-between;
-      }
-
-      .container {
-        padding: 20px;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
-      }
-
-      .stat-card {
-        background: white;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        border-bottom: 4px solid var(--nyondo-gold);
-      }
-
-      .stat-card h3 {
-        font-size: 12px;
-        margin: 0;
-        color: #666;
-      }
-
-      .stat-card p {
-        font-size: 20px;
-        font-weight: bold;
-        margin-top: 5px;
-      }
-
-      .main-layout {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 20px;
-        align-items: start;
-      }
-
-      .content-left {
-        display: block;
-      }
-
-      .content-right {
-        min-width: 300px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .section-box {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        overflow-x: auto;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th {
-        background: var(--soft-blue);
-        padding: 10px;
-        text-align: left;
-      }
-
-      td {
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-      }
-
-      .text-center {
-        text-align: center;
-      }
-
-      .btn {
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        width: 100%;
-        margin-bottom: 10px;
-      }
-
-      .btn-blue { background: var(--nyondo-dark); color: white; }
-      .btn-gold { background: var(--nyondo-gold); color: white; }
-      .btn-danger { background: var(--danger); color: white; }
+    link(rel="stylesheet" href="/css/salesDash.css")
 
   body
+
     nav.navbar
-      span NYONDO GENERAL HARDWARE
-      button(onclick="handleLogout()") LOGOUT
+      .nav-left
+        span NYONDO GENERAL HARDWARE
+
+      .nav-center
+        span Logged in as: Sales Attendant
+
+      .nav-right
+        span#datetime
+
+        button(onclick="handleLogout()") LOGOUT
 
     .container
 
-      // ================= TOP STATS =================
       .stats-grid
+
         .stat-card
           h3 My Sales Today
           p UGX #{totalSalesToday}
 
         .stat-card
-          h3 Total Sales
-          p --
+          h3 Total Revenue
+          p UGX #{dbSales.reduce((a, b) => a + (b.grandTotal || 0), 0)}
 
         .stat-card
-          h3 Low Stock Items
-          p --
+          h3 low stock alert
+          p ----
 
-      // ================= MAIN DASHBOARD =================
       .main-layout
 
-        // LEFT SIDE
         .content-left
+
           .section-box
             h3 📦 Sales Records
+
             table
               thead
                 tr
-                  th customerName
-                  th product
-                  th customerType
-                  th quantity
-                  th unitPrice
-                  th paymentMethod
-                  th Color
-                  th gauge
-                  th total
-                  th Attendant
+                  th Date
+                  th Product
+                  th Image
+                  th Specification
+                  th Unit Price
+                  th Quantity
+                  th Customer Name
+                  th Phone Number
+                  th Address
+                  th Customer Type
+                  th Distance
+                  th Transport Cost
+                  th Sub Total
+                  th Grand Total
+                  th Payment Method
+                  th Actions
+
               tbody
                 if !dbSales || dbSales.length === 0
                   tr
-                    td.text-center(colspan=10) No sales recorded yet
+                    td(colspan="16") No sales recorded yet
+
                 else
                   each sale in dbSales
                     tr
-                      td #{sale.customerName}
-                      td #{sale.product && sale.product.itemName ? sale.product.itemName : sale.product}
-                      td #{sale.customerType}
-                      td #{sale.quantity}
-                      td #{sale.unitPrice}
-                      td #{sale.paymentMethod}
-                      td #{sale.color}
-                      td #{sale.guage}
-                      td #{sale.total}
-                      td #{sale.Attendant && sale.Attendant.fullName ? sale.Attendant.fullName : 'Acom lilian'}
+                      td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
 
-        // RIGHT SIDE
+                      td= (sale.product && sale.product.itemName) ? sale.product.itemName : 'Deleted Product'
+
+                      td
+                        if sale.product && sale.product.image
+                          img(src=sale.product.image, width="45", height="45")
+                        else
+                          span No Image
+
+                      td= sale.specification || '-'
+                      td= sale.unitPrice || 0
+                      td= sale.quantity || 0
+                      td= sale.customerName || '-'
+                      td= sale.phoneNumber || '-'
+                      td= sale.customerAddress || '-'
+                      td= sale.customerType || '-'
+                      td= sale.distance || 0
+                      td= sale.transportCost || 0
+                      td= sale.subTotal || 0
+                      td= sale.grandTotal || 0
+                      td= sale.paymentMethod || '-'
+
+                      td
+                        a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+                        a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
+                        a.btn.btn-green(href=`/sales/mark-updated/${sale._id}` onclick="return confirm('Confirm update?')") Update
+
         .content-right
 
           .section-box
             h3 ⚡ Sales Quick Actions
-            button.btn.btn-blue(type="button" onclick="goTo('/salesform')") 📝 New Standard Sale
+
+            button.btn.btn-blue(type="button" onclick="goTo('/salesform')") 📝 New Sale
 
     script.
       function handleLogout() {
@@ -195,3 +117,12 @@ html
       function goTo(url) {
         window.location.href = url;
       }
+
+      function updateTime() {
+        const now = new Date();
+        document.getElementById("datetime").innerText =
+          now.toLocaleDateString() + " " + now.toLocaleTimeString();
+      }
+
+      setInterval(updateTime, 1000);
+      updateTime();

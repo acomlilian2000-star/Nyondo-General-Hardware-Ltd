@@ -1,0 +1,102 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Sales Receipt
+
+    // External CSS
+    link(rel="stylesheet" href="/css/receipt.css")
+
+  body
+
+    .receipt
+
+      h2 NYONDO GENERAL HARDWARE
+      p.text-center Official Sales Receipt
+
+      hr
+
+      // ================= SALE INFO =================
+      .row
+        span Date:
+        span= sale.date ? new Date(sale.date).toLocaleString() : '-'
+
+      .row
+        span Customer:
+        span= sale.customerName || '-'
+
+      .row
+        span Phone:
+        span= sale.phoneNumber || '-'
+
+      .row
+        span Address:
+        span= sale.customerAddress || '-'
+
+      .row
+        span Attendant:
+        span= sale.Attendant ? sale.Attendant.fullName : '-'
+
+      hr
+
+      // ================= PRODUCT INFO =================
+      .row
+        span Product:
+        span= sale.product ? sale.product.itemName : 'Deleted Product'
+
+      .row
+        span Quantity:
+        span= sale.quantity || 0
+
+      .row
+        span Unit Price:
+        span UGX #{sale.unitPrice || 0}
+
+      .row
+        span Sub Total:
+        span UGX #{sale.subTotal || 0}
+
+      .row
+        span Transport:
+        span UGX #{sale.transportCost || 0}
+
+      hr
+
+      // ================= TOTAL =================
+      .row
+        strong Grand Total:
+        strong UGX #{sale.grandTotal || 0}
+
+      .row
+        span Payment Method:
+        span= sale.paymentMethod || '-'
+
+      hr
+
+      // ================= ACTION BUTTONS =================
+      .receipt-actions
+
+        button.print-btn(
+          onclick="window.print()"
+        ) Print Receipt
+
+        a.back-btn(
+          href="/salesform"
+        ) Back To Sales Form
+
+        a.dashboard-btn(
+          href="/salesDash"
+        ) Go To Dashboard
+
+    // ================= AUTO PRINT + REDIRECT =================
+    script.
+      window.onload = function () {
+        setTimeout(() => {
+          window.print();
+        }, 500);
+      };
+
+      window.onafterprint = function () {
+        window.location.href = "/salesform";
+      };
