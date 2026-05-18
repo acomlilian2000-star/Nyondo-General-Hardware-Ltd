@@ -1,0 +1,210 @@
+:root {
+  --sky-blue: #87CEEB;
+  --nyondo-dark: #003049;
+  --nyondo-gold: #f77f00;
+  --danger: #d62828;
+  --success: #2a9d8f;
+  --white: #ffffff;
+  --soft-blue: #e1f5fe;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: var(--sky-blue);
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar {
+  background: var(--nyondo-dark);
+  color: white;
+  padding: 12px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.logo-placeholder {
+  width: 40px;
+  height: 40px;
+  background: var(--nyondo-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.nav-brand-text span {
+  font-size: 12px;
+  color: var(--sky-blue);
+}
+
+.nav-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.user-status {
+  color: var(--nyondo-gold);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.logout-btn {
+  background: var(--danger);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* ================= LAYOUT ================= */
+
+.container {
+  padding: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.stat-card p {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* ================= MAIN ================= */
+
+.main-layout {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 20px;
+}
+
+.section-box {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+/* ================= TABLE ================= */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: var(--soft-blue);
+  padding: 10px;
+  text-align: left;
+}
+
+td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.status-low {
+  color: var(--danger);
+  font-weight: bold;
+}
+
+.status-ok {
+  color: var(--success);
+  font-weight: bold;
+}
+
+/* ================= BUTTONS ================= */
+
+.btn-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn {
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-blue {
+  background: var(--nyondo-dark);
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.btn {
+  padding: 6px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 0.8rem;
+  margin-right: 5px;
+  display: inline-block;
+}
+
+.btn-blue {
+  background: #003049;
+  color: white;
+}
+
+.btn-red {
+  background: #d62828;
+  color: white;
+}
+
+.btn-gold {
+  background: #f77f00;
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}

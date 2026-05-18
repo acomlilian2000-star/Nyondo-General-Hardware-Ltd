@@ -1,0 +1,150 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width,initial-scale=1")
+    title NYONDO | Stock Manager Dashboard
+
+    link(rel="stylesheet", href="/css/stockDash.css")
+
+  body
+
+    nav.navbar
+      .brand-container
+        .logo-placeholder N
+        .nav-brand-text
+          | NYONDO GENERAL HARDWARE
+          span Quality Equipment • Nansana, Uganda
+
+      .nav-right
+        span.user-status Logged in as: Stock Manager
+        span#live-time
+        button.logout-btn(onclick="handleLogout()") LOGOUT
+
+    .container
+
+      // ================= STATS =================
+      .stats-grid
+        .stat-card
+          h3 Total Stock Items
+          p #{stocks ? stocks.length : 0}
+
+        .stat-card
+          h3 Low Stock Alerts
+          p #{lowStockCount || 0}
+
+        .stat-card
+          h3 Supplier Credits
+          p #{supplierCredits ? supplierCredits.length : 0}
+
+        .stat-card
+          h3 Total Suppliers
+          p #{suppliers ? suppliers.length : 0}
+
+      .main-layout
+
+        // ================= STOCK TABLE =================
+        .content-left
+
+          .section-box
+            h3 📦 Stock Entries
+
+            .table-scroll
+              table
+                thead
+                  tr
+                    th Item Name
+                    th Category
+                    th Quantity
+                    th Buying Price
+                    th Selling Price
+                    th Status
+                    th Actions
+
+                tbody
+                  if !stocks || stocks.length === 0
+                    tr
+                      td(colspan="7") No stock entries available
+
+                  else
+                    each item in stocks
+                      tr
+                        td= item.itemName
+                        td= item.category
+                        td= item.quantity
+                        td UGX #{item.buyingPrice}
+                        td UGX #{item.unitPrice}
+
+                        td
+                          if item.quantity <= 5
+                            span.status-low Low Stock
+                          else
+                            span.status-ok Available
+
+                        // ================= ACTIONS =================
+                        td
+                          a.btn.btn-blue(href=`/stock/edit/${item._id}`) Edit
+
+                          a.btn.btn-red(
+                            href=`/stock/delete/${item._id}`
+                            onclick="return confirm('Are you sure you want to delete this item?')"
+                          ) Delete
+
+                          a.btn.btn-gold(
+                            href=`/stock/confirm/${item._id}`
+                            onclick="return confirm('Confirm stock update?')"
+                          ) Update
+
+          // ================= SUPPLIER CREDIT =================
+          .section-box
+            h3 💳 Supplier Credit Tracking
+
+            .table-scroll
+              table
+                thead
+                  tr
+                    th Supplier
+                    th Product
+                    th Amount
+                    th Status
+                    th Date
+
+                tbody
+                  if !supplierCredits || supplierCredits.length === 0
+                    tr
+                      td(colspan="5") No supplier credits available
+
+                  else
+                    each credit in supplierCredits
+                      tr
+                        td= credit.supplierName
+                        td= credit.productName
+                        td UGX #{credit.amount}
+                        td= credit.status
+                        td= credit.date ? new Date(credit.date).toLocaleDateString() : '-'
+
+        // ================= QUICK ACTIONS =================
+        .content-right
+          .section-box
+            h3 ⚡ Quick Actions
+
+            .btn-grid
+              button.btn.btn-blue(onclick="nav('/stockRegistration')") ➕ Stock Registration
+
+    script.
+      function nav(url){ window.location.href = url; }
+
+      function updateClock(){
+        const now = new Date();
+        document.getElementById("live-time").innerText =
+          now.toLocaleString();
+      }
+
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      function handleLogout(){
+        if(confirm("Logout?")){
+          window.location.href = "/logout";
+        }
+      }
