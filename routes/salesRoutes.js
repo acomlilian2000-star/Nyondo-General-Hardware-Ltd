@@ -18,7 +18,29 @@ function isLoggedIn(req, res, next) {
 ========================= */
 router.get("/salesDash", isLoggedIn, async (req, res) => {
   try {
-    const dbSales = await Sales.find()
+
+    /* =========================
+       MONTHLY FILTER
+    ========================= */
+    let filter = {};
+
+    if (req.query.month) {
+
+      const selectedMonth = req.query.month;
+
+      const startDate = new Date(selectedMonth + "-01");
+
+      const endDate = new Date(startDate);
+
+      endDate.setMonth(endDate.getMonth() + 1);
+
+      filter.createdAt = {
+        $gte: startDate,
+        $lt: endDate
+      };
+    }
+
+    const dbSales = await Sales.find(filter)
       .populate("product", "itemName image")
       .populate("Attendant", "fullName")
       .sort({ createdAt: -1 });
@@ -38,6 +60,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
 
     let totalSalesToday = 0;
     let totalSalesAllTime = 0;
+    let monthlyTotal = 0;
 
     todaySales.forEach((sale) => {
       totalSalesToday += Number(sale.grandTotal || 0);
@@ -45,6 +68,13 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
 
     dbSales.forEach((sale) => {
       totalSalesAllTime += Number(sale.grandTotal || 0);
+    });
+
+    /* =========================
+       MONTHLY TOTAL
+    ========================= */
+    dbSales.forEach((sale) => {
+      monthlyTotal += Number(sale.grandTotal || 0);
     });
 
     /* =========================
@@ -60,6 +90,8 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       dbSales,
       totalSalesToday,
       totalSalesAllTime,
+      monthlyTotal,
+      selectedMonth: req.query.month || "",
       lowStockCount,
       lowStockItems
     });
@@ -71,6 +103,8 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       dbSales: [],
       totalSalesToday: 0,
       totalSalesAllTime: 0,
+      monthlyTotal: 0,
+      selectedMonth: "",
       lowStockCount: 0,
       lowStockItems: []
     });

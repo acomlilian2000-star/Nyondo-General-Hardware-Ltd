@@ -23,6 +23,23 @@ html
 
     .container
 
+      // ================= MONTHLY REPORT FILTER =================
+      .filter-section
+
+        form(action="/salesDash" method="GET")
+
+          label(for="month") Select Month Report:
+
+          input(
+            type="month"
+            name="month"
+            id="month"
+            value=selectedMonth || ""
+          )
+
+          button.btn.btn-blue(type="submit")
+            | Generate Report
+
       .stats-grid
 
         .stat-card
@@ -35,7 +52,11 @@ html
 
         .stat-card
           h3 low stock alert
-          p ----
+          p #{lowStockCount || 0}
+
+        .stat-card
+          h3 Monthly Report Total
+          p UGX #{monthlyTotal || 0}
 
       .main-layout
 
@@ -96,16 +117,29 @@ html
                       td= sale.paymentMethod || '-'
 
                       td
-                        a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
-                        a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-                        a.btn.btn-green(href=`/sales/mark-updated/${sale._id}` onclick="return confirm('Confirm update?')") Update
+                        a.btn.btn-blue(
+                          href=`/sales/edit/${sale._id}`
+                        ) Edit
+
+                        a.btn.btn-red(
+                          href=`/sales/delete/${sale._id}`
+                          onclick="return confirm('Delete this sale?')"
+                        ) Delete
+
+                        a.btn.btn-green(
+                          href=`/sales/mark-updated/${sale._id}`
+                          onclick="return confirm('Confirm update?')"
+                        ) Update
 
         .content-right
 
           .section-box
             h3 ⚡ Sales Quick Actions
 
-            button.btn.btn-blue(type="button" onclick="goTo('/salesform')") 📝 New Sale
+            button.btn.btn-blue(
+              type="button"
+              onclick="goTo('/salesform')"
+            ) 📝 New Sale
 
     script.
       function handleLogout() {
@@ -120,9 +154,11 @@ html
 
       function updateTime() {
         const now = new Date();
+
         document.getElementById("datetime").innerText =
           now.toLocaleDateString() + " " + now.toLocaleTimeString();
       }
 
       setInterval(updateTime, 1000);
+
       updateTime();

@@ -146,7 +146,7 @@ td {
 /* COLORS */
 .btn-blue { background: #007bff; }
 .btn-red { background: #dc3545; }
-.btn-green { background: #28a745; }
+.btn-green { background: #1e3a8a; }
 
 .btn:hover {
   opacity: 0.85;
@@ -221,4 +221,24 @@ td {
 
 .nav-right button:hover {
   opacity: 0.85;
+}
+.form-filter {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.form-filter form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.form-filter input {
+  padding: 8px;
+}
+
+.form-filter button {
+  width: auto;
 }
