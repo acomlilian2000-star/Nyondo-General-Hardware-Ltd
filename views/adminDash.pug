@@ -1,0 +1,100 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title NYONDO | Admin Dashboard
+
+    // External CSS
+    link(rel="stylesheet", href="/css/admin.css")
+
+  body
+
+    // ================= SIDEBAR =================
+    aside.sidebar#sidebar
+
+      .logo-section
+        h2.logo NYONDO ADMIN
+
+      nav.nav-links
+
+        a(href="/stockDash")
+          span.icon 📦
+          span.text Stock Dashboard
+
+        a(href="/salesDash")
+          span.icon 💰
+          span.text Sales Dashboard
+
+        a(href="/register")
+          span.icon 👤
+          span.text User Registration
+
+        a(href="/supplierTable")
+          span.icon 💳
+          span.text Supplier Credit Table
+
+        a(href="/salaryDeposits")
+          span.icon 🏦
+          span.text Salary Deposit Earners
+
+      .sidebar-footer
+
+        button.logout-btn(
+          onclick="logoutUser()"
+        )
+          | 🚪 Logout
+
+    // ================= MAIN CONTENT =================
+    main.main-content
+
+      // ================= TOPBAR =================
+      header.topbar
+
+        button.menu-btn(
+          onclick="toggleSidebar()"
+        )
+          | ☰
+
+        h1.dashboard-title
+          | Admin Dashboard
+
+        .topbar-right
+
+          span.admin-label
+            | Administrator
+
+      // ================= CONTENT =================
+      section.dashboard-content
+
+        .welcome-card
+
+          h2
+            | Welcome to NYONDO Admin Panel
+
+          p
+            | Use the sidebar to manage stock, sales, suppliers, users and salary deposits.
+
+    // ================= JAVASCRIPT =================
+    script.
+
+      // ================= TOGGLE SIDEBAR =================
+      function toggleSidebar() {
+
+        const sidebar =
+          document.getElementById("sidebar");
+
+        sidebar.classList.toggle("active");
+      }
+
+      // ================= LOGOUT =================
+      function logoutUser() {
+
+        const confirmLogout =
+          confirm("Are you sure you want to logout?");
+
+        if (confirmLogout) {
+
+          window.location.href = "/logout";
+        }
+      }

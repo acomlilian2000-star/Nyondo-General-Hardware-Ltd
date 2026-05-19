@@ -1,0 +1,99 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Supplier Credit Table
+
+    link(rel="stylesheet", href="/css/stockDash.css")
+
+  body
+
+    nav.navbar
+      .brand-container
+        .logo-placeholder N
+        .nav-brand-text
+          strong NYONDO GENERAL HARDWARE
+          span Supplier Credit Management
+
+      .nav-right
+        button.logout-btn(onclick="goBack()") BACK
+
+    .container
+
+      .section-box
+        h3 💳 Supplier Credit Table
+
+        .table-scroll
+          table.credit-table
+
+            thead
+              tr
+                th Supplier
+                th Contact
+                th Phone
+                th Factory
+                th Product
+                th Qty
+                th Amount Owed
+                th Status
+                th Actions   // ✅ ADDED
+
+            tbody
+
+              if !supplierCredits.length
+                tr
+                  td(colspan="9") No supplier credits available
+
+              else
+                each credit in supplierCredits
+                  tr
+
+                    td
+                      strong= credit.supplier
+
+                    td
+                      = credit.contactPerson
+
+                    td
+                      | +256 #{credit.supplierPhone}
+
+                    td
+                      = credit.factoryName
+
+                    td
+                      = credit.itemName
+
+                    td
+                      = credit.quantity
+
+                    td
+                      | UGX #{(credit.quantity || 0) * (credit.unitPrice || 0)}
+
+                    td
+                      if credit.paymentMethod === "credit"
+                        span.status-low Pending
+                      else
+                        span.status-ok Paid
+
+                    // ✅ NEW ACTIONS COLUMN
+                    td
+
+                      if credit.paymentMethod === "credit"
+                        a.btn.btn-green(
+                          href=`/supplier/mark-paid/${credit._id}`
+                          onclick="return confirm('Mark this supplier as PAID?')"
+                        )
+                          | Mark Paid
+
+                      else
+                        a.btn.btn-red(
+                          href=`/supplier/clear/${credit._id}`
+                          onclick="return confirm('Clear this paid record?')"
+                        )
+                          | Clear
+
+    script.
+      function goBack() {
+        window.location.href = "/stockDash";
+      }

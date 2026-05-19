@@ -5,6 +5,10 @@ const StockSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  category: {
+    type: String,
+    trim: true,
+  },
   quantity: {
     type: Number,
     trim: true,
@@ -41,10 +45,7 @@ const StockSchema = new mongoose.Schema({
   }
 
   },
-  // amountPaid: {
-  //   type: Number,
-  //   trim: true,
-  // },
+ 
   paymentMethod: {
     type: String,
     trim: true,
@@ -52,6 +53,16 @@ const StockSchema = new mongoose.Schema({
   total:{
     type:Number,
   },
+  Attendant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    status: {
+  type: String,
+  enum: ["Pending", "Paid"],
+  default: "Pending"
+},
   
 });
 

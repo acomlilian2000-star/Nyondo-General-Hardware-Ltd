@@ -2,7 +2,7 @@ doctype html
 html
   head
     meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width,initial-scale=1")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
     title NYONDO | Stock Manager Dashboard
 
     link(rel="stylesheet", href="/css/stockDash.css")
@@ -10,21 +10,30 @@ html
   body
 
     nav.navbar
+
       .brand-container
-        .logo-placeholder N
+
+        .logo-placeholder
+          | N
+
         .nav-brand-text
-          | NYONDO GENERAL HARDWARE
+          strong NYONDO GENERAL HARDWARE
           span Quality Equipment • Nansana, Uganda
 
       .nav-right
-        span.user-status Logged in as: Stock Manager
+
+        span.user-status
+          | Logged in as: Stock Manager
+
         span#live-time
-        button.logout-btn(onclick="handleLogout()") LOGOUT
+
+        button.logout-btn(onclick="handleLogout()")
+          | LOGOUT
 
     .container
 
-      // ================= STATS =================
       .stats-grid
+
         .stat-card
           h3 Total Stock Items
           p #{stocks ? stocks.length : 0}
@@ -38,103 +47,213 @@ html
           p #{supplierCredits ? supplierCredits.length : 0}
 
         .stat-card
-          h3 Total Suppliers
-          p #{suppliers ? suppliers.length : 0}
+          h3 Total Stock Value
+          p UGX #{totalStockValue || 0}
 
       .main-layout
 
-        // ================= STOCK TABLE =================
         .content-left
 
           .section-box
-            h3 📦 Stock Entries
+
+            h3 📦 New Stock Entries
 
             .table-scroll
-              table
+
+              table.stock-table
+
                 thead
                   tr
-                    th Item Name
+                    th Image
+                    th Product Name
                     th Category
                     th Quantity
                     th Buying Price
                     th Selling Price
-                    th Status
+                    th Stock Cost
+                    th Attendant
                     th Actions
 
                 tbody
+
                   if !stocks || stocks.length === 0
+
                     tr
-                      td(colspan="7") No stock entries available
+                      td(colspan="9")
+                        | No new stock entries available
 
                   else
+
                     each item in stocks
+
+                      -
+                        const qty = item.quantity || 0
+                        const buy = item.unitCost || 0
+                        const sell = item.unitPrice || 0
+                        const cost = qty * buy
+
                       tr
-                        td= item.itemName
-                        td= item.category
-                        td= item.quantity
-                        td UGX #{item.buyingPrice}
-                        td UGX #{item.unitPrice}
 
                         td
+
+                          if item.productImage
+
+                            img(
+                              src=`/uploads/${item.productImage}`
+                              alt="Product Image"
+                              style="width:60px; height:60px; object-fit:cover; border-radius:8px;"
+                            )
+
+                          else
+
+                            span No Image
+
+                        td
+                          strong= item.itemName || "No Product"
+
+                        td
+                          = item.category || "General"
+
+                        td
+                          = qty
+
+                        td
+                          | UGX #{buy}
+
+                        td
+                          | UGX #{sell}
+
+                        td
+                          | UGX #{cost}
+
+                        td
+                          strong= item.attendant || "N/A"
+
+                        td
+
+                          a.btn.btn-blue(
+                            href=`/stock/edit/${item._id}`
+                          )
+                            | Edit
+
+                          a.btn.btn-gold(
+                            href=`/stock/confirm/${item._id}`
+                            onclick="return confirm('Confirm stock update?')"
+                          )
+                            | Update
+
+          .section-box
+
+            h3 🗂️ Old Stock Records
+
+            .table-scroll
+
+              table.stock-table
+
+                thead
+                  tr
+                    th Image
+                    th Product Name
+                    th Category
+                    th Quantity
+                    th Buying Price
+                    th Selling Price
+                    th Stock Cost
+                    th Attendant
+                    th Status
+
+                tbody
+
+                  if !oldStocks || oldStocks.length === 0
+
+                    tr
+                      td(colspan="9")
+                        | No old stock records available
+
+                  else
+
+                    each item in oldStocks
+
+                      -
+                        const qty = item.quantity || 0
+                        const buy = item.unitCost || 0
+                        const sell = item.unitPrice || 0
+                        const cost = qty * buy
+
+                      tr
+
+                        td
+
+                          if item.productImage
+
+                            img(
+                              src=`/uploads/${item.productImage}`
+                              alt="Old Stock Image"
+                              style="width:60px; height:60px; object-fit:cover; border-radius:8px;"
+                            )
+
+                          else
+
+                            span No Image
+
+                        td
+                          strong= item.itemName || "No Product"
+
+                        td
+                          = item.category || "General"
+
+                        td
+                          = qty
+
+                        td
+                          | UGX #{buy}
+
+                        td
+                          | UGX #{sell}
+
+                        td
+                          | UGX #{cost}
+
+                        td
+                          strong= item.attendant || "N/A"
+
+                        td
+
                           if item.quantity <= 5
                             span.status-low Low Stock
                           else
                             span.status-ok Available
 
-                        // ================= ACTIONS =================
-                        td
-                          a.btn.btn-blue(href=`/stock/edit/${item._id}`) Edit
-
-                          a.btn.btn-red(
-                            href=`/stock/delete/${item._id}`
-                            onclick="return confirm('Are you sure you want to delete this item?')"
-                          ) Delete
-
-                          a.btn.btn-gold(
-                            href=`/stock/confirm/${item._id}`
-                            onclick="return confirm('Confirm stock update?')"
-                          ) Update
-
-          // ================= SUPPLIER CREDIT =================
-          .section-box
-            h3 💳 Supplier Credit Tracking
-
-            .table-scroll
-              table
-                thead
-                  tr
-                    th Supplier
-                    th Product
-                    th Amount
-                    th Status
-                    th Date
-
-                tbody
-                  if !supplierCredits || supplierCredits.length === 0
-                    tr
-                      td(colspan="5") No supplier credits available
-
-                  else
-                    each credit in supplierCredits
-                      tr
-                        td= credit.supplierName
-                        td= credit.productName
-                        td UGX #{credit.amount}
-                        td= credit.status
-                        td= credit.date ? new Date(credit.date).toLocaleDateString() : '-'
-
-        // ================= QUICK ACTIONS =================
         .content-right
+
           .section-box
+
             h3 ⚡ Quick Actions
 
             .btn-grid
-              button.btn.btn-blue(onclick="nav('/stockRegistration')") ➕ Stock Registration
+
+              button.btn.btn-blue(
+                onclick="nav('/stockform')"
+              )
+                | ➕ Stock Registration
+
+              button.btn.btn-gold(
+                onclick="nav('/stockDash')"
+              )
+                | 🔄 Refresh Dashboard
+
+              button.btn.btn-green(
+                onclick="nav('/supplierTable')"
+              )
+                | 💳 Supplier Table
 
     script.
-      function nav(url){ window.location.href = url; }
 
-      function updateClock(){
+      function nav(url) {
+        window.location.href = url;
+      }
+
+      function updateClock() {
         const now = new Date();
         document.getElementById("live-time").innerText =
           now.toLocaleString();
@@ -143,8 +262,8 @@ html
       setInterval(updateClock, 1000);
       updateClock();
 
-      function handleLogout(){
-        if(confirm("Logout?")){
+      function handleLogout() {
+        if (confirm("Logout from dashboard?")) {
           window.location.href = "/logout";
         }
       }

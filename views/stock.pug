@@ -16,7 +16,7 @@ html
 
       p.subtitle Official Stock Arrival & Finance Portal
 
-      form#stockForm(action='/Stock' method='POST')
+      form#stockForm(action='/stock' method='POST' enctype='multipart/form-data')
 
         // ================= PRODUCTS CONTAINER =================
         #itemsContainer
@@ -39,42 +39,81 @@ html
 
                 optgroup(label='Construction Materials')
 
-                  option(value='Cement CEM II')
+                  option(value='Cement CEM II' data-category='Construction Materials')
                     | Cement (CEM II)
 
-                  option(value='Cement CEM III')
+                  option(value='Cement CEM III' data-category='Construction Materials')
                     | Cement (CEM III)
 
-                  option(value='Iron Bars 10mm')
+                  option(value='Iron Bars 10mm' data-category='Construction Materials')
                     | Iron Bars (10mm)
 
-                  option(value='Iron Bars 12mm')
+                  option(value='Iron Bars 12mm' data-category='Construction Materials')
                     | Iron Bars (12mm)
 
-                  option(value='Iron Bars 16mm')
+                  option(value='Iron Bars 16mm' data-category='Construction Materials')
                     | Iron Bars (16mm)
 
                 optgroup(label='Fasteners & Tools')
 
-                  option(value='Nails Assorted')
+                  option(value='Nails Assorted' data-category='Fasteners & Tools')
                     | Nails (Assorted)
 
-                  option(value='Roofing Nails')
+                  option(value='Roofing Nails' data-category='Fasteners & Tools')
                     | Roofing Nails
 
-                  option(value='Wheelbarrow')
+                  option(value='Wheelbarrow' data-category='Fasteners & Tools')
                     | Wheelbarrows
 
                 optgroup(label='Fencing & Roofing')
 
-                  option(value='Barbed Wire')
+                  option(value='Barbed Wire' data-category='Fencing & Roofing')
                     | Barbed Wire
 
-                  option(value='Wire Mesh')
+                  option(value='Wire Mesh' data-category='Fencing & Roofing')
                     | Wire Mesh
 
-                  option(value='Iron Sheets')
+                  option(value='Iron Sheets' data-category='Fencing & Roofing')
                     | Iron Sheets
+
+            // ================= CATEGORY (AUTO FILLED) =================
+            .input-row
+
+              .form-group
+                label Category
+
+                input.category(
+                  type='text'
+                  name='category'
+                  placeholder='Auto generated from product'
+                  readonly
+                )
+
+            // ================= SPECIFICATIONS (NEW) =================
+            .input-row
+
+              .form-group
+                label Specification
+
+                select(
+                  name='specification'
+                  required
+                )
+
+                  option(value='' disabled selected)
+                    | -- Select Specification --
+
+                  option(value='Pieces')
+                    | Pieces
+
+                  option(value='Kgs')
+                    | Kilograms (Kgs)
+
+                  option(value='Bags')
+                    | Bags
+
+                  option(value='Rolls')
+                    | Rolls
 
             .input-row
 
@@ -83,7 +122,7 @@ html
 
                 input.quantity(
                   type='number'
-                  name='quantity[]'
+                  name='quantity'
                   placeholder='Enter Quantity'
                   required
                 )
@@ -93,7 +132,7 @@ html
 
                 input.unitCost(
                   type='Number'
-                  name='unitCost[]'
+                  name='unitCost'
                   placeholder='Enter Unit Cost'
                   required
                 )
@@ -105,13 +144,25 @@ html
 
                 input.unitPrice(
                   type='Number'
-                  name='unitPrice[]'
+                  name='unitPrice'
                   placeholder='Selling Price'
                   required
                 )
 
                 p.helper-text
                   | Selling price must be greater than unit cost.
+
+            // ================= IMAGE UPLOAD =================
+            .input-row
+
+              .form-group
+                label Product Image
+
+                input(
+                  type='file'
+                  name='productImage'
+                  accept='image/*'
+                )
 
             // ================= SUPPLIER INFO =================
             .input-row
@@ -248,6 +299,29 @@ html
           });
 
         itemsContainer.appendChild(clonedItem);
+      });
+
+      // ================= CATEGORY AUTO FILL =================
+      document.addEventListener('change', function(e) {
+
+        if (e.target.classList.contains('productSelect')) {
+
+          const selectedOption =
+            e.target.options[e.target.selectedIndex];
+
+          const category =
+            selectedOption.getAttribute('data-category');
+
+          const stockItem =
+            e.target.closest('.stock-item');
+
+          const categoryInput =
+            stockItem.querySelector('.category');
+
+          if (categoryInput) {
+            categoryInput.value = category || '';
+          }
+        }
       });
 
       // ================= VALIDATION =================
