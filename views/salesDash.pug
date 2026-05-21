@@ -9,26 +9,25 @@ html
 
   body
 
-    nav.navbar
-      .nav-left
-        span NYONDO GENERAL HARDWARE
+    // ================= SIDEBAR =================
+    aside.sidebar
 
-      .nav-center
-        span Logged in as: Sales Attendant
+      .brand
+        h2 NYONDO SALES
 
-      .nav-right
-        span#datetime
+      ul.nav
 
-        button(onclick="handleLogout()") LOGOUT
+        li
+          a(href="/salesDash") 📊 Dashboard
 
-    .container
+        li
+          a(href="/salesform") 📝 Make New Sale
 
-      // ================= MONTHLY REPORT FILTER =================
-      .filter-section
-
+      // ===== MONTHLY FILTER MOVED (SECOND LAST) =====
+      .sidebar-filter
         form(action="/salesDash" method="GET")
 
-          label(for="month") Select Month Report:
+          label(for="month") Monthly Report
 
           input(
             type="month"
@@ -38,127 +37,126 @@ html
           )
 
           button.btn.btn-blue(type="submit")
-            | Generate Report
+            | Generate
+            
+        li
+          a(href="/logout") 🚪 Logout
 
-      .stats-grid
 
-        .stat-card
-          h3 My Sales Today
-          p UGX #{totalSalesToday}
+    // ================= MAIN CONTENT =================
+    .main-content
 
-        .stat-card
-          h3 Total Revenue
-          p UGX #{dbSales.reduce((a, b) => a + (b.grandTotal || 0), 0)}
+      // ================= NAVBAR =================
+      nav.navbar
+        .nav-left
+          span NYONDO GENERAL HARDWARE LTD
 
-        .stat-card
-          h3 low stock alert
-          p #{lowStockCount || 0}
+        .nav-center
+          span Logged in as: Sales Attendant
 
-        .stat-card
-          h3 Monthly Report Total
-          p UGX #{monthlyTotal || 0}
+        .nav-right
+          span#datetime
 
-      .main-layout
 
-        .content-left
+      .container
 
-          .section-box
-            h3 📦 Sales Records
+        // ================= STATS =================
+        .stats-grid
 
-            table
-              thead
+          .stat-card
+            h3 My Sales Today
+            p UGX #{totalSalesToday}
+
+          .stat-card
+            h3 Total Revenue
+            p UGX #{dbSales.reduce((a, b) => a + (b.grandTotal || 0), 0)}
+
+          .stat-card
+            h3 Low Stock Alert
+            p #{lowStockCount || 0}
+
+          .stat-card
+            h3 Monthly Report Total
+            p UGX #{monthlyTotal || 0}
+
+
+        // ================= SALES TABLE =================
+        .section-box
+
+          h3 📦 Sales Records
+
+          table
+            thead
+              tr
+                th Date
+                th Product
+                th Image
+                th Specification
+                th Unit Price
+                th Quantity
+                th Customer Name
+                th Phone Number
+                th Address
+                th Customer Type
+                th Distance
+                th Transport Cost
+                th Sub Total
+                th Grand Total
+                th Payment Method
+                th Actions
+
+            tbody
+              if !dbSales || dbSales.length === 0
                 tr
-                  th Date
-                  th Product
-                  th Image
-                  th Specification
-                  th Unit Price
-                  th Quantity
-                  th Customer Name
-                  th Phone Number
-                  th Address
-                  th Customer Type
-                  th Distance
-                  th Transport Cost
-                  th Sub Total
-                  th Grand Total
-                  th Payment Method
-                  th Actions
+                  td(colspan="16") No sales recorded yet
 
-              tbody
-                if !dbSales || dbSales.length === 0
+              else
+                each sale in dbSales
                   tr
-                    td(colspan="16") No sales recorded yet
+                    td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
 
-                else
-                  each sale in dbSales
-                    tr
-                      td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
+                    td= (sale.product && sale.product.itemName) ? sale.product.itemName : 'Deleted Product'
 
-                      td= (sale.product && sale.product.itemName) ? sale.product.itemName : 'Deleted Product'
+                    td
+                      if sale.product && sale.product.image
+                        img(src=sale.product.image, width="45", height="45")
+                      else
+                        span No Image
 
-                      td
-                        if sale.product && sale.product.image
-                          img(src=sale.product.image, width="45", height="45")
-                        else
-                          span No Image
+                    td= sale.specification || '-'
+                    td= sale.unitPrice || 0
+                    td= sale.quantity || 0
+                    td= sale.customerName || '-'
+                    td= sale.phoneNumber || '-'
+                    td= sale.customerAddress || '-'
+                    td= sale.customerType || '-'
+                    td= sale.distance || 0
+                    td= sale.transportCost || 0
+                    td= sale.subTotal || 0
+                    td= sale.grandTotal || 0
+                    td= sale.paymentMethod || '-'
 
-                      td= sale.specification || '-'
-                      td= sale.unitPrice || 0
-                      td= sale.quantity || 0
-                      td= sale.customerName || '-'
-                      td= sale.phoneNumber || '-'
-                      td= sale.customerAddress || '-'
-                      td= sale.customerType || '-'
-                      td= sale.distance || 0
-                      td= sale.transportCost || 0
-                      td= sale.subTotal || 0
-                      td= sale.grandTotal || 0
-                      td= sale.paymentMethod || '-'
+                    td
+                      a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
 
-                      td
-                        a.btn.btn-blue(
-                          href=`/sales/edit/${sale._id}`
-                        ) Edit
+                      a.btn.btn-red(
+                        href=`/sales/delete/${sale._id}`
+                        onclick="return confirm('Delete this sale?')"
+                      ) Delete
 
-                        a.btn.btn-red(
-                          href=`/sales/delete/${sale._id}`
-                          onclick="return confirm('Delete this sale?')"
-                        ) Delete
+                      a.btn.btn-green(
+                        href=`/sales/mark-updated/${sale._id}`
+                        onclick="return confirm('Confirm update?')"
+                      ) Update
 
-                        a.btn.btn-green(
-                          href=`/sales/mark-updated/${sale._id}`
-                          onclick="return confirm('Confirm update?')"
-                        ) Update
 
-        .content-right
-
-          .section-box
-            h3 ⚡ Sales Quick Actions
-
-            button.btn.btn-blue(
-              type="button"
-              onclick="goTo('/salesform')"
-            ) 📝 New Sale
-
+    // ================= CLOCK =================
     script.
-      function handleLogout() {
-        if (confirm("Logout?")) {
-          window.location.href = "/logout";
-        }
-      }
-
-      function goTo(url) {
-        window.location.href = url;
-      }
-
       function updateTime() {
         const now = new Date();
-
         document.getElementById("datetime").innerText =
           now.toLocaleDateString() + " " + now.toLocaleTimeString();
       }
 
       setInterval(updateTime, 1000);
-
       updateTime();

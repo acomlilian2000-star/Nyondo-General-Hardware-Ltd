@@ -1,100 +1,134 @@
 doctype html
 html(lang="en")
+
   head
     meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title NYONDO | Admin Dashboard
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+
+    title NYONDO ERP Dashboard
 
     // External CSS
-    link(rel="stylesheet", href="/css/admin.css")
+    link(rel="stylesheet" href="/css/admin.css")
+
+    //- // Font Awesome
+    //- link(
+    //-   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    //-   rel="stylesheet"
+    //- )
 
   body
 
     // ================= SIDEBAR =================
-    aside.sidebar#sidebar
+    aside
 
-      .logo-section
-        h2.logo NYONDO ADMIN
+      h2 NYONDO ADMIN
 
-      nav.nav-links
+      ul.nav-links
 
-        a(href="/stockDash")
-          span.icon 📦
-          span.text Stock Dashboard
+        li.active
+          a(href="/adminDash")
+            i.fa.fa-gauge
+            |  Dashboard
 
-        a(href="/salesDash")
-          span.icon 💰
-          span.text Sales Dashboard
+        li
+          a(href="/SignUpform")
+            i.fa.fa-user-plus
+            |  Register
 
-        a(href="/register")
-          span.icon 👤
-          span.text User Registration
+        li
+          a(href="/salesDash")
+            i.fa.fa-cash-register
+            |  Sales
 
-        a(href="/supplierTable")
-          span.icon 💳
-          span.text Supplier Credit Table
+        li
+          a(href="/stockDash")
+            i.fa.fa-box
+            |  Stock
 
-        a(href="/salaryDeposits")
-          span.icon 🏦
-          span.text Salary Deposit Earners
+        li
+          a(href="/salary")
+            i.fa.fa-credit-card
+            |  Deposit
 
-      .sidebar-footer
-
-        button.logout-btn(
-          onclick="logoutUser()"
-        )
-          | 🚪 Logout
+        li
+          a(href="/logout")
+            i.fa.fa-right-from-bracket
+            |  Logout
 
     // ================= MAIN CONTENT =================
-    main.main-content
+    main
 
-      // ================= TOPBAR =================
-      header.topbar
+      // ================= NAVBAR =================
+      .navbar
 
-        button.menu-btn(
-          onclick="toggleSidebar()"
-        )
-          | ☰
+        div
+          strong NYONDO GENERAL HARDWARE LTD
 
-        h1.dashboard-title
-          | Admin Dashboard
+        div
+          strong Logged in as Administrator
 
-        .topbar-right
+        #clock
 
-          span.admin-label
-            | Administrator
+      // ================= KPI CARDS =================
+      .kpi-grid
 
-      // ================= CONTENT =================
-      section.dashboard-content
+        .kpi-card
+          h4 Total Sales
+          p UGX —
 
-        .welcome-card
+        .kpi-card
+          h4 Total Stock Value
+          p UGX —
 
-          h2
-            | Welcome to NYONDO Admin Panel
+        .kpi-card
+          h4 Suppliers Owed
+          p —
 
-          p
-            | Use the sidebar to manage stock, sales, suppliers, users and salary deposits.
+        .kpi-card
+          h4 Low Stock Alerts
+          p —
 
-    // ================= JAVASCRIPT =================
+      // ================= CUSTOMER TABLE =================
+      .section-box
+
+        h3 Customer Credit / Deposit Records
+
+        table
+
+          thead
+            tr
+              th Customer Name
+              th NIN Number
+              th Phone
+              th Address
+              th Distance
+              th Item Purchased
+              th Total Amount
+              th Transport Cost
+              th Amount Paid
+              th Balance
+              th Status
+
+          tbody
+
+            tr
+              td(
+                colspan="11"
+                style="text-align:center; color:#94a3b8;"
+              )
+                | No customer credit records available
+
+    // ================= LIVE CLOCK =================
     script.
+      function updateClock() {
 
-      // ================= TOGGLE SIDEBAR =================
-      function toggleSidebar() {
+          const now = new Date();
 
-        const sidebar =
-          document.getElementById("sidebar");
+          document.getElementById("clock").innerText =
+              now.toLocaleTimeString();
 
-        sidebar.classList.toggle("active");
       }
 
-      // ================= LOGOUT =================
-      function logoutUser() {
+      setInterval(updateClock, 1000);
 
-        const confirmLogout =
-          confirm("Are you sure you want to logout?");
-
-        if (confirmLogout) {
-
-          window.location.href = "/logout";
-        }
-      }
+      updateClock();

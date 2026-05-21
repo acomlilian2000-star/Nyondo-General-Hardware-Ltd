@@ -1,0 +1,115 @@
+doctype html
+html(lang="en")
+
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+
+    title NYONDO Receipt
+
+    // External CSS
+    link(rel="stylesheet" href="/css/tempReceipt.css")
+
+  body
+
+    .receipt-container
+
+      // HEADER
+      .receipt-header
+        h1 NYONDO General Hardware LTD
+        h2 Salary Earner Deposit Receipt
+        p Nansana - Uganda
+
+      // CUSTOMER DETAILS
+      .customer-section
+
+        h3 Customer Information
+
+        .details-grid
+
+          .detail-box
+            span.label Customer Name
+            p= customer.customerName
+
+          .detail-box
+            span.label NIN Number
+            p= customer.ninNumber
+
+          .detail-box
+            span.label Phone Number
+            p +256 #{customer.customerPhone}
+
+          .detail-box
+            span.label Registration Date
+            p= customer.regDate
+
+          .detail-box
+            span.label Distance
+            p #{customer.distance} KM
+
+      // ITEMS TABLE
+      .table-section
+
+        h3 Purchased Items
+
+        table
+
+          thead
+            tr
+              th Item
+              th Specification
+              th Quantity
+              th Unit Price
+              th Total
+
+          tbody
+
+            each item in items
+              tr
+                td= item.itemName
+                td= item.specification
+                td= item.quantity
+                td UGX #{item.unitPrice}
+                td UGX #{item.itemTotal}
+
+      // PAYMENT SUMMARY
+      .summary-section
+
+        h3 Payment Summary
+
+        .summary-grid
+
+          .summary-row
+            span Total Amount
+            strong UGX #{payment.grandTotal}
+
+          .summary-row
+            span Transport Cost
+            strong UGX #{payment.transportCost}
+
+          .summary-row.total-pay
+            span Total To Pay
+            strong UGX #{payment.totalToPay}
+
+          .summary-row
+            span Amount Paid
+            strong UGX #{payment.amountPaid}
+
+          .summary-row.balance
+            span Balance
+            strong UGX #{payment.balance}
+
+          .summary-row
+            span Payment Method
+            strong= payment.paymentMethod
+
+      // FOOTER
+      .receipt-footer
+
+        p Thank you for choosing NYONDO General Hardware LTD.
+        p Goods are released after full payment clearance.
+
+      // PRINT BUTTON
+      .print-area
+        button.print-btn(type="button" onclick="window.print()")
+          | Print Receipt

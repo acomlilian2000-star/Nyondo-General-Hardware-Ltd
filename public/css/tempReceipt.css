@@ -1,0 +1,178 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#f1f5f9;
+    font-family:Arial, Helvetica, sans-serif;
+    padding:30px;
+    color:#1e293b;
+}
+
+.receipt-container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* HEADER */
+.receipt-header{
+    text-align:center;
+    margin-bottom:30px;
+    border-bottom:2px solid #e2e8f0;
+    padding-bottom:20px;
+}
+
+.receipt-header h1{
+    color:#0369a1;
+    margin-bottom:8px;
+}
+
+.receipt-header h2{
+    font-size:20px;
+    margin-bottom:5px;
+}
+
+.receipt-header p{
+    color:#64748b;
+}
+
+/* SECTION TITLES */
+h3{
+    margin-bottom:15px;
+    color:#0369a1;
+}
+
+/* CUSTOMER DETAILS */
+.customer-section{
+    margin-bottom:30px;
+}
+
+.details-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+.detail-box{
+    background:#f8fafc;
+    padding:15px;
+    border-radius:12px;
+}
+
+.label{
+    font-size:12px;
+    color:#64748b;
+    display:block;
+    margin-bottom:5px;
+}
+
+.detail-box p{
+    font-weight:bold;
+}
+
+/* TABLE */
+.table-section{
+    margin-bottom:30px;
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0ea5e9;
+    color:white;
+    padding:12px;
+    text-align:left;
+    font-size:14px;
+}
+
+td{
+    padding:12px;
+    border-bottom:1px solid #e2e8f0;
+    font-size:14px;
+}
+
+/* SUMMARY */
+.summary-section{
+    margin-bottom:30px;
+}
+
+.summary-grid{
+    background:#f8fafc;
+    padding:20px;
+    border-radius:14px;
+}
+
+.summary-row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:12px;
+    font-size:15px;
+}
+
+.total-pay{
+    border-top:1px solid #cbd5e1;
+    padding-top:12px;
+    font-size:17px;
+}
+
+.balance{
+    color:#dc2626;
+}
+
+/* FOOTER */
+.receipt-footer{
+    text-align:center;
+    margin-top:20px;
+    color:#64748b;
+    font-size:14px;
+}
+
+/* PRINT BUTTON */
+.print-area{
+    text-align:center;
+    margin-top:25px;
+}
+
+.print-btn{
+    background:#0369a1;
+    color:white;
+    border:none;
+    padding:12px 24px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.print-btn:hover{
+    background:#075985;
+}
+
+/* PRINT MODE */
+@media print{
+
+    body{
+        background:white;
+        padding:0;
+    }
+
+    .receipt-container{
+        box-shadow:none;
+        border-radius:0;
+        max-width:100%;
+    }
+
+    .print-area{
+        display:none;
+    }
+
+}

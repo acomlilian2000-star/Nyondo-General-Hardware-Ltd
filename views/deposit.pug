@@ -1,0 +1,362 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Salary Earner Scheme - NYONDO
+
+    link(rel="stylesheet", href="/css/deposit.css")
+
+  body
+
+    .container
+
+      header
+        h1 NYONDO General Hardware LTD
+        span.scheme-badge Salary Earner Deposit Scheme Portal
+
+      form#salaryForm(action="/deposit" method="POST")
+
+        // ================= CUSTOMER DETAILS =================
+        h3 1. Member Registration
+
+        .form-grid
+
+          .input-group
+            label Full Name *
+            input(
+              type="text"
+              name="customerName"
+              required
+            )
+
+          .input-group
+            label NIN Number *
+            input#ninNumber(
+              type="text"
+              name="ninNumber"
+              maxlength="14"
+              minlength="14"
+              required
+            )
+
+          .input-group
+            label Phone Number *
+            .phone-wrapper
+              span.prefix +256
+              input(
+                type="tel"
+                name="customerPhone"
+                maxlength="9"
+                required
+              )
+
+          .input-group
+            label Customer Address *
+            input(
+              type="text"
+              name="customerAddress"
+              required
+            )
+
+          .input-group
+            label Date of Registration
+            input(
+              type="date"
+              name="regDate"
+              required
+            )
+
+        // ================= PRODUCTS =================
+        h3 2. Products
+
+        .notice-box
+          | only cement , iron sheets and iron bars are eligible for deposit sales
+
+        table
+
+          thead
+            tr
+              th Product
+              th Specification
+              th Quantity
+              th Unit Price
+              th Amount
+
+          tbody#itemsBody
+
+            tr.itemRow
+
+              td
+                select.productSelect(name="product" required)
+                  option(value="") Select Product
+
+                  each item in products
+                    option(
+                      value=item._id
+                      data-price=item.unitPrice
+                    )= item.itemName
+
+              td
+                select.specification(name="specification")
+                  option(value="") Select
+                  option(value="Bags") Bags
+                  option(value="Pieces") Pieces
+
+              td
+                input.quantity(
+                  type="number"
+                  name="quantity"
+                  min="1"
+                )
+
+              td
+                input.unitPrice(
+                  type="number"
+                  name="unitPrice"
+                  readonly
+                )
+
+              td
+                input.itemTotal(
+                  type="number"
+                  name="itemTotal"
+                  readonly
+                )
+
+        button#addItemBtn.add-btn(type="button")
+          | + Add Product
+
+        // ================= PAYMENT SUMMARY =================
+        h3 Payment Summary
+
+        .form-grid
+
+          .input-group
+            label Distance KM
+            input#distance(
+              type="number"
+              name="distance"
+            )
+
+          .input-group
+            label Transport Cost
+            input#transportCost(
+              type="number"
+              name="transportCost"
+              readonly
+            )
+
+          .input-group
+            label Total To Pay
+            input#totalToPay(
+              type="number"
+              name="totalToPay"
+              readonly
+            )
+
+          .input-group
+            label Amount Paid
+            input#amountPaid(
+              type="number"
+              name="amountPaid"
+            )
+
+          .input-group
+            label Balance
+            input#balance(
+              type="number"
+              name="balance"
+              readonly
+            )
+
+          .input-group
+            label Payment Method
+
+            select(name="paymentMethod")
+              option(value="Bank") Bank
+              option(value="Mobile Money") Mobile Money
+              option(value="Cash") Cash
+
+        .print-area
+
+          button.btn-print(
+            type="button"
+            onclick="printReceipt()"
+          )
+            | PRINT RECEIPT
+
+    script.
+
+      // ================= NIN VALIDATION =================
+      document.getElementById("ninNumber")
+      .addEventListener("input", function () {
+
+          this.value = this.value
+              .toUpperCase()
+              .replace(/[^A-Z0-9]/g, "")
+              .slice(0, 14);
+
+      });
+
+      // ================= PRODUCT PRICE =================
+      function updatePrice(row) {
+
+          const product =
+              row.querySelector(".productSelect");
+
+          const selected =
+              product.options[product.selectedIndex];
+
+          const price =
+              selected.getAttribute("data-price") || 0;
+
+          row.querySelector(".unitPrice").value = price;
+
+          calcRow(row);
+
+      }
+
+      // ================= CALCULATE ROW =================
+      function calcRow(row) {
+
+          const qty =
+              Number(row.querySelector(".quantity").value) || 0;
+
+          const price =
+              Number(row.querySelector(".unitPrice").value) || 0;
+
+          row.querySelector(".itemTotal").value =
+              qty * price;
+
+          calcGrand();
+
+      }
+
+      // ================= GRAND TOTAL =================
+      function calcGrand() {
+
+          let total = 0;
+
+          document.querySelectorAll(".itemRow")
+          .forEach(row => {
+
+              total +=
+                  Number(row.querySelector(".itemTotal").value) || 0;
+
+          });
+
+          calcTransport(total);
+
+      }
+
+      // ================= TRANSPORT =================
+      function calcTransport(total) {
+
+          const distance =
+              Number(document.getElementById("distance").value) || 0;
+
+          let transport = 30000;
+
+          if (
+              total >= 500000 &&
+              distance <= 10 &&
+              distance > 0
+          ) {
+
+              transport = 0;
+
+          }
+
+          document.getElementById("transportCost").value =
+              transport;
+
+          document.getElementById("totalToPay").value =
+              total + transport;
+
+          calcBalance();
+
+      }
+
+      // ================= BALANCE =================
+      function calcBalance() {
+
+          const total =
+              Number(document.getElementById("totalToPay").value) || 0;
+
+          const paid =
+              Number(document.getElementById("amountPaid").value) || 0;
+
+          document.getElementById("balance").value =
+              total - paid;
+
+      }
+
+      // ================= ADD PRODUCT ROW =================
+      document.getElementById("addItemBtn")
+      .addEventListener("click", () => {
+
+          const row =
+              document.querySelector(".itemRow");
+
+          const clone =
+              row.cloneNode(true);
+
+          clone.querySelectorAll("input")
+          .forEach(input => input.value = "");
+
+          clone.querySelectorAll("select")
+          .forEach(select => select.selectedIndex = 0);
+
+          document.getElementById("itemsBody")
+          .appendChild(clone);
+
+      });
+
+      // ================= EVENTS =================
+      document.addEventListener("change", e => {
+
+          const row =
+              e.target.closest(".itemRow");
+
+          if (!row) return;
+
+          if (
+              e.target.classList.contains("productSelect")
+          ) {
+
+              updatePrice(row);
+
+          }
+
+      });
+
+      document.addEventListener("input", e => {
+
+          const row =
+              e.target.closest(".itemRow");
+
+          if (!row) return;
+
+          if (
+              e.target.classList.contains("quantity")
+          ) {
+
+              calcRow(row);
+
+          }
+
+      });
+
+      document.getElementById("distance")
+      .addEventListener("input", calcGrand);
+
+      document.getElementById("amountPaid")
+      .addEventListener("input", calcBalance);
+
+      // ================= PRINT =================
+      function printReceipt() {
+
+          window.print();
+
+      }
