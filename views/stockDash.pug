@@ -243,8 +243,7 @@ html
                           td
                             | UGX #{cost}
 
-                          td
-                            strong= item.attendant || "N/A"
+                          td= item.Attendant && item.Attendant.fullName ? item.Attendant.fullName : "N/A"
 
                           td
 

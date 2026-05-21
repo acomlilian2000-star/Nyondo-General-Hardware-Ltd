@@ -163,6 +163,8 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
       return res.status(400).send("Missing required fields");
     }
 
+
+    
     /* =========================
        CHECK STOCK
     ========================= */

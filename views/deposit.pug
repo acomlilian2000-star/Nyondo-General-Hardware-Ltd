@@ -24,48 +24,25 @@ html
 
           .input-group
             label Full Name *
-            input(
-              type="text"
-              name="customerName"
-              required
-            )
+            input(type="text" name="customerName" required)
 
           .input-group
             label NIN Number *
-            input#ninNumber(
-              type="text"
-              name="ninNumber"
-              maxlength="14"
-              minlength="14"
-              required
-            )
+            input#ninNumber(type="text" name="ninNumber" maxlength="14" minlength="14" required)
 
           .input-group
             label Phone Number *
             .phone-wrapper
               span.prefix +256
-              input(
-                type="tel"
-                name="customerPhone"
-                maxlength="9"
-                required
-              )
+              input(type="tel" name="customerPhone" maxlength="9" required)
 
           .input-group
             label Customer Address *
-            input(
-              type="text"
-              name="customerAddress"
-              required
-            )
+            input(type="text" name="customerAddress" required)
 
           .input-group
             label Date of Registration
-            input(
-              type="date"
-              name="regDate"
-              required
-            )
+            input(type="date" name="regDate" required)
 
         // ================= PRODUCTS =================
         h3 2. Products
@@ -74,7 +51,6 @@ html
           | only cement , iron sheets and iron bars are eligible for deposit sales
 
         table
-
           thead
             tr
               th Product
@@ -92,10 +68,7 @@ html
                   option(value="") Select Product
 
                   each item in products
-                    option(
-                      value=item._id
-                      data-price=item.unitPrice
-                    )= item.itemName
+                    option(value=item._id data-price=item.unitPrice)= item.itemName
 
               td
                 select.specification(name="specification")
@@ -104,25 +77,13 @@ html
                   option(value="Pieces") Pieces
 
               td
-                input.quantity(
-                  type="number"
-                  name="quantity"
-                  min="1"
-                )
+                input.quantity(type="number" name="quantity" min="1")
 
               td
-                input.unitPrice(
-                  type="number"
-                  name="unitPrice"
-                  readonly
-                )
+                input.unitPrice(type="number" name="unitPrice" readonly)
 
               td
-                input.itemTotal(
-                  type="number"
-                  name="itemTotal"
-                  readonly
-                )
+                input.itemTotal(type="number" name="itemTotal" readonly)
 
         button#addItemBtn.add-btn(type="button")
           | + Add Product
@@ -134,229 +95,126 @@ html
 
           .input-group
             label Distance KM
-            input#distance(
-              type="number"
-              name="distance"
-            )
+            input#distance(type="number" name="distance")
 
           .input-group
             label Transport Cost
-            input#transportCost(
-              type="number"
-              name="transportCost"
-              readonly
-            )
+            input#transportCost(type="number" name="transportCost" readonly)
 
           .input-group
             label Total To Pay
-            input#totalToPay(
-              type="number"
-              name="totalToPay"
-              readonly
-            )
+            input#totalToPay(type="number" name="totalToPay" readonly)
 
           .input-group
             label Amount Paid
-            input#amountPaid(
-              type="number"
-              name="amountPaid"
-            )
+            input#amountPaid(type="number" name="amountPaid")
 
           .input-group
             label Balance
-            input#balance(
-              type="number"
-              name="balance"
-              readonly
-            )
+            input#balance(type="number" name="balance" readonly)
 
           .input-group
             label Payment Method
-
             select(name="paymentMethod")
               option(value="Bank") Bank
               option(value="Mobile Money") Mobile Money
               option(value="Cash") Cash
 
+        // ================= ACTION BUTTONS =================
         .print-area
 
-          button.btn-print(
-            type="button"
-            onclick="printReceipt()"
-          )
+          button(type="submit")
+            | SAVE DEPOSIT
+
+          button.btn-print(type="button" onclick="printReceipt()")
             | PRINT RECEIPT
 
     script.
 
-      // ================= NIN VALIDATION =================
-      document.getElementById("ninNumber")
-      .addEventListener("input", function () {
-
-          this.value = this.value
-              .toUpperCase()
-              .replace(/[^A-Z0-9]/g, "")
-              .slice(0, 14);
-
+      document.getElementById("ninNumber").addEventListener("input", function () {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 14);
       });
 
-      // ================= PRODUCT PRICE =================
       function updatePrice(row) {
+        const product = row.querySelector(".productSelect");
+        const selected = product.options[product.selectedIndex];
+        const price = selected.getAttribute("data-price") || 0;
 
-          const product =
-              row.querySelector(".productSelect");
-
-          const selected =
-              product.options[product.selectedIndex];
-
-          const price =
-              selected.getAttribute("data-price") || 0;
-
-          row.querySelector(".unitPrice").value = price;
-
-          calcRow(row);
-
+        row.querySelector(".unitPrice").value = price;
+        calcRow(row);
       }
 
-      // ================= CALCULATE ROW =================
       function calcRow(row) {
+        const qty = Number(row.querySelector(".quantity").value) || 0;
+        const price = Number(row.querySelector(".unitPrice").value) || 0;
 
-          const qty =
-              Number(row.querySelector(".quantity").value) || 0;
-
-          const price =
-              Number(row.querySelector(".unitPrice").value) || 0;
-
-          row.querySelector(".itemTotal").value =
-              qty * price;
-
-          calcGrand();
-
+        row.querySelector(".itemTotal").value = qty * price;
+        calcGrand();
       }
 
-      // ================= GRAND TOTAL =================
       function calcGrand() {
+        let total = 0;
 
-          let total = 0;
+        document.querySelectorAll(".itemRow").forEach(row => {
+          total += Number(row.querySelector(".itemTotal").value) || 0;
+        });
 
-          document.querySelectorAll(".itemRow")
-          .forEach(row => {
-
-              total +=
-                  Number(row.querySelector(".itemTotal").value) || 0;
-
-          });
-
-          calcTransport(total);
-
+        calcTransport(total);
       }
 
-      // ================= TRANSPORT =================
       function calcTransport(total) {
+        const distance = Number(document.getElementById("distance").value) || 0;
 
-          const distance =
-              Number(document.getElementById("distance").value) || 0;
+        let transport = 30000;
 
-          let transport = 30000;
+        if (total >= 500000 && distance <= 10 && distance > 0) {
+          transport = 0;
+        }
 
-          if (
-              total >= 500000 &&
-              distance <= 10 &&
-              distance > 0
-          ) {
+        document.getElementById("transportCost").value = transport;
+        document.getElementById("totalToPay").value = total + transport;
 
-              transport = 0;
-
-          }
-
-          document.getElementById("transportCost").value =
-              transport;
-
-          document.getElementById("totalToPay").value =
-              total + transport;
-
-          calcBalance();
-
+        calcBalance();
       }
 
-      // ================= BALANCE =================
       function calcBalance() {
+        const total = Number(document.getElementById("totalToPay").value) || 0;
+        const paid = Number(document.getElementById("amountPaid").value) || 0;
 
-          const total =
-              Number(document.getElementById("totalToPay").value) || 0;
-
-          const paid =
-              Number(document.getElementById("amountPaid").value) || 0;
-
-          document.getElementById("balance").value =
-              total - paid;
-
+        document.getElementById("balance").value = total - paid;
       }
 
-      // ================= ADD PRODUCT ROW =================
-      document.getElementById("addItemBtn")
-      .addEventListener("click", () => {
+      document.getElementById("addItemBtn").addEventListener("click", () => {
+        const row = document.querySelector(".itemRow");
+        const clone = row.cloneNode(true);
 
-          const row =
-              document.querySelector(".itemRow");
+        clone.querySelectorAll("input").forEach(i => i.value = "");
+        clone.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
 
-          const clone =
-              row.cloneNode(true);
-
-          clone.querySelectorAll("input")
-          .forEach(input => input.value = "");
-
-          clone.querySelectorAll("select")
-          .forEach(select => select.selectedIndex = 0);
-
-          document.getElementById("itemsBody")
-          .appendChild(clone);
-
+        document.getElementById("itemsBody").appendChild(clone);
       });
 
-      // ================= EVENTS =================
       document.addEventListener("change", e => {
+        const row = e.target.closest(".itemRow");
+        if (!row) return;
 
-          const row =
-              e.target.closest(".itemRow");
-
-          if (!row) return;
-
-          if (
-              e.target.classList.contains("productSelect")
-          ) {
-
-              updatePrice(row);
-
-          }
-
+        if (e.target.classList.contains("productSelect")) {
+          updatePrice(row);
+        }
       });
 
       document.addEventListener("input", e => {
+        const row = e.target.closest(".itemRow");
+        if (!row) return;
 
-          const row =
-              e.target.closest(".itemRow");
-
-          if (!row) return;
-
-          if (
-              e.target.classList.contains("quantity")
-          ) {
-
-              calcRow(row);
-
-          }
-
+        if (e.target.classList.contains("quantity")) {
+          calcRow(row);
+        }
       });
 
-      document.getElementById("distance")
-      .addEventListener("input", calcGrand);
+      document.getElementById("distance").addEventListener("input", calcGrand);
+      document.getElementById("amountPaid").addEventListener("input", calcBalance);
 
-      document.getElementById("amountPaid")
-      .addEventListener("input", calcBalance);
-
-      // ================= PRINT =================
       function printReceipt() {
-
-          window.print();
-
+        window.print();
       }

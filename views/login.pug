@@ -16,7 +16,8 @@ html
         h2 Staff Login
         p Welcome back to the portal
 
-        form(action="/login", method="POST")
+        form(action="/login", method="post")
+
 
           .form-group
             label Email Address
@@ -36,11 +37,11 @@ html
               required
             )
 
-          a.forgot-password(href="#") Forgot password?
-
           button.btn-login(type="submit")
             Sign In
 
+        //- a.forgot-password(href="/secureAcc") Change Password
+
         .footer-links
           | New staff member?
-          a(href="/SignUpform") Create Account
+          a(href="/secureAcc") Contact Admin

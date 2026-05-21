@@ -3,6 +3,8 @@ const router = express.Router();
 
 const Deposit = require("../models/Deposit");
 const Stock = require("../models/Stock");
+const User = require("../models/User");
+const Sales = require("../models/Sales");
 
 
 // ======================================
@@ -18,13 +20,15 @@ router.get("/salary", async (req, res) => {
             }
         });
 
+        console.log("📦 PRODUCTS LOADED:", products.length);
+
         res.render("deposit", {
             products: products || []
         });
 
     } catch (error) {
 
-        console.log(error);
+        console.log("❌ ERROR LOADING FORM:", error);
         res.status(500).send("Error loading deposit form");
 
     }
@@ -33,40 +37,46 @@ router.get("/salary", async (req, res) => {
 
 
 // ======================================
-// POST DEPOSIT FORM (WITH STOCK CONTROL)
+// POST DEPOSIT FORM
 // ======================================
 router.post("/deposit", async (req, res) => {
 
     try {
 
+        console.log("🔥 DEPOSIT ROUTE HIT");
+        console.log("📩 BODY:", req.body);
+
         const data = req.body;
 
         const quantity = Number(data.quantity) || 0;
         const unitPrice = Number(data.unitPrice) || 0;
-
         const amount = quantity * unitPrice;
 
         // ======================================
-        // CHECK LOGIN USER
+        // CHECK USER
         // ======================================
-        if (!req.user) {
-            console.log("❌ No logged-in user found");
+        if (!req.user || !req.user._id) {
+            console.log("❌ USER NOT LOGGED IN");
             return res.status(401).send("User not logged in");
         }
 
+        console.log("👤 USER:", req.user._id);
+
         // ======================================
-        // FIND PRODUCT IN STOCK
+        // FIND PRODUCT
         // ======================================
         const product = await Stock.findById(data.product);
 
         if (!product) {
+            console.log("❌ PRODUCT NOT FOUND");
             return res.status(404).send("Product not found");
         }
 
         // ======================================
-        // CHECK STOCK AVAILABILITY
+        // STOCK CHECK
         // ======================================
         if (product.quantity < quantity) {
+            console.log("❌ NOT ENOUGH STOCK");
             return res.status(400).send("Not enough stock available");
         }
 
@@ -76,11 +86,12 @@ router.post("/deposit", async (req, res) => {
         product.quantity -= quantity;
         await product.save();
 
+        console.log("📉 STOCK UPDATED:", product.quantity);
+
         // ======================================
-        // SAVE DEPOSIT RECORD
+        // CREATE DEPOSIT
         // ======================================
         const deposit = new Deposit({
-
             customerName: data.customerName,
             ninNumber: data.ninNumber,
             customerPhone: data.customerPhone,
@@ -102,21 +113,18 @@ router.post("/deposit", async (req, res) => {
             balance: Number(data.balance) || 0,
 
             paymentMethod: data.paymentMethod
-
         });
 
         const saved = await deposit.save();
-        console.log("✅ SAVED:", saved);
 
-        // ======================================
-        // REDIRECT TO RECEIPT
-        // ======================================
-        res.redirect(`/tempReceipt/${saved._id}`);
+        console.log("✅ SAVED SUCCESSFULLY:", saved._id);
+
+        return res.redirect(`/tempReceipt/${saved._id}`);
 
     } catch (error) {
 
         console.log("❌ ERROR SAVING DEPOSIT:", error);
-        res.status(500).send("Error saving deposit");
+        return res.status(500).send("Error saving deposit");
 
     }
 
@@ -140,9 +148,7 @@ router.get("/tempReceipt/:id", async (req, res) => {
         }
 
         res.render("tempReceipt", {
-
             customer: deposit,
-
             items: [
                 {
                     itemName: deposit.product?.itemName || "Deleted Product",
@@ -152,14 +158,12 @@ router.get("/tempReceipt/:id", async (req, res) => {
                     itemTotal: deposit.amount
                 }
             ],
-
             payment: deposit
-
         });
 
     } catch (error) {
 
-        console.log(error);
+        console.log("❌ RECEIPT ERROR:", error);
         res.status(500).send("Error loading receipt");
 
     }
@@ -174,23 +178,58 @@ router.get("/adminDash", async (req, res) => {
 
     try {
 
-        const deposits = await Deposit
-            .find()
-            .populate("attendant")
-            .populate("product");
+        const stocks = await Stock.find();
+        const sales = await Sales.find();
+        const deposits = await Deposit.find();
 
-        res.render("adminDash", {
-            deposits: deposits || []
+        // ================= NORMALIZE PAYMENT METHOD =================
+        const normalize = (val) => (val || "").toString().toLowerCase();
+
+        // ================= CASH SALES =================
+        const totalCashSales = sales
+            .filter(s => normalize(s.paymentMethod) === "cash")
+            .reduce((sum, s) => sum + Number(s.grandTotal || 0), 0);
+
+        // ================= CREDIT SALES =================
+        const totalCreditSales = sales
+            .filter(s => normalize(s.paymentMethod) === "credit")
+            .reduce((sum, s) => sum + Number(s.grandTotal || 0), 0);
+
+        // ================= STOCK VALUE =================
+        const totalStockValue = stocks.reduce((sum, s) => {
+            return sum + (Number(s.quantity || 0) * Number(s.unitPrice || 0));
+        }, 0);
+
+        // ================= LOW STOCK =================
+        const lowStockCount = stocks.filter(s => Number(s.quantity) < 10).length;
+
+        // ================= SUPPLIERS OWED (FIXED SAFELY) =================
+        const suppliersOwed = stocks.reduce((sum, s) => {
+            return sum + Number(
+                s.supplierOwed ||
+                s.supplierBalance ||
+                s.amountOwed ||
+                0
+            );
+        }, 0);
+
+        console.log("💰 CASH:", totalCashSales);
+        console.log("💳 CREDIT:", totalCreditSales);
+        console.log("📦 STOCK:", totalStockValue);
+        console.log("🏦 OWED:", suppliersOwed);
+
+        return res.render("adminDash", {
+            totalCashSales,
+            totalCreditSales,
+            totalStockValue,
+            suppliersOwed,
+            lowStockCount,
+            deposits
         });
 
-    } catch (error) {
-
-        console.log(error);
+    } catch (err) {
+        console.log("❌ ADMIN DASH ERROR:", err);
         res.status(500).send("Dashboard error");
-
     }
-
 });
-
-
 module.exports = router;

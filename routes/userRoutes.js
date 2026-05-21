@@ -8,106 +8,124 @@ router.get('/', (req, res) => {
   res.render('index');
 });
 
+router.post(
+  "/login",
+  passport.authenticate("local", { failureRedirect: "/login" }),
+  (req, res) => {
+    if (req.user.role === "admin") {
+      res.redirect("/adminDash");
+    } else if (req.user.role === "sales_attendant") {
+      res.redirect("/salesDash");
+    } else if (req.user.role === "stock_manager") {
+      res.redirect("/StockDash");
+    } else {
+      res.redirect("/login");
+    }
+  },
+);
+
+
+
 // 🚪 Login GET
 router.get("/login", (req, res) => {
   res.render("login");
 });
 
 // 🛡️ Secure Account GET (FIXED)
-router.get('/secureAcc', (req, res) => {
+// router.get('/secureAcc', (req, res) => {
 
-  if (!req.isAuthenticated()) {
-    return res.redirect("/login");
-  }
+  // if (!req.isAuthenticated()) {
+  //   return res.redirect("/login");
+  // }
 
-  return res.render("secureAcc");
-});
+//   return res.render("secureAcc");
+// });
 
 
 // 🛡️ Secure Account POST (ONLY ONE - FIXED)
-router.post("/secureAcc", async (req, res) => {
+// router.post("/secureAcc", async (req, res) => {
 
-  try {
+//   try {
 
-    const user = await User.findById(req.user._id);
+//     const user = await User.findById(req.user._id);
 
-    // mark first login completed
-    user.isFirstLogin = false;
+//     // mark first login completed
+//     user.isFirstLogin = false;
 
-    await user.save();
+//     await user.save();
 
-    console.log("UPDATED SUCCESSFULLY");
+//     console.log("UPDATED SUCCESSFULLY");
 
-    // role redirect
-    if (user.role === "admin") {
-      return res.redirect("/Dashboard");
-    }
+//     // role redirect
+//     // if (user.role === "admin") {
+//     //   return res.redirect("/Dashboard");
+//     // }
 
-    if (user.role === "sales_attendant") {
-      return res.redirect("/salesDash");
-    }
+//     // if (user.role === "sales_attendant") {
+//     //   return res.redirect("/salesDash");
+//     // }
 
-    if (user.role === "stock_manager") {
-      return res.redirect("/StockDash");
-    }
+//     // if (user.role === "stock_manager") {
+//     //   return res.redirect("/StockDash");
+//     // }
 
-    return res.redirect("/");
+//     return res.redirect("/login");
 
-  } catch (error) {
-    console.log(error);
-    return res.redirect("/secureAcc");
-  }
-});
+//   } catch (error) {
+//     console.log(error);
+//     return res.redirect("/secureAcc");
+//   }
+// });
 
 
 // 🔑 Login POST (FIXED SAFER LOGIC)
-router.post("/login", (req, res, next) => {
+// router.post("/login", (req, res, next) => {
 
-  console.log("BODY:", req.body);
+//   console.log("BODY:", req.body);
 
-  passport.authenticate("local", (err, user, info) => {
+//   passport.authenticate("local", (err, user, info) => {
 
-    console.log("USER:", user);
+//     console.log("USER:", user);
 
-    if (err) return next(err);
+//     if (err) return next(err);
 
-    if (!user) {
-      console.log("AUTH FAILED");
-      return res.redirect("/login");
-    }
+//     if (!user) {
+//       console.log("AUTH FAILED");
+//       return res.redirect("/login");
+//     }
 
-    req.logIn(user, (err) => {
+//     req.logIn(user, (err) => {
 
-      if (err) return next(err);
+//       if (err) return next(err);
 
-      console.log("LOGIN SUCCESS");
-      console.log("FIRST LOGIN:", user.isFirstLogin);
+//       console.log("LOGIN SUCCESS");
+//       console.log("FIRST LOGIN:", user.isFirstLogin);
 
-      // FIRST LOGIN CHECK (FIXED)
-      if (user.isFirstLogin !== false) {
-        console.log("Redirecting to secureAcc");
-        return res.redirect("/secureAcc");
-      }
+//       // FIRST LOGIN CHECK (FIXED)
+//       if (user.isFirstLogin !== false) {
+//         console.log("Redirecting to secureAcc");
+//         return res.redirect("/secureAcc");
+//       }
 
-      // ROLE ROUTING
-      if (user.role === "admin") {
-        return res.redirect("/Dashboard");
-      }
+//       // ROLE ROUTING
+//       if (user.role === "admin") {
+//         return res.redirect("/Dashboard");
+//       }
 
-      if (user.role === "sales_attendant") {
-        return res.redirect("/salesDash");
-      }
+//       if (user.role === "sales_attendant") {
+//         return res.redirect("/salesDash");
+//       }
 
-      if (user.role === "stock_manager") {
-        return res.redirect("/StockDash");
-      }
+//       if (user.role === "stock_manager") {
+//         return res.redirect("/StockDash");
+//       }
 
-      return res.redirect("/");
+//       return res.redirect("/");
 
-    });
+//     });
 
-  })(req, res, next);
-});
+//   })(req, res, next);
+// });
 
 
 // 📝 Signup GET

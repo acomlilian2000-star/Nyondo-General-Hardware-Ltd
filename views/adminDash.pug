@@ -10,12 +10,6 @@ html(lang="en")
     // External CSS
     link(rel="stylesheet" href="/css/admin.css")
 
-    //- // Font Awesome
-    //- link(
-    //-   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    //-   rel="stylesheet"
-    //- )
-
   body
 
     // ================= SIDEBAR =================
@@ -73,20 +67,24 @@ html(lang="en")
       .kpi-grid
 
         .kpi-card
-          h4 Total Sales
-          p UGX —
+          h4 Total Sales (Cash)
+          p UGX #{totalCashSales || 0}
+
+        .kpi-card
+          h4 Total Credit Sales
+          p UGX #{totalCreditSales || 0}
 
         .kpi-card
           h4 Total Stock Value
-          p UGX —
+          p UGX #{totalStockValue || 0}
 
         .kpi-card
           h4 Suppliers Owed
-          p —
+          p UGX #{suppliersOwed || 0}
 
         .kpi-card
           h4 Low Stock Alerts
-          p —
+          p #{lowStockCount || 0}
 
       // ================= CUSTOMER TABLE =================
       .section-box
@@ -111,24 +109,41 @@ html(lang="en")
 
           tbody
 
-            tr
-              td(
-                colspan="11"
-                style="text-align:center; color:#94a3b8;"
-              )
-                | No customer credit records available
+            if deposits && deposits.length
+
+              each deposit in deposits
+
+                tr
+
+                  td= deposit.customerName
+                  td= deposit.ninNumber
+                  td= deposit.customerPhone
+                  td= deposit.customerAddress
+                  td= deposit.distance
+                  td= deposit.product ? deposit.product.itemName : "N/A"
+                  td= deposit.totalToPay
+                  td= deposit.transportCost
+                  td= deposit.amountPaid
+                  td= deposit.balance
+                  td
+                    if deposit.balance <= 0
+                      span(style="color:green") Paid
+                    else
+                      span(style="color:red") Pending
+
+            else
+
+              tr
+                td(colspan="11" style="text-align:center; color:#94a3b8;")
+                  | No customer credit records available
 
     // ================= LIVE CLOCK =================
     script.
       function updateClock() {
-
           const now = new Date();
-
           document.getElementById("clock").innerText =
               now.toLocaleTimeString();
-
       }
 
       setInterval(updateClock, 1000);
-
       updateClock();

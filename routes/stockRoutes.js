@@ -139,7 +139,9 @@ router.post(
 ========================= */
 router.get("/stockDash", async (req, res) => {
   try {
-    const stocks = await Stock.find().sort({ createdAt: -1 });
+    const stocks = await Stock.find()
+  .populate("Attendant")
+  .sort({ createdAt: -1 });
 
     const lowStockCount = await Stock.countDocuments({
       quantity: { $lte: 5 },
