@@ -1,53 +1,55 @@
-meta(charset="UTF-8")
-meta(name="viewport", content="width=device-width, initial-scale=1")
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
 
-title NYONDO General Hardware LTD | Portal
+    title NYONDO General Hardware LTD | Portal
 
-link(rel="stylesheet", href="/css/index.css")
+    link(rel="stylesheet", href="/css/index.css")
 
-main.hero
-  section.marketing-card
+  body
 
-    span.welcome-badge Operations Portal
+    main.hero
+      section.marketing-card
 
-    h1
-      | Welcome to
-      br
-      | NYONDO General Hardware Ltd
+        span.welcome-badge Operations Portal
 
-    p.sub-message
-      | Dealers in heavy and light
-      br
-      | building equipment.
+        h1
+          | Welcome to
+          br
+          | NYONDO General Hardware Ltd
 
-    // BUTTONS CONTAINER
-    .button-group
+        p.sub-message
+          | Dealers in heavy and light
+          br
+          | building equipment.
 
-      a.btn-portal#loginBtn(href="/login")
-        | Staff Login
+        // BUTTONS CONTAINER
+        .button-group
 
-      a.btn-signup#signupBtn(href="/SignUpform")
-        | Create Account
+          a.btn-portal#loginBtn(href="/login")
+            | Staff Login
 
-script.
-  // LOGIN BUTTON
-  document.getElementById("loginBtn").addEventListener("click", function () {
+    script.
+      // LOGIN BUTTON
+      document.getElementById("loginBtn").addEventListener("click", function () {
 
-    this.innerHTML = "Authenticating...";
+        this.innerHTML = "Authenticating...";
 
-    setTimeout(() => {
-      window.location.href = "/login";
-    }, 600);
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 600);
 
-  });
+      });
 
-  // SIGNUP BUTTON
-  document.getElementById("signupBtn").addEventListener("click", function () {
+      // SIGNUP BUTTON
+      document.getElementById("signupBtn").addEventListener("click", function () {
 
-    this.innerHTML = "Loading...";
+        this.innerHTML = "Loading...";
 
-    setTimeout(() => {
-      window.location.href = "/SignUpform";
-    }, 600);
+        setTimeout(() => {
+          window.location.href = "/SignUpform";
+        }, 600);
 
-  });
+      });
