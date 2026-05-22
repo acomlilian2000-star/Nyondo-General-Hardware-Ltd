@@ -16,14 +16,15 @@ html
         h2 NYONDO SALES
 
       ul.nav
-
         li
           a(href="/salesDash") 📊 Dashboard
 
         li
           a(href="/salesform") 📝 Make New Sale
 
-      // ===== MONTHLY FILTER MOVED (SECOND LAST) =====
+        li
+          a(href="/logout") 🚪 Logout
+
       .sidebar-filter
         form(action="/salesDash" method="GET")
 
@@ -38,15 +39,11 @@ html
 
           button.btn.btn-blue(type="submit")
             | Generate
-            
-        li
-          a(href="/logout") 🚪 Logout
 
 
     // ================= MAIN CONTENT =================
     .main-content
 
-      // ================= NAVBAR =================
       nav.navbar
         .nav-left
           span NYONDO GENERAL HARDWARE LTD
@@ -69,7 +66,7 @@ html
 
           .stat-card
             h3 Total Revenue
-            p UGX #{dbSales.reduce((a, b) => a + (b.grandTotal || 0), 0)}
+            p UGX #{(dbSales || []).reduce((a, b) => a + (b.grandTotal || 0), 0)}
 
           .stat-card
             h3 Low Stock Alert
@@ -112,45 +109,72 @@ html
 
               else
                 each sale in dbSales
-                  tr
-                    td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
 
-                    td= (sale.product && sale.product.itemName) ? sale.product.itemName : 'Deleted Product'
+                  if sale.items && sale.items.length > 0
 
-                    td
-                      if sale.product && sale.product.image
-                        img(src=sale.product.image, width="45", height="45")
-                      else
-                        span No Image
+                    each item in sale.items
+                      tr
+                        td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
 
-                    td= sale.specification || '-'
-                    td= sale.unitPrice || 0
-                    td= sale.quantity || 0
-                    td= sale.customerName || '-'
-                    td= sale.phoneNumber || '-'
-                    td= sale.customerAddress || '-'
-                    td= sale.customerType || '-'
-                    td= sale.distance || 0
-                    td= sale.transportCost || 0
-                    td= sale.subTotal || 0
-                    td= sale.grandTotal || 0
-                    td= sale.paymentMethod || '-'
+                        td= item.product && item.product.itemName ? item.product.itemName : 'Deleted Product'
 
-                    td
-                      a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+                        td
+                          if item.product && item.product.image
+                            img(src=item.product.image, width="45", height="45")
+                          else
+                            span No Image
 
-                      a.btn.btn-red(
-                        href=`/sales/delete/${sale._id}`
-                        onclick="return confirm('Delete this sale?')"
-                      ) Delete
+                        td= item.specification || '-'
+                        td= item.unitPrice || 0
+                        td= item.quantity || 0
 
-                      a.btn.btn-green(
-                        href=`/sales/mark-updated/${sale._id}`
-                        onclick="return confirm('Confirm update?')"
-                      ) Update
+                        td= sale.customerName || '-'
+                        td= sale.phoneNumber || '-'
+                        td= sale.customerAddress || '-'
+                        td= sale.customerType || '-'
+                        td= sale.distance || 0
+                        td= sale.transportCost || 0
+                        td= item.subTotal || 0
+                        td= sale.grandTotal || 0
+                        td= sale.paymentMethod || '-'
+
+                        td
+                          a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+                          a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
+                          a.btn.btn-green(href=`/sales/mark-updated/${sale._id}` onclick="return confirm('Confirm update?')") Update
+
+                  else
+                    tr
+                      td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
+
+                      td= sale.product && sale.product.itemName ? sale.product.itemName : 'Deleted Product'
+
+                      td
+                        if sale.product && sale.product.image
+                          img(src=sale.product.image, width="45", height="45")
+                        else
+                          span No Image
+
+                      td= sale.specification || '-'
+                      td= sale.unitPrice || 0
+                      td= sale.quantity || 0
+
+                      td= sale.customerName || '-'
+                      td= sale.phoneNumber || '-'
+                      td= sale.customerAddress || '-'
+                      td= sale.customerType || '-'
+                      td= sale.distance || 0
+                      td= sale.transportCost || 0
+                      td= sale.subTotal || 0
+                      td= sale.grandTotal || 0
+                      td= sale.paymentMethod || '-'
+
+                      td
+                        a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+                        a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
+                        a.btn.btn-green(href=`/sales/mark-updated/${sale._id}` onclick="return confirm('Confirm update?')") Update
 
 
-    // ================= CLOCK =================
     script.
       function updateTime() {
         const now = new Date();

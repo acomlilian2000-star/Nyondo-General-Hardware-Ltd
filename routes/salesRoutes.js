@@ -10,6 +10,7 @@ function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated || !req.isAuthenticated()) {
     return res.redirect("/login");
   }
+
   next();
 }
 
@@ -18,17 +19,10 @@ function isLoggedIn(req, res, next) {
 ========================= */
 router.get("/salesDash", isLoggedIn, async (req, res) => {
   try {
-
-    /* =========================
-       MONTHLY FILTER
-    ========================= */
     let filter = {};
 
     if (req.query.month) {
-
-      const selectedMonth = req.query.month;
-
-      const startDate = new Date(selectedMonth + "-01");
+      const startDate = new Date(req.query.month + "-01");
 
       const endDate = new Date(startDate);
 
@@ -36,26 +30,31 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
 
       filter.createdAt = {
         $gte: startDate,
-        $lt: endDate
+        $lt: endDate,
       };
     }
 
     const dbSales = await Sales.find(filter)
-      .populate("product", "itemName image")
+      .populate("items.product", "itemName image unitPrice")
       .populate("Attendant", "fullName")
       .sort({ createdAt: -1 });
 
     /* =========================
-       TODAY SALES CALCULATION
+       TODAY SALES
     ========================= */
     const start = new Date();
+
     start.setHours(0, 0, 0, 0);
 
     const end = new Date();
+
     end.setHours(23, 59, 59, 999);
 
     const todaySales = await Sales.find({
-      createdAt: { $gte: start, $lte: end },
+      createdAt: {
+        $gte: start,
+        $lte: end,
+      },
     });
 
     let totalSalesToday = 0;
@@ -68,23 +67,15 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
 
     dbSales.forEach((sale) => {
       totalSalesAllTime += Number(sale.grandTotal || 0);
-    });
-
-    /* =========================
-       MONTHLY TOTAL
-    ========================= */
-    dbSales.forEach((sale) => {
       monthlyTotal += Number(sale.grandTotal || 0);
     });
 
     /* =========================
-       LOW STOCK ALERT FIX
+       LOW STOCK
     ========================= */
     const lowStockItems = await Stock.find({
-      quantity: { $lte: 5 }
+      quantity: { $lte: 5 },
     });
-
-    const lowStockCount = lowStockItems.length;
 
     res.render("salesDash", {
       dbSales,
@@ -92,10 +83,9 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       totalSalesAllTime,
       monthlyTotal,
       selectedMonth: req.query.month || "",
-      lowStockCount,
-      lowStockItems
+      lowStockCount: lowStockItems.length,
+      lowStockItems,
     });
-
   } catch (err) {
     console.error(err);
 
@@ -106,7 +96,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       monthlyTotal: 0,
       selectedMonth: "",
       lowStockCount: 0,
-      lowStockItems: []
+      lowStockItems: [],
     });
   }
 });
@@ -117,24 +107,30 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
 router.get("/salesform", isLoggedIn, async (req, res) => {
   try {
     const items = await Stock.find({
-      quantity: { $gt: 0 }
+      quantity: { $gt: 0 },
     });
 
     res.render("sales", {
       products: items,
     });
-
   } catch (error) {
     console.error(error);
+
     res.status(500).send("Internal Server Error");
   }
 });
 
 /* =========================
-   CREATE SALE + UPDATE STOCK
+   CREATE SALE
 ========================= */
 router.post("/Sales", isLoggedIn, async (req, res) => {
   try {
+    /* =========================
+       USER CHECK
+    ========================= */
+    if (!req.user) {
+      return res.status(401).send("User not logged in");
+    }
 
     let {
       date,
@@ -151,102 +147,129 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
       paymentMethod,
     } = req.body;
 
-    const qty = Number(quantity || 0);
-    const price = Number(unitPrice || 0);
-    const transport = Number(transportCost || 0);
-    const dist = Number(distance || 0);
+    /* =========================
+       FORCE ARRAYS
+    ========================= */
+    product = Array.isArray(product) ? product : [product];
+
+    specification = Array.isArray(specification)
+      ? specification
+      : [specification];
+
+    quantity = Array.isArray(quantity) ? quantity : [quantity];
+
+    unitPrice = Array.isArray(unitPrice) ? unitPrice : [unitPrice];
 
     /* =========================
        VALIDATION
     ========================= */
-    if (!product || qty <= 0 || price <= 0 || !customerName) {
+    if (!customerName || !product.length) {
       return res.status(400).send("Missing required fields");
     }
 
+    let items = [];
 
-    
+    let total = 0;
+
     /* =========================
-       CHECK STOCK
+       LOOP THROUGH PRODUCTS
     ========================= */
-    const stockItem = await Stock.findById(product);
+    for (let i = 0; i < product.length; i++) {
+      const qty = Number(quantity[i] || 0);
 
-    if (!stockItem) {
-      return res.status(404).send("Product not found");
+      const price = Number(unitPrice[i] || 0);
+
+      if (!product[i] || qty <= 0 || price <= 0) {
+        continue;
+      }
+
+      const stockItem = await Stock.findById(product[i]);
+
+      if (!stockItem) {
+        return res.status(404).send("Product not found");
+      }
+
+      if (stockItem.quantity < qty) {
+        return res
+          .status(400)
+          .send(`Not enough stock for ${stockItem.itemName}`);
+      }
+
+      /* =========================
+         UPDATE STOCK
+      ========================= */
+      stockItem.quantity -= qty;
+
+      await stockItem.save();
+
+      const subTotal = qty * price;
+
+      total += subTotal;
+
+      items.push({
+  product: stockItem._id,
+
+  itemName: stockItem.itemName, // 🔥 THIS FIXES YOUR ERROR
+
+  specification: specification[i] || "-",
+  quantity: qty,
+  unitPrice: price,
+  subTotal,
+});
     }
 
-    if (stockItem.quantity < qty) {
-      return res.status(400).send(
-        `Not enough stock. Available: ${stockItem.quantity}`
-      );
-    }
-
     /* =========================
-       UPDATE STOCK
+       GRAND TOTAL
     ========================= */
-    stockItem.quantity -= qty;
-    await stockItem.save();
+    const transport = Number(transportCost || 0);
+
+    const grandTotal = total + transport;
 
     /* =========================
-       CALCULATIONS
-    ========================= */
-    const subTotal = qty * price;
-    const grandTotal = subTotal + transport;
-
-    /* =========================
-       CREATE SALE
+       SAVE SALE
     ========================= */
     const newSale = new Sales({
       date: date || new Date(),
 
-      customerName: customerName || "-",
+      customerName,
+
       phoneNumber: phoneNumber || "-",
+
       customerAddress: customerAddress || "-",
+
       customerType: customerType || "individual",
 
-      product,
+      items,
 
-      specification: Array.isArray(specification)
-        ? specification[0]
-        : specification || "-",
+      subTotal: total,
 
-      quantity: qty,
-      unitPrice: price,
+      grandTotal,
 
-      distance: dist,
       transportCost: transport,
 
-      subTotal,
-      grandTotal,
+      distance: Number(distance || 0),
 
       paymentMethod: paymentMethod || "-",
 
-      Attendant: req.user._id,
+      Attendant: req.user ? req.user._id : null,
     });
 
     await newSale.save();
 
-    /* =========================
-       REDIRECT TO RECEIPT
-    ========================= */
     return res.redirect(`/sales/receipt/${newSale._id}`);
-
   } catch (error) {
     console.error("Sales Error:", error);
 
-    return res.status(500).send(
-      "Error saving Sales: " + error.message
-    );
+    return res.status(500).send("Error saving Sales: " + error.message);
   }
 });
 
 /* =========================
-   EDIT SALE PAGE
+   EDIT PAGE
 ========================= */
 router.get("/sales/edit/:id", isLoggedIn, async (req, res) => {
   try {
-
-    const sale = await Sales.findById(req.params.id)
-      .populate("product");
+    const sale = await Sales.findById(req.params.id).populate("items.product");
 
     const products = await Stock.find();
 
@@ -258,9 +281,9 @@ router.get("/sales/edit/:id", isLoggedIn, async (req, res) => {
       sale,
       products,
     });
-
   } catch (error) {
     console.error(error);
+
     res.status(500).send("Error loading sale");
   }
 });
@@ -270,55 +293,30 @@ router.get("/sales/edit/:id", isLoggedIn, async (req, res) => {
 ========================= */
 router.post("/sales/edit/:id", isLoggedIn, async (req, res) => {
   try {
-
     let {
       customerName,
       phoneNumber,
       customerAddress,
       customerType,
-      specification,
-      quantity,
-      unitPrice,
       distance,
       transportCost,
       paymentMethod,
     } = req.body;
 
-    const qty = Number(quantity || 0);
-    const price = Number(unitPrice || 0);
-    const transport = Number(transportCost || 0);
-    const dist = Number(distance || 0);
-
-    const subTotal = qty * price;
-    const grandTotal = subTotal + transport;
-
     await Sales.findByIdAndUpdate(req.params.id, {
-
       customerName,
       phoneNumber,
       customerAddress,
       customerType,
-
-      specification: Array.isArray(specification)
-        ? specification[0]
-        : specification || "-",
-
-      quantity: qty,
-      unitPrice: price,
-
-      distance: dist,
-      transportCost: transport,
-
-      subTotal,
-      grandTotal,
-
+      distance: Number(distance || 0),
+      transportCost: Number(transportCost || 0),
       paymentMethod,
     });
 
     res.redirect("/salesDash");
-
   } catch (error) {
     console.error(error);
+
     res.status(500).send("Error updating sale");
   }
 });
@@ -328,50 +326,41 @@ router.post("/sales/edit/:id", isLoggedIn, async (req, res) => {
 ========================= */
 router.get("/sales/delete/:id", isLoggedIn, async (req, res) => {
   try {
-
-    const sale = await Sales.findById(req.params.id);
-
-    if (!sale) {
-      return res.status(404).send("Sale not found");
-    }
-
     await Sales.findByIdAndDelete(req.params.id);
 
     res.redirect("/salesDash");
-
   } catch (error) {
-    console.error("Delete Error:", error);
+    console.error(error);
+
     res.status(500).send("Error deleting sale");
   }
 });
 
 /* =========================
-   CONFIRM UPDATE
+   MARK UPDATED
 ========================= */
 router.get("/sales/mark-updated/:id", isLoggedIn, async (req, res) => {
   try {
-
     await Sales.findByIdAndUpdate(req.params.id, {
       updatedAt: new Date(),
-      status: "updated"
+      status: "updated",
     });
 
     res.redirect("/salesDash");
-
   } catch (err) {
     console.error(err);
+
     res.status(500).send("Error marking update");
   }
 });
 
 /* =========================
-   VIEW RECEIPT
+   RECEIPT
 ========================= */
 router.get("/sales/receipt/:id", isLoggedIn, async (req, res) => {
   try {
-
     const sale = await Sales.findById(req.params.id)
-      .populate("product", "itemName image unitPrice")
+      .populate("items.product", "itemName image unitPrice")
       .populate("Attendant", "fullName");
 
     if (!sale) {
@@ -379,11 +368,11 @@ router.get("/sales/receipt/:id", isLoggedIn, async (req, res) => {
     }
 
     res.render("receipt", {
-      sale
+      sale,
     });
-
   } catch (error) {
     console.error(error);
+
     res.status(500).send("Error loading receipt");
   }
 });
