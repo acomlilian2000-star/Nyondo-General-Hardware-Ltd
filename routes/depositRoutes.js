@@ -140,7 +140,7 @@ router.get("/tempReceipt/:id", async (req, res) => {
 
         const deposit = await Deposit
             .findById(req.params.id)
-            .populate("attendant")
+            .populate("Attendant")
             .populate("product");
 
         if (!deposit) {

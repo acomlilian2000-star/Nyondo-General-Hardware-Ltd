@@ -34,7 +34,7 @@ const depositSchema = new mongoose.Schema({
     },
 
     // ================= ATTENDANT =================
-    attendant: {
+    Attendant: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: false

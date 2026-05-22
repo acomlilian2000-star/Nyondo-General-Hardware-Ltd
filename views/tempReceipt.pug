@@ -7,53 +7,53 @@ html(lang="en")
 
     title NYONDO Receipt
 
-    // External CSS
     link(rel="stylesheet" href="/css/tempReceipt.css")
 
   body
 
     .receipt-container
 
-      // HEADER
+      // ================= HEADER =================
       .receipt-header
         h1 NYONDO General Hardware LTD
         h2 Salary Earner Deposit Receipt
         p Nansana - Uganda
 
-      // CUSTOMER DETAILS
-      .customer-section
+      hr
 
+      // ================= CUSTOMER DETAILS =================
+      .customer-section
         h3 Customer Information
 
         .details-grid
 
           .detail-box
             span.label Customer Name
-            p= customer.customerName
+            p= customer.customerName || '-'
 
           .detail-box
             span.label NIN Number
-            p= customer.ninNumber
+            p= customer.ninNumber || '-'
 
           .detail-box
             span.label Phone Number
-            p +256 #{customer.customerPhone}
+            p= customer.customerPhone || customer.phoneNumber || '-'
 
           .detail-box
             span.label Registration Date
-            p= customer.regDate
+            p= customer.regDate ? new Date(customer.regDate).toLocaleDateString() : '-'
 
           .detail-box
             span.label Distance
-            p #{customer.distance} KM
+            p #{customer.distance || 0} KM
 
-      // ITEMS TABLE
+      hr
+
+      // ================= ITEMS TABLE =================
       .table-section
-
         h3 Purchased Items
 
         table
-
           thead
             tr
               th Item
@@ -63,53 +63,58 @@ html(lang="en")
               th Total
 
           tbody
-
-            each item in items
+            if items && items.length
+              each item in items
+                tr
+                  td= item.itemName || 'Deleted Product'
+                  td= item.specification || '-'
+                  td= item.quantity || 0
+                  td UGX #{item.unitPrice || 0}
+                  td UGX #{item.itemTotal || 0}
+            else
               tr
-                td= item.itemName
-                td= item.specification
-                td= item.quantity
-                td UGX #{item.unitPrice}
-                td UGX #{item.itemTotal}
+                td(colspan="5") No items found
 
-      // PAYMENT SUMMARY
+      hr
+
+      // ================= PAYMENT SUMMARY =================
       .summary-section
-
         h3 Payment Summary
 
         .summary-grid
 
           .summary-row
             span Total Amount
-            strong UGX #{payment.grandTotal}
+            strong UGX #{payment.grandTotal || 0}
 
           .summary-row
             span Transport Cost
-            strong UGX #{payment.transportCost}
+            strong UGX #{payment.transportCost || 0}
 
-          .summary-row.total-pay
+          .summary-row
             span Total To Pay
-            strong UGX #{payment.totalToPay}
+            strong UGX #{payment.totalToPay || 0}
 
           .summary-row
             span Amount Paid
-            strong UGX #{payment.amountPaid}
+            strong UGX #{payment.amountPaid || 0}
 
           .summary-row.balance
             span Balance
-            strong UGX #{payment.balance}
+            strong UGX #{payment.balance || 0}
 
           .summary-row
             span Payment Method
-            strong= payment.paymentMethod
+            strong= payment.paymentMethod || '-'
 
-      // FOOTER
+      hr
+
+      // ================= FOOTER =================
       .receipt-footer
-
         p Thank you for choosing NYONDO General Hardware LTD.
         p Goods are released after full payment clearance.
 
-      // PRINT BUTTON
+      // ================= PRINT =================
       .print-area
         button.print-btn(type="button" onclick="window.print()")
           | Print Receipt
