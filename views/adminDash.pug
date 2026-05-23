@@ -7,12 +7,10 @@ html(lang="en")
 
     title NYONDO ADMIN Dashboard
 
-    // External CSS
     link(rel="stylesheet" href="/css/admin.css")
 
   body
 
-    // ================= SIDEBAR =================
     aside
 
       h2 NYONDO ADMIN
@@ -20,47 +18,30 @@ html(lang="en")
       ul.nav-links
 
         li.active
-          a(href="/adminDash")
-            i.fa.fa-gauge
-            |  Dashboard
+          a(href="/adminDash") Dashboard
 
         li
-          a(href="/SignUpform")
-            i.fa.fa-user-plus
-            |  Register
+          a(href="/SignUpform") Register
 
         li
-          a(href="/salesDash")
-            i.fa.fa-cash-register
-            |  Sales
+          a(href="/salesDash") Sales
 
         li
-          a(href="/stockDash")
-            i.fa.fa-box
-            |  Stock
+          a(href="/stockDash") Stock
 
         li
-          a(href="/salary")
-            i.fa.fa-credit-card
-            |  Deposit
+          a(href="/salary") Deposit
 
         li
-          a(href="/logout")
-            i.fa.fa-right-from-bracket
-            |  Logout
+          a(href="/logout") Logout
 
-    // ================= MAIN CONTENT =================
     main
 
-      // ================= NAVBAR =================
       .navbar
-
         div
           strong NYONDO GENERAL HARDWARE LTD
-
         div
           strong Logged in as Administrator
-
         #clock
 
       // ================= KPI CARDS =================
@@ -78,10 +59,10 @@ html(lang="en")
           h4 Total Stock Value
           p UGX #{totalStockValue || 0}
 
+        // ================= FIXED SUPPLIERS OWE LOGIC =================
         .kpi-card
           h4 Suppliers Owed
-          p UGX #{suppliersOwed || 0}
-
+          p #{suppliersOwed || 0} Suppliers
         .kpi-card
           h4 Low Stock Alerts
           p #{lowStockCount || 0}
@@ -95,17 +76,17 @@ html(lang="en")
 
           thead
             tr
-              th Customer Name
-              th NIN Number
+              th Date
+              th Customer
+              th NIN
               th Phone
               th Address
-              th Distance
-              th Item Purchased
-              th Total Amount
-              th Transport Cost
-              th Amount Paid
+              th Items
+              th Total
+              th Paid
               th Balance
               th Status
+              th Action
 
           tbody
 
@@ -115,29 +96,42 @@ html(lang="en")
 
                 tr
 
+                  td= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
                   td= deposit.customerName
                   td= deposit.ninNumber
                   td= deposit.customerPhone
                   td= deposit.customerAddress
-                  td= deposit.distance
-                  td= deposit.product ? deposit.product.itemName : "N/A"
-                  td= deposit.totalToPay
-                  td= deposit.transportCost
-                  td= deposit.amountPaid
-                  td= deposit.balance
+
+                  // ================= SAFE ITEM DISPLAY =================
                   td
-                    if deposit.balance <= 0
-                      span(style="color:green") Paid
+                    if deposit.items && deposit.items.length
+                      = deposit.items.map(i => i.itemName).join(", ")
+                    else
+                      | N/A
+
+                  td UGX #{deposit.totalToPay || 0}
+                  td UGX #{deposit.amountPaid || 0}
+                  td UGX #{deposit.balance || 0}
+
+                  td
+                    if deposit.paymentStatus === "Finished" || deposit.balance <= 0
+                      span(style="color:green") Finished
                     else
                       span(style="color:red") Pending
 
-            else
+                  // ================= CLEAR DEBT ACTION =================
+                  td
+                    if deposit.balance > 0
+                      form(method="POST", action=`/deposit/finish/${deposit._id}`)
+                        button(type="submit") Clear Debt
+                    else
+                      span Done
 
+            else
               tr
-                td(colspan="11" style="text-align:center; color:#94a3b8;")
+                td(colspan="11", style="text-align:center;color:#94a3b8")
                   | No customer credit records available
 
-    // ================= LIVE CLOCK =================
     script.
       function updateClock() {
           const now = new Date();

@@ -1,5 +1,5 @@
 body {
-  background: #87CEEB;
+  background: #1e3a8a;
   font-family: Arial;
   padding: 40px;
 }
@@ -10,6 +10,10 @@ body {
   margin: auto;
   padding: 30px;
   border-radius: 10px;
+
+  /* ✅ FIX: prevents table overflow outside container */
+  overflow-x: auto;
+  box-sizing: border-box;
 }
 
 header {
@@ -55,6 +59,10 @@ input, select {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+
+  /* ✅ FIX: prevents input overflow in table cells */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .phone-wrapper {
@@ -72,10 +80,12 @@ input, select {
   margin: 10px 0;
 }
 
+/* ✅ FIX: keeps table from breaking layout */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
+  table-layout: fixed;
 }
 
 th {
@@ -87,6 +97,9 @@ th {
 td {
   border: 1px solid #ddd;
   padding: 10px;
+
+  /* ✅ FIX: prevents text/input wrapping issues */
+  white-space: nowrap;
 }
 
 .add-btn {

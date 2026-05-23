@@ -1,5 +1,52 @@
 const mongoose = require("mongoose");
 
+/* =========================
+   DEPOSIT ITEMS SCHEMA
+========================= */
+const DepositItemSchema = new mongoose.Schema({
+
+    product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Stock",
+        required: true
+    },
+
+    itemName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+
+    specification: {
+        type: String,
+        enum: ["Bags", "Pieces"],
+        required: true,
+        default: "Pieces"
+    },
+
+    quantity: {
+        type: Number,
+        required: true,
+        min: 1
+    },
+
+    unitPrice: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+
+    itemTotal: {
+        type: Number,
+        required: true,
+        min: 0
+    }
+
+}, { _id: false });
+
+/* =========================
+   MAIN DEPOSIT SCHEMA
+========================= */
 const depositSchema = new mongoose.Schema({
 
     // ================= CUSTOMER DETAILS =================
@@ -14,12 +61,14 @@ const depositSchema = new mongoose.Schema({
         required: true,
         uppercase: true,
         minlength: 14,
-        maxlength: 14
+        maxlength: 14,
+        trim: true
     },
 
     customerPhone: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
 
     customerAddress: {
@@ -33,61 +82,56 @@ const depositSchema = new mongoose.Schema({
         required: true
     },
 
-    // ================= ATTENDANT =================
-    Attendant: {
+    // ================= ATTENDANT (FROM DATABASE USER) =================
+    attendant: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: false
-    },
-
-    // ================= PRODUCT DETAILS =================
-    product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Stock",
         required: true
     },
 
-    specification: {
-        type: String,
-        enum: ["Bags", "Pieces"],
-        required: true
-    },
-
-    quantity: {
-        type: Number,
+    // ================= PRODUCTS =================
+    items: {
+        type: [DepositItemSchema],
         required: true,
-        min: 1
+        validate: {
+            validator: function (v) {
+                return Array.isArray(v) && v.length > 0;
+            },
+            message: "At least one product item is required"
+        }
     },
 
-    unitPrice: {
-        type: Number,
-        required: true
-    },
-
+    // ================= TOTALS =================
     amount: {
         type: Number,
-        required: true
+        required: true,
+        default: 0,
+        min: 0
     },
 
     // ================= PAYMENT DETAILS =================
     distance: {
         type: Number,
-        default: 0
+        default: 0,
+        min: 0
     },
 
     transportCost: {
         type: Number,
-        default: 30000
+        default: 30000,
+        min: 0
     },
 
     totalToPay: {
         type: Number,
-        required: true
+        required: true,
+        min: 0
     },
 
     amountPaid: {
         type: Number,
-        required: true
+        required: true,
+        min: 0
     },
 
     balance: {
