@@ -11,7 +11,6 @@ const Sales = require("../models/Sales");
 ========================= */
 router.get("/salary", async (req, res) => {
   try {
-
     const products = await Stock.find({
       itemName: {
         $in: [
@@ -76,10 +75,8 @@ router.post("/deposit", async (req, res) => {
 
       items.push({
         product: product._id,
-        itemName: product.itemName, // ✅ ensures name ALWAYS saved
-        specification: specifications[i] && specifications[i] !== "-" 
-          ? specifications[i] 
-          : "Pieces",
+        itemName: product.itemName,
+        specification: specifications[i] || "Pieces",
         quantity: qty,
         unitPrice,
         itemTotal
@@ -98,7 +95,6 @@ router.post("/deposit", async (req, res) => {
       customerPhone: data.customerPhone,
       customerAddress: data.customerAddress,
       regDate: data.regDate,
-
       attendant: req.user._id,
 
       items,
@@ -109,9 +105,8 @@ router.post("/deposit", async (req, res) => {
       amountPaid,
       balance: totalToPay - amountPaid,
 
-      paymentMethod: (data.paymentMethod || "cash"),
+      paymentMethod: (data.paymentMethod || "Cash"),
 
-      // ✅ payment status tracking
       paymentStatus: amountPaid >= totalToPay ? "Finished" : "Pending"
     });
 
@@ -120,7 +115,7 @@ router.post("/deposit", async (req, res) => {
     return res.redirect(`/tempReceipt/${saved._id}`);
 
   } catch (err) {
-    console.log("❌ ERROR SAVING DEPOSIT:", err);
+    console.log(err);
     res.status(500).send("Error saving deposit");
   }
 });
@@ -155,7 +150,7 @@ router.get("/tempReceipt/:id", async (req, res) => {
 
 
 /* =========================
-   MARK PAYMENT AS FINISHED
+   FINISH PAYMENT
 ========================= */
 router.post("/deposit/finish/:id", async (req, res) => {
 
@@ -176,13 +171,13 @@ router.post("/deposit/finish/:id", async (req, res) => {
 
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error updating payment status");
+    res.status(500).send("Error updating payment");
   }
 });
 
 
 /* =========================
-   ADMIN DASHBOARD (FIXED FULLY)
+   ADMIN DASHBOARD (FIXED)
 ========================= */
 router.get("/adminDash", async (req, res) => {
 
@@ -191,9 +186,7 @@ router.get("/adminDash", async (req, res) => {
     const stocks = await Stock.find();
     const sales = await Sales.find();
 
-    const deposits = await Deposit.find()
-      .populate("items.product", "itemName")
-      .populate("attendant", "fullName");
+    const deposits = await Deposit.find();
 
     const normalize = (val) =>
       (val || "").toString().toLowerCase();
@@ -213,33 +206,26 @@ router.get("/adminDash", async (req, res) => {
       Number(s.quantity || 0) < 10
     ).length;
 
-    // ================= FIXED SUPPLIERS OWED =================
-    const suppliersOwed = stocks.filter(s => {
+    /* =========================
+       SUPPLIERS OWED (COUNT ONLY)
+    ========================= */
+    const supplierList = await Stock.distinct("supplier", {
+      paymentMethod: "credit"
+    });
 
-      const owed =
-        Number(s.supplierOwed || 0) ||
-        Number(s.supplierBalance || 0) ||
-        Number(s.amountOwed || 0);
-
-      return owed > 0;
-
-    }).length;
+    const suppliersOwed = supplierList.length;
 
     res.render("adminDash", {
-
       totalCashSales,
       totalCreditSales,
       totalStockValue,
       suppliersOwed,
       lowStockCount,
       deposits
-
     });
 
   } catch (err) {
-
-    console.log("❌ ADMIN DASH ERROR:", err);
-
+    console.log(err);
     res.status(500).send("Dashboard error");
   }
 });

@@ -105,8 +105,10 @@ router.post(
           unitCost: cost,
           unitPrice: price,
 
-          paymentMethod,
-          status: paymentMethod === "credit" ? "Pending" : "Paid",
+          paymentMethod: paymentMethod || "cash",
+
+          // ✅ FIXED: STRICT CONSISTENCY
+          status: (paymentMethod || "cash").toLowerCase() === "credit" ? "Pending" : "Paid",
 
           amountPaid: Number(amountPaid) || 0,
 
@@ -115,7 +117,6 @@ router.post(
 
           productImage: images[i] ? images[i].filename : "",
 
-          // ✅ FIXED HERE (REAL USER FROM DB)
           Attendant: req.user._id,
 
           createdAt: new Date(),
@@ -131,7 +132,7 @@ router.post(
         error: error.message,
       });
     }
-  },
+  }
 );
 
 /* =========================
@@ -140,8 +141,8 @@ router.post(
 router.get("/stockDash", async (req, res) => {
   try {
     const stocks = await Stock.find()
-  .populate("Attendant")
-  .sort({ createdAt: -1 });
+      .populate("Attendant")
+      .sort({ createdAt: -1 });
 
     const lowStockCount = await Stock.countDocuments({
       quantity: { $lte: 5 },
@@ -174,7 +175,10 @@ router.get("/stockDash", async (req, res) => {
     });
   }
 });
-// supplier table
+
+/* =========================
+   SUPPLIER TABLE
+========================= */
 router.get("/supplierTable", async (req, res) => {
   try {
     const supplierCredits = await Stock.find({
@@ -187,12 +191,15 @@ router.get("/supplierTable", async (req, res) => {
     res.render("supplierTable", { supplierCredits: [] });
   }
 });
-// comfirm payment
+
+/* =========================
+   CONFIRM PAYMENT
+========================= */
 router.get("/supplier/pay/:id", async (req, res) => {
   try {
     await Stock.findByIdAndUpdate(req.params.id, {
       status: "Paid",
-      paymentMethod: "cash-at-hand",
+      paymentMethod: "cash",
     });
 
     res.redirect("/supplierTable");
@@ -201,11 +208,18 @@ router.get("/supplier/pay/:id", async (req, res) => {
     res.status(500).send("Error updating payment status");
   }
 });
-// clearing off the debt
-router.get("/supplier/clear/:id", async (req, res) => {
-  await Stock.findByIdAndDelete(req.params.id);
 
-  res.redirect("/supplierTable");
+/* =========================
+   CLEAR DEBT
+========================= */
+router.get("/supplier/clear/:id", async (req, res) => {
+  try {
+    await Stock.findByIdAndDelete(req.params.id);
+    res.redirect("/supplierTable");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error clearing debt");
+  }
 });
 
 /* =========================
@@ -242,7 +256,7 @@ router.post(
       console.error(error);
       res.status(500).send("Error updating stock");
     }
-  },
+  }
 );
 
 /* =========================
