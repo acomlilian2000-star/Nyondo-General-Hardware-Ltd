@@ -5,7 +5,6 @@ html
     meta(name='viewport' content='width=device-width, initial-scale=1.0')
     title NYONDO Stock Registration
 
-    // External CSS
     link(rel='stylesheet' href='/css/stock.css')
 
   body
@@ -13,7 +12,6 @@ html
     .form-container
 
       h1 NYONDO General Hardware LTD
-
       p.subtitle Official Stock Arrival & Finance Portal
 
       form#stockForm(action='/stock' method='POST' enctype='multipart/form-data')
@@ -28,295 +26,135 @@ html
 
             .form-group
               label Product Name
-
-              select.productSelect(
-                name='itemName'
-                required
-              )
-
-                option(value='' disabled selected)
-                  | -- Select Product --
+              select.productSelect(name='itemName' required)
+                option(value='' disabled selected) -- Select Product --
 
                 optgroup(label='Construction Materials')
-
-                  option(value='Cement CEM II' data-category='Construction Materials')
-                    | Cement (CEM II)
-
-                  option(value='Cement CEM III' data-category='Construction Materials')
-                    | Cement (CEM III)
-
-                  option(value='Iron Bars 10mm' data-category='Construction Materials')
-                    | Iron Bars (10mm)
-
-                  option(value='Iron Bars 12mm' data-category='Construction Materials')
-                    | Iron Bars (12mm)
-
-                  option(value='Iron Bars 16mm' data-category='Construction Materials')
-                    | Iron Bars (16mm)
+                  option(value='Cement CEM II' data-category='Construction Materials') Cement (CEM II)
+                  option(value='Cement CEM III' data-category='Construction Materials') Cement (CEM III)
+                  option(value='Iron Bars 10mm' data-category='Construction Materials') Iron Bars (10mm)
+                  option(value='Iron Bars 12mm' data-category='Construction Materials') Iron Bars (12mm)
+                  option(value='Iron Bars 16mm' data-category='Construction Materials') Iron Bars (16mm)
 
                 optgroup(label='Fasteners & Tools')
-
-                  option(value='Nails Assorted' data-category='Fasteners & Tools')
-                    | Nails (Assorted)
-
-                  option(value='Roofing Nails' data-category='Fasteners & Tools')
-                    | Roofing Nails
-
-                  option(value='Wheelbarrow' data-category='Fasteners & Tools')
-                    | Wheelbarrows
+                  option(value='Nails Assorted' data-category='Fasteners & Tools') Nails (Assorted)
+                  option(value='Roofing Nails' data-category='Fasteners & Tools') Roofing Nails
+                  option(value='Wheelbarrow' data-category='Fasteners & Tools') Wheelbarrows
 
                 optgroup(label='Fencing & Roofing')
+                  option(value='Barbed Wire' data-category='Fencing & Roofing') Barbed Wire
+                  option(value='Wire Mesh' data-category='Fencing & Roofing') Wire Mesh
+                  option(value='Iron Sheets' data-category='Fencing & Roofing') Iron Sheets
 
-                  option(value='Barbed Wire' data-category='Fencing & Roofing')
-                    | Barbed Wire
-
-                  option(value='Wire Mesh' data-category='Fencing & Roofing')
-                    | Wire Mesh
-
-                  option(value='Iron Sheets' data-category='Fencing & Roofing')
-                    | Iron Sheets
-
-            // ================= CATEGORY (AUTO FILLED) =================
             .input-row
-
               .form-group
                 label Category
+                input.category(type='text' name='category' readonly)
 
-                input.category(
-                  type='text'
-                  name='category'
-                  placeholder='Auto generated from product'
-                  readonly
-                )
-
-            // ================= SPECIFICATIONS (NEW) =================
             .input-row
-
               .form-group
                 label Specification
-
-                select(
-                  name='specification'
-                  required
-                )
-
-                  option(value='' disabled selected)
-                    | -- Select Specification --
-
-                  option(value='Pieces')
-                    | Pieces
-
-                  option(value='Kgs')
-                    | Kilograms (Kgs)
-
-                  option(value='Bags')
-                    | Bags
-
-                  option(value='Rolls')
-                    | Rolls
+                select(name='specification' required)
+                  option(value='' disabled selected) -- Select Specification --
+                  option(value='Pieces') Pieces
+                  option(value='Kgs') Kilograms (Kgs)
+                  option(value='Bags') Bags
+                  option(value='Rolls') Rolls
 
             .input-row
-
               .form-group
                 label Quantity
-
-                input.quantity(
-                  type='number'
-                  name='quantity'
-                  placeholder='Enter Quantity'
-                  required
-                )
+                input.quantity(type='number' name='quantity' required)
 
               .form-group
                 label Unit Cost (UGX)
-
-                input.unitCost(
-                  type='Number'
-                  name='unitCost'
-                  placeholder='Enter Unit Cost'
-                  required
-                )
+                input.unitCost(type='number' name='unitCost' required)
 
             .input-row
-
               .form-group
                 label Selling Price (UGX)
+                input.unitPrice(type='number' name='unitPrice' required)
 
-                input.unitPrice(
-                  type='Number'
-                  name='unitPrice'
-                  placeholder='Selling Price'
-                  required
-                )
-
-                p.helper-text
-                  | Selling price must be greater than unit cost.
-
-            // ================= IMAGE UPLOAD =================
             .input-row
-
               .form-group
                 label Product Image
-
-                input(
-                  type='file'
-                  name='productImage'
-                  accept='image/*'
-                )
-
-            // ================= SUPPLIER INFO =================
-            .input-row
-
-              .form-group
-                label Supplier
-
-                select(
-                  name='supplier'
-                  required
-                )
-
-                  option(value='' disabled selected)
-                    | -- Select Supplier --
-
-                  option(value='Hima Cement')
-                    | Hima Cement
-
-                  option(value='Tororo Cement')
-                    | Tororo Cement
-
-                  option(value='China Depot')
-                    | China Depot
-
-                  option(value='Uganda Baati')
-                    | Uganda Baati
-
-                  option(value='Roofings Uganda')
-                    | Roofings Uganda
-
-                  option(value='Hardware World')
-                    | Hardware World
-
-                  option(value='Other')
-                    | Other
-
-              .form-group
-                label Contact Person
-
-                input(
-                  type='String'
-                  name='contactPerson'
-                  placeholder='Contact Person'
-                  required
-                )
-
-            .input-row
-
-              .form-group
-                label Supplier Phone (+256)
-
-                .phone-wrapper(style='display:flex; align-items:center; gap:5px;')
-
-                  span +256
-
-                  input(
-                    type='tel'
-                    name='supplierPhone'
-                    placeholder='7XXXXXXXX'
-                    pattern='[0-9]{9}'
-                    maxlength='9'
-                    required
-                  )
-
-              .form-group
-                label Factory Name
-
-                input(
-                  type='String'
-                  name='factoryName'
-                  placeholder='Factory Name'
-                  required
-                )
+                input(type='file' name='productImage' accept='image/*')
 
         // ================= ADD ITEM BUTTON =================
-        button#addItemBtn(
-          type='button'
-        )
-          | + Add Another Product
+        button#addItemBtn(type='button') + Add Another Product
+
+        // ================= SUPPLIER INFO (ONLY ONCE) =================
+        .section-title Supplier Information
+
+        .input-row
+          .form-group
+            label Supplier
+            select(name='supplier' required)
+              option(value='' disabled selected) -- Select Supplier --
+              option(value='Hima Cement') Hima Cement
+              option(value='Tororo Cement') Tororo Cement
+              option(value='China Depot') China Depot
+              option(value='Uganda Baati') Uganda Baati
+              option(value='Roofings Uganda') Roofings Uganda
+              option(value='Hardware World') Hardware World
+              option(value='Other') Other
+
+          .form-group
+            label Contact Person
+            input(type='text' name='contactPerson' required)
+
+        .input-row
+          .form-group
+            label Supplier Phone (+256)
+
+            .phone-wrapper(style='display:flex; align-items:center; gap:5px;')
+              span +256
+              input(type='tel' name='supplierPhone' pattern='[0-9]{9}' maxlength='9' required)
+
+          .form-group
+            label Factory Name
+            input(type='text' name='factoryName' required)
 
         // ================= PAYMENT SECTION =================
         .section-title Payment Information
 
         .payment-box
-
           .form-group
             label Payment Status
-
-            select(
-              name='paymentMethod'
-              required
-            )
-
-              option(value='' disabled selected)
-                | -- Select Payment Status --
-
-              option(value='cash-at-hand')
-                | Cash At Hand
-
-              option(value='credit')
-                | Credit
+            select(name='paymentMethod' required)
+              option(value='' disabled selected) -- Select Payment Status --
+              option(value='cash-at-hand') Cash At Hand
+              option(value='credit') Credit
 
         // ================= SUBMIT =================
-        button.btn-submit(type='submit')
-          | Complete Stock Entry
+        button.btn-submit(type='submit') Complete Stock Entry
 
     script.
 
-      const addItemBtn =
-        document.getElementById('addItemBtn');
+      const addItemBtn = document.getElementById('addItemBtn');
+      const itemsContainer = document.getElementById('itemsContainer');
 
-      const itemsContainer =
-        document.getElementById('itemsContainer');
-
-      // ================= ADD NEW PRODUCT =================
       addItemBtn.addEventListener('click', () => {
 
-        const firstItem =
-          document.querySelector('.stock-item');
+        const firstItem = document.querySelector('.stock-item');
+        const clonedItem = firstItem.cloneNode(true);
 
-        const clonedItem =
-          firstItem.cloneNode(true);
+        clonedItem.querySelectorAll('input').forEach(input => input.value = '');
 
-        // CLEAR INPUTS
-        clonedItem.querySelectorAll('input')
-          .forEach(input => {
-            input.value = '';
-          });
-
-        // RESET SELECTS
-        clonedItem.querySelectorAll('select')
-          .forEach(select => {
-            select.selectedIndex = 0;
-          });
+        clonedItem.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
 
         itemsContainer.appendChild(clonedItem);
       });
 
-      // ================= CATEGORY AUTO FILL =================
       document.addEventListener('change', function(e) {
 
         if (e.target.classList.contains('productSelect')) {
 
-          const selectedOption =
-            e.target.options[e.target.selectedIndex];
+          const selectedOption = e.target.options[e.target.selectedIndex];
+          const category = selectedOption.getAttribute('data-category');
 
-          const category =
-            selectedOption.getAttribute('data-category');
-
-          const stockItem =
-            e.target.closest('.stock-item');
-
-          const categoryInput =
-            stockItem.querySelector('.category');
+          const stockItem = e.target.closest('.stock-item');
+          const categoryInput = stockItem.querySelector('.category');
 
           if (categoryInput) {
             categoryInput.value = category || '';
@@ -324,34 +162,20 @@ html
         }
       });
 
-      // ================= VALIDATION =================
-      document
-        .getElementById('stockForm')
-        .addEventListener('submit', function(e) {
+      document.getElementById('stockForm').addEventListener('submit', function(e) {
 
-          const unitCosts =
-            document.querySelectorAll('.unitCost');
+        const unitCosts = document.querySelectorAll('.unitCost');
+        const unitPrices = document.querySelectorAll('.unitPrice');
 
-          const unitPrices =
-            document.querySelectorAll('.unitPrice');
+        for (let i = 0; i < unitCosts.length; i++) {
 
-          for (let i = 0; i < unitCosts.length; i++) {
+          const cost = Number(unitCosts[i].value);
+          const price = Number(unitPrices[i].value);
 
-            const cost =
-              Number(unitCosts[i].value);
-
-            const price =
-              Number(unitPrices[i].value);
-
-            if (price <= cost) {
-
-              e.preventDefault();
-
-              alert(
-                'Selling price must be greater than Unit Cost.'
-              );
-
-              return;
-            }
+          if (price <= cost) {
+            e.preventDefault();
+            alert('Selling price must be greater than Unit Cost.');
+            return;
           }
-        });
+        }
+      });
