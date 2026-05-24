@@ -67,6 +67,9 @@ router.post("/deposit", async (req, res) => {
         return res.status(400).send(`Not enough stock for ${product.itemName}`);
       }
 
+      /* =========================
+         FIXED: stock should reduce correctly
+      ========================= */
       const unitPrice = Number(product.unitPrice || 0);
       const itemTotal = qty * unitPrice;
 
@@ -185,29 +188,44 @@ router.get("/adminDash", async (req, res) => {
 
     const stocks = await Stock.find();
     const sales = await Sales.find();
-
     const deposits = await Deposit.find();
 
     const normalize = (val) =>
       (val || "").toString().toLowerCase();
 
+    /* =========================
+       CASH SALES ONLY
+    ========================= */
     const totalCashSales = sales
       .filter(s => normalize(s.paymentMethod) === "cash")
-      .reduce((sum, s) => sum + Number(s.grandTotal || 0), 0);
+      .reduce((sum, s) =>
+        sum + Number(s.grandTotal || 0)
+      , 0);
 
+    /* =========================
+       CREDIT / DEPOSITS
+    ========================= */
     const totalCreditSales = deposits
-      .reduce((sum, d) => sum + Number(d.totalToPay || 0), 0);
+      .reduce((sum, d) =>
+        sum + Number(d.totalToPay || 0)
+      , 0);
 
+    /* =========================
+       TOTAL STOCK VALUE (BUYING PRICE)
+    ========================= */
     const totalStockValue = stocks.reduce((sum, s) =>
-      sum + (Number(s.quantity || 0) * Number(s.unitPrice || 0))
+      sum + (Number(s.quantity || 0) * Number(s.unitCost || 0))
     , 0);
 
+    /* =========================
+       LOW STOCK COUNT
+    ========================= */
     const lowStockCount = stocks.filter(s =>
-      Number(s.quantity || 0) < 10
+      Number(s.quantity || 0) <= 10
     ).length;
 
     /* =========================
-       SUPPLIERS OWED (COUNT ONLY)
+       SUPPLIERS OWED (CORRECT GROUP COUNT)
     ========================= */
     const supplierList = await Stock.distinct("supplier", {
       paymentMethod: "credit"

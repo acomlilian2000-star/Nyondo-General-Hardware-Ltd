@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
+
 const Stock = require("../models/Stock");
+const Sales = require("../models/Sales");
+const Deposit = require("../models/Deposit");
+
 const multer = require("multer");
 
 /* =========================
@@ -10,7 +14,6 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/uploads");
   },
-
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
   },
@@ -19,17 +22,15 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* =========================
-   AUTH CHECK MIDDLEWARE
+   AUTH CHECK
 ========================= */
 function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated && req.isAuthenticated()) {
-    return next();
-  }
+  if (req.isAuthenticated && req.isAuthenticated()) return next();
   return res.status(401).send("Please login first");
 }
 
 /* =========================
-   GET STOCK FORM PAGE
+   STOCK FORM
 ========================= */
 router.get("/stockform", async (req, res) => {
   try {
@@ -41,7 +42,7 @@ router.get("/stockform", async (req, res) => {
 });
 
 /* =========================
-   POST STOCK DATA
+   CREATE STOCK (FIXED)
 ========================= */
 router.post(
   "/stock",
@@ -49,10 +50,6 @@ router.post(
   upload.array("productImage"),
   async (req, res) => {
     try {
-      if (!req.body) {
-        return res.status(400).send("No form data received");
-      }
-
       const {
         itemName,
         quantity,
@@ -64,73 +61,72 @@ router.post(
         unitPrice,
         paymentMethod,
         category,
-        amountPaid,
         specification,
       } = req.body || {};
 
-      const toArray = (value) => {
-        if (!value) return [];
-        return Array.isArray(value) ? value : [value];
-      };
+      const toArray = (v) => (Array.isArray(v) ? v : [v || ""]);
 
       const items = toArray(itemName);
       const qtys = toArray(quantity);
       const costs = toArray(unitCost);
       const prices = toArray(unitPrice);
-      const suppliers = toArray(supplier);
-      const contacts = toArray(contactPerson);
-      const phones = toArray(supplierPhone);
-      const factories = toArray(factoryName);
       const categories = toArray(category);
-      const specifications = toArray(specification);
+      const specs = toArray(specification);
 
+      /* =========================
+         GLOBAL SUPPLIER FIX
+      ========================= */
+      const globalSupplier = supplier || "Unknown";
+      const globalContact = contactPerson || "";
+      const globalPhone = supplierPhone || "";
+      const globalFactory = factoryName || "";
+
+      const methods = toArray(paymentMethod);
       const images = req.files || [];
 
       const stocks = items.map((_, i) => {
-        const qty = parseFloat(qtys[i]) || 0;
-        const cost = parseFloat(costs[i]) || 0;
-        const price = parseFloat(prices[i]) || 0;
+        const qty = Number(qtys[i]) || 0;
+        const cost = Number(costs[i]) || 0;
+        const price = Number(prices[i]) || 0;
+
+        const method = (methods[i] || methods[0] || "cash")
+          .toLowerCase()
+          .trim();
 
         return {
           itemName: items[i] || "",
           category: categories[i] || "General",
-          specification: specifications[i] || "",
+          specification: specs[i] || "Pieces",
+
           quantity: qty,
-
-          supplier: suppliers[i] || "",
-          contactPerson: contacts[i] || "",
-          supplierPhone: phones[i] || "",
-          factoryName: factories[i] || "",
-
           unitCost: cost,
           unitPrice: price,
 
-          paymentMethod: paymentMethod || "cash",
+          /* ✅ SAME SUPPLIER FOR ALL ITEMS */
+          supplier: globalSupplier,
+          contactPerson: globalContact,
+          supplierPhone: globalPhone,
+          factoryName: globalFactory,
 
-          // ✅ FIXED: STRICT CONSISTENCY
-          status: (paymentMethod || "cash").toLowerCase() === "credit" ? "Pending" : "Paid",
+          paymentMethod: method,
+          status: method === "credit" ? "Pending" : "Paid",
 
-          amountPaid: Number(amountPaid) || 0,
-
-          total: qty * price,
+          /* ✅ CORRECT TOTAL LOGIC */
+          total: qty * cost,
           stockCost: qty * cost,
 
           productImage: images[i] ? images[i].filename : "",
-
           Attendant: req.user._id,
-
           createdAt: new Date(),
         };
       });
 
       await Stock.insertMany(stocks);
+      res.redirect("/stockDash");
 
-      return res.redirect("/stockDash");
     } catch (error) {
       console.error("Stock Save Error:", error);
-      return res.status(500).render("stock", {
-        error: error.message,
-      });
+      res.status(500).render("stock", { error: error.message });
     }
   }
 );
@@ -140,55 +136,109 @@ router.post(
 ========================= */
 router.get("/stockDash", async (req, res) => {
   try {
-    const stocks = await Stock.find()
+    const allStocks = await Stock.find()
       .populate("Attendant")
       .sort({ createdAt: -1 });
 
-    const lowStockCount = await Stock.countDocuments({
-      quantity: { $lte: 5 },
+    const sales = await Sales.find();
+    const deposits = await Deposit.find();
+
+    const liveStocks = allStocks.map(stock => {
+      let soldQty = 0;
+
+      sales.forEach(sale => {
+        sale.items?.forEach(i => {
+          if (i.product?.toString() === stock._id.toString()) {
+            soldQty += Number(i.quantity || 0);
+          }
+        });
+      });
+
+      deposits.forEach(dep => {
+        dep.items?.forEach(i => {
+          if (i.product?.toString() === stock._id.toString()) {
+            soldQty += Number(i.quantity || 0);
+          }
+        });
+      });
+
+      const remainingQty = Math.max(0, stock.quantity - soldQty);
+
+      return {
+        ...stock.toObject(),
+        remainingQty
+      };
     });
 
-    const supplierCredits = await Stock.find({ paymentMethod: "credit" });
-
-    const suppliers = await Stock.distinct("supplier");
-
-    const totalStockValue = stocks.reduce((total, item) => {
-      return total + (item.quantity || 0) * (item.unitCost || 0);
+    const totalStockValue = allStocks.reduce((sum, s) => {
+      return sum + (Number(s.quantity || 0) * Number(s.unitCost || 0));
     }, 0);
 
     res.render("stockDash", {
-      stocks,
-      lowStockCount,
-      supplierCredits,
-      suppliers,
+      liveStocks,
+      allStocks,
       totalStockValue,
+      lowStockCount: liveStocks.filter(i => i.remainingQty <= 5).length,
+      totalItemsRecorded: allStocks.length,
+      supplierCredits: await Stock.find({ paymentMethod: "credit" })
     });
-  } catch (error) {
-    console.error(error);
 
+  } catch (err) {
+    console.error(err);
     res.render("stockDash", {
-      stocks: [],
-      lowStockCount: 0,
-      supplierCredits: [],
-      suppliers: [],
+      liveStocks: [],
+      allStocks: [],
       totalStockValue: 0,
+      lowStockCount: 0,
+      totalItemsRecorded: 0,
+      supplierCredits: []
     });
   }
 });
 
 /* =========================
-   SUPPLIER TABLE
+   SUPPLIER TABLE (RESTORED + FIXED)
 ========================= */
 router.get("/supplierTable", async (req, res) => {
   try {
-    const supplierCredits = await Stock.find({
-      paymentMethod: "credit",
+    const creditStocks = await Stock.find({
+      paymentMethod: "credit"
     }).sort({ createdAt: -1 });
 
-    res.render("supplierTable", { supplierCredits });
+    const grouped = {};
+
+    creditStocks.forEach(item => {
+      const supplierName = item.supplier || "Unknown Supplier";
+
+      if (!grouped[supplierName]) {
+        grouped[supplierName] = {
+          supplier: supplierName,
+          contactPerson: item.contactPerson || "-",
+          supplierPhone: item.supplierPhone || "-",
+          factoryName: item.factoryName || "-",
+          items: [],
+          totalAmount: 0,
+          date: item.createdAt
+        };
+      }
+
+      grouped[supplierName].items.push(item.itemName);
+
+      grouped[supplierName].totalAmount +=
+        Number(item.quantity || 0) * Number(item.unitCost || 0);
+    });
+
+    const supplierCredits = Object.values(grouped);
+
+    res.render("supplierTable", {
+      supplierCredits
+    });
+
   } catch (error) {
     console.error(error);
-    res.render("supplierTable", { supplierCredits: [] });
+    res.render("supplierTable", {
+      supplierCredits: []
+    });
   }
 });
 
@@ -199,7 +249,7 @@ router.get("/supplier/pay/:id", async (req, res) => {
   try {
     await Stock.findByIdAndUpdate(req.params.id, {
       status: "Paid",
-      paymentMethod: "cash",
+      paymentMethod: "cash"
     });
 
     res.redirect("/supplierTable");
@@ -219,73 +269,6 @@ router.get("/supplier/clear/:id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Error clearing debt");
-  }
-});
-
-/* =========================
-   EDIT STOCK
-========================= */
-router.get("/stock/edit/:id", async (req, res) => {
-  try {
-    const item = await Stock.findById(req.params.id);
-    res.render("editStock", { item });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error loading edit page");
-  }
-});
-
-/* =========================
-   UPDATE STOCK
-========================= */
-router.post(
-  "/stock/edit/:id",
-  upload.array("productImage"),
-  async (req, res) => {
-    try {
-      const updateData = { ...req.body };
-
-      if (req.files && req.files.length > 0) {
-        updateData.productImage = req.files[0].filename;
-      }
-
-      await Stock.findByIdAndUpdate(req.params.id, updateData);
-
-      res.redirect("/stockDash");
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("Error updating stock");
-    }
-  }
-);
-
-/* =========================
-   DELETE STOCK
-========================= */
-router.get("/stock/delete/:id", async (req, res) => {
-  try {
-    await Stock.findByIdAndDelete(req.params.id);
-    res.redirect("/stockDash");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error deleting stock");
-  }
-});
-
-/* =========================
-   CONFIRM UPDATE
-========================= */
-router.get("/stock/confirm/:id", async (req, res) => {
-  try {
-    await Stock.findByIdAndUpdate(req.params.id, {
-      updatedAt: new Date(),
-      status: "updated",
-    });
-
-    res.redirect("/stockDash");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error confirming update");
   }
 });
 

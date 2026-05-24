@@ -22,7 +22,7 @@ html
     .container
 
       .section-box
-        h3 💳 Supplier Credit Table
+        h3 💳 Supplier Credit Summary
 
         .table-scroll
           table.credit-table
@@ -33,63 +33,68 @@ html
                 th Contact
                 th Phone
                 th Factory
-                th Product
-                th Qty
-                th Amount Owed
+                th Items Supplied
+                th Quantity Supplied
+                th Supplied Date
+                th Total Amount Owed
                 th Status
-                th Actions   // ✅ ADDED
+                th Actions
 
             tbody
 
-              if !supplierCredits.length
+              if !supplierCredits || supplierCredits.length === 0
                 tr
-                  td(colspan="9") No supplier credits available
+                  td(colspan="10") No supplier credits available
 
               else
                 each credit in supplierCredits
                   tr
 
                     td
-                      strong= credit.supplier
+                      strong= credit.supplier || "-"
 
                     td
-                      = credit.contactPerson
+                      = credit.contactPerson || "-"
 
                     td
-                      | +256 #{credit.supplierPhone}
+                      | +256 #{credit.supplierPhone || "-"}
 
                     td
-                      = credit.factoryName
+                      = credit.factoryName || "-"
 
                     td
-                      = credit.itemName
+                      ul
+                        if credit.items && credit.items.length
+                          each item in credit.items
+                            li= item
+                        else
+                          li No items recorded
+
+                    // ✅ NEW COLUMN: TOTAL QUANTITY
+                    td
+                      strong= credit.totalQuantity || 0
 
                     td
-                      = credit.quantity
+                      = credit.suppliedDate ? new Date(credit.suppliedDate).toDateString() : "-"
 
                     td
-                      | UGX #{(credit.quantity || 0) * (credit.unitPrice || 0)}
+                      strong
+                        | UGX #{(credit.totalAmount || 0).toLocaleString()}
 
                     td
-                      if credit.paymentMethod === "credit"
-                        span.status-low Pending
-                      else
-                        span.status-ok Paid
+                      span.status-low Pending
 
-                    // ✅ NEW ACTIONS COLUMN
                     td
-
-                      if credit.paymentMethod === "credit"
+                      if credit.supplier
                         a.btn.btn-green(
-                          href=`/supplier/mark-paid/${credit._id}`
-                          onclick="return confirm('Mark this supplier as PAID?')"
+                          href=`/supplier/mark-paid/${credit.supplier}`
+                          onclick="return confirm('Mark supplier as PAID?')"
                         )
                           | Mark Paid
 
-                      else
                         a.btn.btn-red(
-                          href=`/supplier/clear/${credit._id}`
-                          onclick="return confirm('Clear this paid record?')"
+                          href=`/supplier/clear/${credit.supplier}`
+                          onclick="return confirm('Clear supplier record?')"
                         )
                           | Clear
 
