@@ -1,11 +1,12 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const passportLocalMongoose =
-  require('passport-local-mongoose').default ||
-  require('passport-local-mongoose');
+  require("passport-local-mongoose").default ||
+  require("passport-local-mongoose");
+
+console.log("PLUGIN TYPE:", typeof passportLocalMongoose); // MUST BE function
 
 const userSchema = new mongoose.Schema({
-
   fullName: {
     type: String,
     required: true,
@@ -15,34 +16,35 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
-    lowercase: true
+    lowercase: true,
+    index: true
   },
 
   ninNumber: {
     type: String,
     required: true,
-    unique: true,
-    uppercase: true
+    uppercase: true,
+    index: true
   },
 
   phoneNumber: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
 
   address: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
 
   role: {
     type: String,
-    enum: ['admin', 'stock_manager', 'sales_attendant'],
-    default: 'sales_attendant'
+    enum: ["admin", "stock_manager", "sales_attendant"],
+    default: "sales_attendant"
   },
 
-  // ✅ KEEP ONLY THIS ONE
   isFirstLogin: {
     type: Boolean,
     default: true
@@ -52,12 +54,15 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-
 });
 
-// passport-local-mongoose plugin
+// CRITICAL CHECK
+if (typeof passportLocalMongoose !== "function") {
+  throw new Error("passport-local-mongoose is NOT a function. Check installation.");
+}
+
 userSchema.plugin(passportLocalMongoose, {
-  usernameField: 'email'
+  usernameField: "email"
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);

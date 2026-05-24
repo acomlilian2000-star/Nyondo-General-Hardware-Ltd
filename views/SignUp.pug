@@ -13,28 +13,29 @@ link(rel="stylesheet", href="/css/signup.css")
     p Enter your details to register
 
     form(action="/SignUp" method="post")
+
       .form-group
         label Full Name
-        input(type="text", name="fullName" placeholder="e.g. John Musoke", required)
+        input(type="text", name="fullName" placeholder="e.g. John Musoke")
 
       .form-group
         label Email Address
-        input(type="email", name="email" placeholder="name@company.com", required)
+        input(type="text", name="email" placeholder="name@company.com")
 
       .form-group
         label NIN Number (14 Characters)
-        input(type="text", name="ninNumber" placeholder="CM000000000000", minlength="14", maxlength="14", required, style="text-transform: uppercase;")
+        input(type="text", name="ninNumber" placeholder="CM000000000000", style="text-transform: uppercase;")
 
       .form-group
         label Phone Number
         .phone-container
           span.phone-prefix +256
-          input(type="tel", name="phoneNumber" placeholder="770000000", pattern="[0-9]{9}", maxlength="9", required)
+          input(type="text", name="phoneNumber" placeholder="770000000")
 
       // ✅ ROLE SECTION ADDED HERE (NO CHANGES ELSEWHERE)
       .form-group
         label User Role
-        select(name="role" required)
+        select(name="role")
           option(value="") -- Select Role --
           option(value="admin") Admin
           option(value="stock_manager") Stock Manager
@@ -42,11 +43,15 @@ link(rel="stylesheet", href="/css/signup.css")
 
       .form-group
         label Residential Address
-        input(type="text", name="address" placeholder="Nansana, Wakiso", required)
+        input(type="text", name="address" placeholder="Nansana, Wakiso")
 
       .form-group
-        label Temporal Password
-        input(type="password", name="password" placeholder="••••••••", required)
+        label Password
+
+        // password rule hint (frontend guidance only)
+        small.password-hint Password must be at least 8 characters with letters and numbers
+
+        input(type="password", name="password" placeholder="••••••••")
 
       button.btn-submit(type="submit") Create Account
 

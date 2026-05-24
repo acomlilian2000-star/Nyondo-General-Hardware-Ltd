@@ -1,6 +1,6 @@
 :root {
-    --bg: #0b1d39;          /* main dashboard background */
-    --sidebar: #0b1d39;     /* blended sidebar */
+    --bg: #0b1d39;
+    --sidebar: #0b1d39;
     --card: rgba(255,255,255,0.97);
     --text: #0f172a;
     --soft: #e0f2fe;
@@ -28,11 +28,13 @@ body {
 aside {
     width: 155px;
     height: calc(100vh - 20px);
+
     position: fixed;
     top: 10px;
     left: 10px;
 
     background: var(--sidebar);
+
     border: 1px solid rgba(255,255,255,0.08);
 
     padding: 1rem;
@@ -47,36 +49,52 @@ aside h2 {
     color: white;
 }
 
-/* NAV LINKS */
+/* ================= NAV LINKS ================= */
 .nav-links {
     list-style: none;
+    padding: 0;
 }
 
 .nav-links li {
-    padding: 10px;
     margin-bottom: 10px;
-
     border-radius: 12px;
-    color: #cbd5e1;
 
+    transition: 0.3s ease;
+    user-select: none;
+}
+
+/* THE ACTUAL LINKS */
+.nav-links li a {
     display: flex;
     align-items: center;
 
-    cursor: pointer;
-    transition: 0.3s ease;
+    width: 100%;
+
+    padding: 10px;
+
+    text-decoration: none;
+    color: white;
+
     font-size: 0.8rem;
+
+    border-radius: 12px;
+
+    transition: 0.3s ease;
 }
 
-.nav-links li i {
+/* ICONS */
+.nav-links li a i {
     margin-right: 8px;
     font-size: 0.8rem;
+    color: white;
 }
 
-/* hover + active */
-.nav-links li:hover,
-.nav-links li.active {
+/* HOVER EFFECT */
+.nav-links li a:hover,
+.nav-links li.active a {
     background: rgba(255,255,255,0.10);
     color: white;
+
     transform: translateX(3px);
 }
 
@@ -90,6 +108,7 @@ main {
 /* ================= NAVBAR ================= */
 .navbar {
     background: rgba(255,255,255,0.97);
+
     padding: 0.9rem 1.4rem;
     border-radius: 16px;
 
@@ -101,51 +120,60 @@ main {
 
     font-size: 0.9rem;
 
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     color: var(--text);
+
+    box-shadow: 0 3px 10px rgba(80, 5, 13, 0.49);
 }
 
 /* ================= KPI CARDS ================= */
 .kpi-grid {
     display: grid;
+
     grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+
     gap: 1rem;
     margin-bottom: 1.2rem;
 }
 
 .kpi-card {
     background: var(--card);
+
     padding: 1rem;
     border-radius: 16px;
 
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     color: var(--text);
 
     border-bottom: 3px solid var(--blue);
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
 .kpi-card h4 {
     font-size: 0.7rem;
     color: #64748b;
+
     margin-bottom: 6px;
 }
 
 .kpi-card p {
     font-size: 1rem;
     font-weight: bold;
+
     color: var(--blue);
 }
 
 /* ================= TABLE SECTION ================= */
 .section-box {
     background: var(--card);
+
     padding: 1rem;
     border-radius: 16px;
 
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    color: var(--text);
 
     overflow-x: auto;
-    color: var(--text);
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
 .section-box h3 {
@@ -153,39 +181,39 @@ main {
     margin-bottom: 1rem;
 }
 
-/* TABLE */
+/* ================= TABLE ================= */
 table {
     width: 100%;
-    border-collapse: collapse;
     min-width: 1300px;
+
+    border-collapse: collapse;
 }
 
 th {
     text-align: left;
+
     padding: 10px;
 
     background: var(--soft);
-    font-size: 0.75rem;
+
     color: #64748b;
+    font-size: 0.75rem;
 
     white-space: nowrap;
 }
 
 td {
     padding: 10px;
-    border-bottom: 1px solid #e2e8f0;
 
     font-size: 0.78rem;
-    white-space: nowrap;
     color: var(--text);
+
+    border-bottom: 1px solid #e2e8f0;
+
+    white-space: nowrap;
 }
 
 /* ================= IMAGE ================= */
 img {
     border-radius: 6px;
-}
-
-/* ================= SMALL IMPROVEMENTS ================= */
-.nav-links li {
-    user-select: none;
 }

@@ -3,45 +3,39 @@ const router = express.Router();
 const User = require("../models/User");
 const passport = require("passport");
 
-// 🏠 Homepage
-router.get('/', (req, res) => {
-  res.render('index');
+
+// ================= DEBUG MIDDLEWARE =================
+router.use((req, res, next) => {
+  console.log("📡 REQUEST:", req.method, req.url);
+  next();
 });
 
-router.post(
-  "/login",
-  passport.authenticate("local", { failureRedirect: "/login" }),
-  (req, res) => {
-    if (req.user.role === "admin") {
-      res.redirect("/adminDash");
-    } else if (req.user.role === "sales_attendant") {
-      res.redirect("/salesDash");
-    } else if (req.user.role === "stock_manager") {
-      res.redirect("/StockDash");
-    } else {
-      res.redirect("/login");
-    }
-  },
-);
+
+// 🏠 Homepage
+router.get("/", (req, res) => {
+  res.render("index");
+});
 
 
-
-// 🚪 Login GET
+// 🚪 Login GET (kept only UI render, NO POST)
 router.get("/login", (req, res) => {
   res.render("login");
 });
 
 
 // 📝 Signup GET
-router.get('/SignUpform', (req, res) => {
-  res.render('SignUp');
+router.get("/SignUpform", (req, res) => {
+  res.render("SignUp");
 });
 
 
-// 📝 Signup POST (FIXED PROMISE STYLE)
+// 📝 SIGNUP POST (ONLY WORKING LOGIC)
 router.post("/SignUp", async (req, res) => {
 
   try {
+
+    console.log("🔥 SIGNUP ROUTE HIT");
+    console.log("BODY:", req.body);
 
     const {
       fullName,
@@ -53,19 +47,44 @@ router.post("/SignUp", async (req, res) => {
       address
     } = req.body;
 
-    const existingUser = await User.findOne({
-      email: email.toLowerCase()
-    });
+    // ================= VALIDATION =================
+    if (!fullName || !email || !ninNumber || !role || !phoneNumber || !password || !address) {
+      return res.render("SignUp", { error: "All fields are required" });
+    }
 
-    if (existingUser) {
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      return res.render("SignUp", { error: "Invalid email address" });
+    }
+
+    const strongPassword = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+    if (!strongPassword.test(password)) {
       return res.render("SignUp", {
-        error: "Email already exists"
+        error: "Password must be 8+ chars with letters & numbers"
       });
     }
 
+    if (phoneNumber.length < 9) {
+      return res.render("SignUp", { error: "Invalid phone number" });
+    }
+
+    if (ninNumber.length < 14) {
+      return res.render("SignUp", { error: "Invalid NIN Number" });
+    }
+
+    const normalizedEmail = email.toLowerCase();
+
+    // ================= CHECK EXISTING USER =================
+    const existingUser = await User.findOne({ email: normalizedEmail });
+
+    if (existingUser) {
+      return res.render("SignUp", { error: "Email already exists" });
+    }
+
+    // ================= CREATE USER =================
     const newUser = new User({
       fullName,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       ninNumber: ninNumber.toUpperCase(),
       role,
       phoneNumber,
@@ -73,34 +92,36 @@ router.post("/SignUp", async (req, res) => {
       isFirstLogin: true
     });
 
-    await User.register(newUser, password);
+    console.log("👉 BEFORE REGISTER");
 
-    console.log("USER REGISTERED SUCCESSFULLY");
+    // ================= SAVE USER =================
+    const savedUser = await User.register(newUser, password);
+
+    console.log("✅ USER SAVED IN DATABASE:", savedUser._id);
 
     return res.redirect("/login");
 
   } catch (error) {
-    console.log(error);
-    return res.status(500).send("Registration Failed");
+    console.log("❌ SIGNUP ERROR:", error);
+    return res.status(500).send(error.message);
   }
 
 });
 
 
 // 🚪 Logout
-router.get('/logout', (req, res, next) => {
+router.get("/logout", (req, res, next) => {
 
   req.logout((err) => {
-
     if (err) return next(err);
 
     req.session.destroy(() => {
-      res.clearCookie('connect.sid');
-      res.redirect('/');
+      res.clearCookie("connect.sid");
+      res.redirect("/");
     });
-
   });
 
 });
+
 
 module.exports = router;
