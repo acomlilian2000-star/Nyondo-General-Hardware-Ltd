@@ -11,6 +11,11 @@ html
 
     .sales-container
 
+      // ================= BACK BUTTON (ADDED) =================
+      .top-bar(style='margin-bottom:10px;')
+        button(type='button' onclick="window.location.href='/salesDash'" style='padding:8px 15px; cursor:pointer;')
+          | ← Back to Sales Dashboard
+
       h1 Sales Entry 🧾
 
       form#salesForm(action='/Sales' method='POST')

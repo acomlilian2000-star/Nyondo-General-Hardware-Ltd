@@ -17,28 +17,13 @@ html
 
       ul.nav
         li
-          a(href="/salesDash") 📊 Dashboard
+          a(href="/adminDash") 📊 Dashboard
 
         li
           a(href="/salesform") 📝 Make New Sale
 
         li
           a(href="/logout") 🚪 Logout
-
-      .sidebar-filter
-        form(action="/salesDash" method="GET")
-
-          label(for="month") Monthly Report
-
-          input(
-            type="month"
-            name="month"
-            id="month"
-            value=selectedMonth || ""
-          )
-
-          button.btn.btn-blue(type="submit")
-            | Generate
 
 
     // ================= MAIN CONTENT =================
@@ -72,10 +57,6 @@ html
             h3 Low Stock Alert
             p #{lowStockCount || 0}
 
-          .stat-card
-            h3 Monthly Report Total
-            p UGX #{monthlyTotal || 0}
-
 
         // ================= SALES TABLE =================
         .section-box
@@ -87,7 +68,6 @@ html
               tr
                 th Date
                 th Product
-                th Image
                 th Specification
                 th Unit Price
                 th Quantity
@@ -105,7 +85,7 @@ html
             tbody
               if !dbSales || dbSales.length === 0
                 tr
-                  td(colspan="16") No sales recorded yet
+                  td(colspan="15") No sales recorded yet
 
               else
                 each sale in dbSales
@@ -117,12 +97,6 @@ html
                         td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
 
                         td= item.product && item.product.itemName ? item.product.itemName : 'Deleted Product'
-
-                        td
-                          if item.product && item.product.image
-                            img(src=item.product.image, width="45", height="45")
-                          else
-                            span No Image
 
                         td= item.specification || '-'
                         td= item.unitPrice || 0
@@ -148,12 +122,6 @@ html
                       td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
 
                       td= sale.product && sale.product.itemName ? sale.product.itemName : 'Deleted Product'
-
-                      td
-                        if sale.product && sale.product.image
-                          img(src=sale.product.image, width="45", height="45")
-                        else
-                          span No Image
 
                       td= sale.specification || '-'
                       td= sale.unitPrice || 0

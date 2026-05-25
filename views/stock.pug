@@ -11,6 +11,11 @@ html
 
     .form-container
 
+      // ================= BACK BUTTON (NOW INSIDE FORM TOP) =================
+      .top-bar(style='padding:10px;')
+        button(type='button' onclick="window.location.href='/stockDash'" style='padding:8px 15px; cursor:pointer;')
+          | ← Back to Dashboard
+
       h1 NYONDO General Hardware LTD
       p.subtitle Official Stock Arrival & Finance Portal
 
@@ -140,10 +145,7 @@ html
         const firstItem = document.querySelector('.stock-item');
         const clonedItem = firstItem.cloneNode(true);
 
-        // clear inputs
         clonedItem.querySelectorAll('input').forEach(i => i.value = '');
-
-        // reset selects
         clonedItem.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
 
         itemsContainer.appendChild(clonedItem);
