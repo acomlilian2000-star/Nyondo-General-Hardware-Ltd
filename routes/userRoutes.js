@@ -1,25 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
+const Registration = require("../models/User");
 const passport = require("passport");
-
-
-// ================= DEBUG MIDDLEWARE =================
-router.use((req, res, next) => {
-  console.log("📡 REQUEST:", req.method, req.url);
-  next();
-});
-
-
-// 🏠 Homepage
-router.get("/", (req, res) => {
-  res.render("index");
-});
-
-
-// 🚪 Login GET (kept only UI render, NO POST)
+const User = require("../models/User");
+// loginpage
 router.get("/login", (req, res) => {
   res.render("login");
+});
+// homepage
+router.get("/", (req, res) => {
+  res.render("index");
 });
 
 
@@ -29,116 +19,86 @@ router.post(
   (req, res) => {
     if (req.user.role === "admin") {
       res.redirect("/adminDash");
-    } else if (req.user.role === "sales-attendant") {
+    } else if (req.user.role === "sales_attendant") {
       res.redirect("/salesDash");
-    } else if (req.user.role === "stock-manager") {
-      res.redirect("/StockDash");
+    } else if (req.user.role === "stock_manager") {
+      res.redirect("/stockDash");
     } else {
       res.redirect("/login");
     }
   },
 );
 
+// logoutpage
 
-// 📝 Signup GET
+router.get('/logout', (req, res, next) =>{
+  console.log("Logout request received...");
+  req.logout( (err)=>{
+    console.error("Logout error:", err);
+    if(err) {
+
+      return next(err);
+    }
+    req.session.destroy(() => {
+        res.clearCookie('connect.sid'); // Clears the session cookie
+        console.log("Session destroyed. Redirecting to login.");
+        res.redirect('/'); 
+    });
+  
+  })
+})
+
+
+
+
+// signuppage
+
 router.get("/SignUpform", (req, res) => {
   res.render("SignUp");
 });
-
-
-// 📝 SIGNUP POST (ONLY WORKING LOGIC)
 router.post("/SignUp", async (req, res) => {
-
   try {
-
-    console.log("🔥 SIGNUP ROUTE HIT");
-    console.log("BODY:", req.body);
-
     const {
       fullName,
       email,
       ninNumber,
       role,
-      phoneNumber,
+      ugPhoneNumber,
+      userName,
+      address,
       password,
-      address
     } = req.body;
-
-    // ================= VALIDATION =================
-    if (!fullName || !email || !ninNumber || !role || !phoneNumber || !password || !address) {
-      return res.render("SignUp", { error: "All fields are required" });
-    }
-
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!emailRegex.test(email)) {
-      return res.render("SignUp", { error: "Invalid email address" });
-    }
-
-    const strongPassword = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
-    if (!strongPassword.test(password)) {
-      return res.render("SignUp", {
-        error: "Password must be 8+ chars with letters & numbers"
-      });
-    }
-
-    if (phoneNumber.length < 9) {
-      return res.render("SignUp", { error: "Invalid phone number" });
-    }
-
-    if (ninNumber.length < 14) {
-      return res.render("SignUp", { error: "Invalid NIN Number" });
-    }
-
-    const normalizedEmail = email.toLowerCase();
-
-    // ================= CHECK EXISTING USER =================
-    const existingUser = await User.findOne({ email: normalizedEmail });
-
+    //   if user already exists
+    let existingUser = await User.findOne({
+      email: email.toLowerCase(),
+    });
     if (existingUser) {
-      return res.render("SignUp", { error: "Email already exists" });
+      return res.render("SignUp", { error: "Email is already registered" });
     }
-
-    // ================= CREATE USER =================
+    // const create new user
     const newUser = new User({
       fullName,
-      email: normalizedEmail,
+      email: email.toLowerCase(),
       ninNumber: ninNumber.toUpperCase(),
-      role,
-      phoneNumber,
       address,
-      isFirstLogin: true
+      ugPhoneNumber,
+      role,
+      userName,
+      password,
     });
+    console.log(newUser);
+    console.log("Password:", req.body.password);
+    await Registration.register(newUser, req.body.password, (err) => {
+      if (err) {
+        return res.redirect("/SignUp");
+      }
+    });
+    res.redirect("/login");
 
-    console.log("👉 BEFORE REGISTER");
-
-    // ================= SAVE USER =================
-    const savedUser = await User.register(newUser, password);
-
-    console.log("✅ USER SAVED IN DATABASE:", savedUser._id);
-
-    return res.redirect("/login");
-
+    //  res.redirect('/login')
   } catch (error) {
-    console.log("❌ SIGNUP ERROR:", error);
-    return res.status(500).send(error.message);
+    console.error(error);
   }
-
 });
-
-
-// 🚪 Logout
-router.get("/logout", (req, res, next) => {
-
-  req.logout((err) => {
-    if (err) return next(err);
-
-    req.session.destroy(() => {
-      res.clearCookie("connect.sid");
-      res.redirect("/");
-    });
-  });
-
-});
-
 
 module.exports = router;

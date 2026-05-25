@@ -1,67 +1,118 @@
-meta(charset="UTF-8")
-meta(name="viewport", content="width=device-width,initial-scale=1")
-title NYONDO | Staff Registration
-link(rel="stylesheet", href="/css/signup.css")
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
 
-.page-wrapper
-  .brand-header.
-    
-    NYONDO GENERAL HARDWARE LTD
-    
-  section.signup-card
+    title NYONDO | Staff Registration
 
-    // ================= BACKEND ERROR DISPLAY (ADDED) =================
-    if error
-      .error-box
-        p= error
+    link(rel="stylesheet", href="/css/signup.css")
 
-    h2 Staff Signup
-    p Enter your details to register
+  body
 
-    form(action="/SignUp" method="post")
+    .page-wrapper
 
-      .form-group
-        label Full Name
-        input(type="text", name="fullName" placeholder="e.g. John Musoke")
+      .brand-header
+        | NYONDO GENERAL HARDWARE LTD
 
-      .form-group
-        label Email Address
-        input(type="text", name="email" placeholder="name@company.com")
+      section.signup-card
 
-      .form-group
-        label NIN Number (14 Characters)
-        input(type="text", name="ninNumber" placeholder="CM000000000000", style="text-transform: uppercase;")
+        // ================= BACKEND ERROR DISPLAY =================
+        if error
+          .error-box
+            p= error
 
-      .form-group
-        label Phone Number
-        .phone-container
-          span.phone-prefix +256
-          input(type="text", name="phoneNumber" placeholder="770000000")
+        h2 Staff Signup
 
-      // ✅ ROLE SECTION ADDED HERE (NO CHANGES ELSEWHERE)
-      .form-group
-        label User Role
-        select(name="role")
-          option(value="") -- Select Role --
-          option(value="admin") Admin
-          option(value="stock_manager") Stock Manager
-          option(value="sales_attendant") Sales Attendant
+        p Enter your details to register
 
-      .form-group
-        label Residential Address
-        input(type="text", name="address" placeholder="Nansana, Wakiso")
+        form(action="/SignUp" method="post")
 
-      .form-group
-        label Password
+          .form-group
+            label(for="fullName") Full Name
 
-        // password rule hint (frontend guidance only)
-        small.password-hint Password must be at least 8 characters with letters and numbers
+            input(
+              type="text"
+              id="fullName"
+              name="fullName"
+              placeholder="e.g. John Musoke"
+            )
 
-        input(type="password", name="password" placeholder="••••••••")
+          .form-group
+            label(for="email") Email Address
 
-      button.btn-submit(type="submit") Create Account
+            input(
+              type="text"
+              id="email"
+              name="email"
+              placeholder="name@company.com"
+            )
 
-    //- .footer-text
-    //-   |
-    //-   Already registered?
-    //-   a(href="/login") Login Here
+          .form-group
+            label(for="ninNumber") NIN Number (14 Characters)
+
+            input(
+              type="text"
+              id="ninNumber"
+              name="ninNumber"
+              placeholder="CM000000000000"
+              style="text-transform: uppercase;"
+            )
+
+          .form-group
+            label(for="phoneNumber") Phone Number
+
+            .phone-container
+
+              span.phone-prefix +256
+
+              input(
+                type="text"
+                id="phoneNumber"
+                name="ugPhoneNumber"
+                placeholder="770000000"
+              )
+
+          // ================= ROLE SECTION =================
+          .form-group
+            label(for="role") User Role
+
+            select(
+              id="role"
+              name="role"
+            )
+              option(value="") -- Select Role --
+              option(value="admin") Admin
+              option(value="stock_manager") Stock Manager
+              option(value="sales_attendant") Sales Attendant
+
+          .form-group
+            label(for="address") Residential Address
+
+            input(
+              type="text"
+              id="address"
+              name="address"
+              placeholder="Nansana, Wakiso"
+            )
+
+          .form-group
+            label(for="password") Password
+
+            small.password-hint
+              | Password must be at least 8 characters with letters and numbers
+
+            input(
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+            )
+
+          button.btn-submit(type="submit")
+            | Create Account
+
+        //- .footer-text
+        //-   |
+        //-   Already registered?
+        //-   a(href="/login") Login Here
