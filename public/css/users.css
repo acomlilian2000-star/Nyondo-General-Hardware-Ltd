@@ -1,0 +1,50 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #0b1d39;
+    padding: 30px;
+    color: white;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    color: black;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #0ea5e9;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background: #f1f5f9;
+}
+.delete-btn{
+    background: red;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.delete-btn:hover{
+    opacity: 0.8;
+}

@@ -18,27 +18,22 @@ html
       ul.sidebar-links
 
         li.active
-          a(href="/stockDash")
-            | 📊 Dashboard
+          a(href="/stockDash") 📊 Dashboard
 
         li
-          a(href="/stockform")
-            | ➕ Make New Stock
+          a(href="/stockform") ➕ Make New Stock
 
         li
-          a(href="/supplierTable")
-            | 💳 Supplier Table
+          a(href="/supplierTable") 💳 Supplier Table
 
         li
-          a(href="/logout")
-            | 🚪 Logout
+          a(href="/logout") 🚪 Logout
 
 
     // ================= MAIN CONTENT =================
     .main-content
 
       nav.navbar
-
         .brand-container
           .logo-placeholder N
 
@@ -53,24 +48,25 @@ html
 
       .container
 
-        // ================= TOTAL STOCK VALUE (RECORDED ONLY) =================
+        // ================= TOTAL STOCK VALUE (ONLY STOCK ADDED) =================
         -
-          let totalRecordedStockValue = 0
+          let totalStockValue = 0;
 
-          if (allStocks && allStocks.length > 0) {
-            allStocks.forEach(item => {
-              const qty = Number(item.originalQuantity || item.quantity || 0)
-              const cost = Number(item.unitCost || 0)
-              totalRecordedStockValue += qty * cost
-            })
+          if (liveStocks && liveStocks.length > 0) {
+            liveStocks.forEach(item => {
+              const stockInQty = Number(item.stockInQuantity || 0);
+              const cost = Number(item.unitCost || 0);
+
+              totalStockValue += stockInQty * cost;
+            });
           }
 
         // ================= DASHBOARD CARDS =================
         .stats-grid
 
           .stat-card
-            h3 Total Items Recorded As Stock
-            p #{allStocks ? allStocks.length : 0}
+            h3 Total Stock Items
+            p 11
 
           .stat-card
             h3 Low Stock Alerts
@@ -82,171 +78,79 @@ html
 
           .stat-card
             h3 Total Stock Value
-            p UGX #{Number(totalRecordedStockValue).toLocaleString()}
+            p UGX #{Number(totalStockValue).toLocaleString()}
 
 
-        .main-layout
+        // ================= PRODUCT STOCK TABLE =================
+        .section-box
+          h3 📦 Product Stock Table
 
-          // ================= LIVE STOCK (NO STOCK COST) =================
-          .content-left
+          .table-scroll
+            table.stock-table
 
-            .section-box
-              h3 📦 Live Stock (Reduced By Sales & Deposits)
+              thead
+                tr
+                  th Product Name
+                  th Quantity
+                  th Buying Price
+                  th Selling Price
+                  th Status
+                  th Actions
 
-              .table-scroll
-                table.stock-table
+              tbody
 
-                  thead
-                    tr
-                      th Image
-                      th Product Name
-                      th Category
-                      th Remaining Quantity
-                      th Buying Price
-                      th Selling Price
-                      th Status
+                -
+                  const products = [
+                    { name: "Cement (CEM II)", key: "cement-cem-ii" },
+                    { name: "Cement (CEM III)", key: "cement-cem-iii" },
+                    { name: "Iron Bars (10mm)", key: "iron-bars-10mm" },
+                    { name: "Iron Bars (12mm)", key: "iron-bars-12mm" },
+                    { name: "Iron Bars (16mm)", key: "iron-bars-16mm" },
+                    { name: "Nails (Assorted)", key: "nails-assorted" },
+                    { name: "Roofing Nails", key: "roofing-nails" },
+                    { name: "Wheelbarrow", key: "wheelbarrow" },
+                    { name: "Barbed Wire", key: "barbed-wire" },
+                    { name: "Wire Mesh", key: "wire-mesh" },
+                    { name: "Iron Sheets", key: "iron-sheets" }
+                  ];
 
-                  tbody
+                each product in products
 
-                    if !liveStocks || liveStocks.length === 0
-                      tr
-                        td(colspan="7")
-                          | No live stock available
+                  -
+                    const stockItem = liveStocks
+                      ? liveStocks.find(i => i.slug === product.key)
+                      : null;
 
-                    else
-                      each item in liveStocks
+                    const qty = stockItem ? Number(stockItem.currentQuantity || 0) : 0;
+                    const buy = stockItem ? Number(stockItem.unitCost || 0) : 0;
+                    const sell = stockItem ? Number(stockItem.unitPrice || 0) : 0;
 
-                        -
-                          const qty = Number(item.quantity || 0)
-                          const buy = Number(item.unitCost || 0)
-                          const sell = Number(item.unitPrice || 0)
+                  tr
 
-                        tr
+                    td
+                      strong= product.name
 
-                          td
-                            if item.productImage
-                              img(
-                                src=`/uploads/${item.productImage}`
-                                style="width:60px;height:60px;object-fit:cover;border-radius:8px;"
-                              )
-                            else
-                              span No Image
+                    td
+                      strong= qty
 
-                          td
-                            strong= item.itemName || "No Product"
+                    td
+                      | UGX #{buy.toLocaleString()}
 
-                          td
-                            = item.category || "General"
+                    td
+                      | UGX #{sell.toLocaleString()}
 
-                          td
-                            strong= qty
+                    td
+                      if qty <= 0
+                        span.status-low OUT OF STOCK
+                      else if qty <= 5
+                        span.status-low LOW STOCK
+                      else
+                        span.status-ok AVAILABLE
 
-                          td
-                            | UGX #{buy.toLocaleString()}
-
-                          td
-                            | UGX #{sell.toLocaleString()}
-
-                          td
-                            if qty <= 5
-                              span.status-low LOW STOCK
-                            else
-                              span.status-ok AVAILABLE
-
-
-          // ================= ALL STOCK RECORDS =================
-          .content-right
-
-            .section-box
-              h3 🗂️ All Registered Stock Records
-
-              .table-scroll
-                table.stock-table
-
-                  thead
-                    tr
-                      th Image
-                      th Product Name
-                      th Category
-                      th Quantity Registered
-                      th Buying Price
-                      th Selling Price
-                      th Stock Cost
-                      th Supplier
-                      th Attendant
-                      th Date
-                      th Actions
-
-                  tbody
-
-                    if !allStocks || allStocks.length === 0
-                      tr
-                        td(colspan="11")
-                          | No stock records available
-
-                    else
-                      each item in allStocks
-
-                        -
-                          const qty = Number(item.originalQuantity || item.quantity || 0)
-                          const buy = Number(item.unitCost || 0)
-                          const sell = Number(item.unitPrice || 0)
-                          const stockCost = qty * buy
-
-                        tr
-
-                          td
-                            if item.productImage
-                              img(
-                                src=`/uploads/${item.productImage}`
-                                style="width:60px;height:60px;object-fit:cover;border-radius:8px;"
-                              )
-                            else
-                              span No Image
-
-                          td
-                            strong= item.itemName || "No Product"
-
-                          td
-                            = item.category || "General"
-
-                          td
-                            = qty
-
-                          td
-                            | UGX #{buy.toLocaleString()}
-
-                          td
-                            | UGX #{sell.toLocaleString()}
-
-                          td
-                            strong UGX #{stockCost.toLocaleString()}
-
-                          td
-                            = item.supplier || "-"
-
-                          td
-                            if item.Attendant && item.Attendant.fullName
-                              strong= item.Attendant.fullName
-                            else
-                              | N/A
-
-                          td
-                            if item.createdAt
-                              = new Date(item.createdAt).toDateString()
-                            else
-                              | -
-
-                          td
-                            a.btn.btn-blue(href=`/stock/edit/${item._id}`) Edit
-                            a.btn.btn-gold(
-                              href=`/stock/confirm/${item._id}`
-                              onclick="return confirm('Confirm stock update?')"
-                            ) Update
-                            a.btn.btn-red(
-                              href=`/stock/delete/${item._id}`
-                              onclick="return confirm('Delete stock record?')"
-                            ) Delete
+                    td
+                      a.btn.btn-blue(
+                        href=`/stock/update/${product.key}`
+                      ) Update
 
 
     script.

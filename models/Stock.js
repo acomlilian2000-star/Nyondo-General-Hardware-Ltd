@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 
 const StockSchema = new mongoose.Schema(
   {
+    /* =========================
+       BASIC PRODUCT INFO
+    ========================= */
     itemName: {
       type: String,
       trim: true,
@@ -14,21 +17,30 @@ const StockSchema = new mongoose.Schema(
       default: "General",
     },
 
+    /* =========================
+       STOCK QUANTITY
+    ========================= */
     quantity: {
       type: Number,
       default: 0,
     },
 
-    // original registered stock (immutable reference)
+    stockInQuantity: {
+      type: Number,
+      default: 0,
+    },
+
     originalQuantity: {
       type: Number,
       default: 0,
     },
 
+    /* =========================
+       SUPPLIER INFO
+    ========================= */
     supplier: {
       type: String,
       trim: true,
-      // default: "Unknown",
     },
 
     contactPerson: {
@@ -46,6 +58,9 @@ const StockSchema = new mongoose.Schema(
       trim: true,
     },
 
+    /* =========================
+       PRICING
+    ========================= */
     unitCost: {
       type: Number,
       default: 0,
@@ -53,15 +68,22 @@ const StockSchema = new mongoose.Schema(
 
     unitPrice: {
       type: Number,
-      required: true,
-      validate: {
-        validator: function (value) {
-          return value > (this.unitCost || 0);
-        },
-        message: "unitPrice must be greater than unitCost",
-      },
+      default: 0,
     },
 
+    total: {
+      type: Number,
+      default: 0,
+    },
+
+    stockCost: {
+      type: Number,
+      default: 0,
+    },
+
+    /* =========================
+       PAYMENT STATUS
+    ========================= */
     paymentMethod: {
       type: String,
       enum: ["cash", "credit", "cash-at-hand"],
@@ -69,28 +91,19 @@ const StockSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // selling value (correct definition)
-    total: {
-      type: Number,
-      default: 0,
+    status: {
+      type: String,
+      enum: ["PENDING", "PAID"],
+      default: "PENDING",
     },
 
-    // true stock cost value (BUYING PRICE × QUANTITY)
-    stockCost: {
-      type: Number,
-      default: 0,
-    },
-
+    /* =========================
+       SYSTEM FIELDS
+    ========================= */
     Attendant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
-    },
-
-    status: {
-      type: String,
-      enum: ["Pending", "Paid"],
-      default: "Pending",
     },
   },
   {
@@ -99,37 +112,56 @@ const StockSchema = new mongoose.Schema(
 );
 
 /* =========================
-   AUTO-CALCULATION FIX
-   (THIS IS THE MOST IMPORTANT PART)
+   AUTO CALCULATION (SAVE)
 ========================= */
 StockSchema.pre("save", function (next) {
   const qty = Number(this.quantity || 0);
   const cost = Number(this.unitCost || 0);
   const price = Number(this.unitPrice || 0);
 
-  // correct calculations
-  this.stockCost = qty * cost; // real stock value
-  this.total = qty * price;    // selling value
+  this.stockCost = qty * cost;
+  this.total = qty * price;
 
-  // next();
+  if (!this.stockInQuantity) {
+    this.stockInQuantity = qty;
+  }
+
+  next();
 });
 
 /* =========================
-   ALSO FIX UPDATE OPERATIONS
+   AUTO CALCULATION (UPDATE)
 ========================= */
 StockSchema.pre("findOneAndUpdate", function (next) {
-  const update = this.getUpdate();
+  const update = this.getUpdate() || {};
 
-  if (update.quantity != null || update.unitCost != null || update.unitPrice != null) {
-    const qty = Number(update.quantity || 0);
-    const cost = Number(update.unitCost || 0);
-    const price = Number(update.unitPrice || 0);
+  const qty =
+    update.quantity ??
+    update.$set?.quantity ??
+    0;
 
-    update.stockCost = qty * cost;
-    update.total = qty * price;
+  const cost =
+    update.unitCost ??
+    update.$set?.unitCost ??
+    0;
 
-    this.setUpdate(update);
+  const price =
+    update.unitPrice ??
+    update.$set?.unitPrice ??
+    0;
+
+  const stockCost = Number(qty) * Number(cost);
+  const total = Number(qty) * Number(price);
+
+  if (update.$set) {
+    update.$set.stockCost = stockCost;
+    update.$set.total = total;
+  } else {
+    update.stockCost = stockCost;
+    update.total = total;
   }
+
+  this.setUpdate(update);
 
   next();
 });

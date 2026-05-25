@@ -3,7 +3,7 @@ html
   head
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title Supplier Credit Table
+    title Supplier Table
 
     link(rel="stylesheet", href="/css/stockDash.css")
 
@@ -14,15 +14,16 @@ html
         .logo-placeholder N
         .nav-brand-text
           strong NYONDO GENERAL HARDWARE
-          span Supplier Credit Management
+          span Supplier Management
 
       .nav-right
         button.logout-btn(onclick="goBack()") BACK
 
+
     .container
 
       .section-box
-        h3 💳 Supplier Credit Summary
+        h3 🏢 Supplier Table
 
         .table-scroll
           table.credit-table
@@ -36,7 +37,7 @@ html
                 th Items Supplied
                 th Quantity Supplied
                 th Supplied Date
-                th Total Amount Owed
+                th Total Amount
                 th Status
                 th Actions
 
@@ -44,59 +45,35 @@ html
 
               if !supplierCredits || supplierCredits.length === 0
                 tr
-                  td(colspan="10") No supplier credits available
+                  td(colspan="10") No suppliers available
 
               else
-                each credit in supplierCredits
+                each supplier in supplierCredits
                   tr
 
-                    td
-                      strong= credit.supplier || "-"
-
-                    td
-                      = credit.contactPerson || "-"
-
-                    td
-                      | +256 #{credit.supplierPhone || "-"}
-
-                    td
-                      = credit.factoryName || "-"
+                    td strong= supplier.supplier
+                    td= supplier.contactPerson
+                    td | +256 #{supplier.supplierPhone}
+                    td= supplier.factoryName
 
                     td
                       ul
-                        if credit.items && credit.items.length
-                          each item in credit.items
-                            li= item
-                        else
-                          li No items recorded
+                        each item in supplier.items
+                          li= item
 
-                    // ✅ NEW COLUMN: TOTAL QUANTITY
-                    td
-                      strong= credit.totalQuantity || 0
+                    td strong= supplier.totalQuantity || 0
+                    td= supplier.date ? new Date(supplier.date).toDateString() : "-"
+
+                    td strong UGX #{Number(supplier.totalAmount || 0).toLocaleString()}
 
                     td
-                      = credit.suppliedDate ? new Date(credit.suppliedDate).toDateString() : "-"
+                      span.status-pending PENDING
 
                     td
-                      strong
-                        | UGX #{(credit.totalAmount || 0).toLocaleString()}
-
-                    td
-                      span.status-low Pending
-
-                    td
-                      if credit.supplier
-                        a.btn.btn-green(
-                          href=`/supplier/mark-paid/${credit.supplier}`
-                          onclick="return confirm('Mark supplier as PAID?')"
-                        )
-                          | Mark Paid
-
-                        a.btn.btn-red(
-                          href=`/supplier/clear/${credit.supplier}`
-                          onclick="return confirm('Clear supplier record?')"
-                        )
-                          | Clear
+                      a.btn.btn-green(
+                        href=`/supplier/mark-paid/${supplier._id || supplier.supplier}`
+                        onclick="return confirm('Mark supplier as PAID?')"
+                      ) Mark Paid
 
     script.
       function goBack() {

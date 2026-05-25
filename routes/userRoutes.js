@@ -85,6 +85,7 @@ router.post("/SignUp", async (req, res) => {
       role,
       userName,
       password,
+      dateJoined: new Date() ,
     });
     console.log(newUser);
     console.log("Password:", req.body.password);
@@ -100,5 +101,28 @@ router.post("/SignUp", async (req, res) => {
     console.error(error);
   }
 });
+// table of users
+router.get("/users", async (req, res) => {
+
+  try {
+
+    // fetch all users from database
+    const users = await User.find().sort({ dateJoined: -1 });
+
+    // render users page
+    res.render("users", {
+      users
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).send("Failed to fetch users");
+
+  }
+
+});
+
 
 module.exports = router;

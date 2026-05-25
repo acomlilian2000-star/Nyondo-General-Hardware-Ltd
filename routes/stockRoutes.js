@@ -8,128 +8,22 @@ const Deposit = require("../models/Deposit");
 const multer = require("multer");
 
 /* =========================
-   MULTER CONFIG
+   MULTER
 ========================= */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/uploads");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+  destination: (req, file, cb) => cb(null, "public/uploads"),
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 
 const upload = multer({ storage });
 
 /* =========================
-   AUTH CHECK
+   AUTH
 ========================= */
 function isLoggedIn(req, res, next) {
   if (req.isAuthenticated && req.isAuthenticated()) return next();
-  return res.status(401).send("Please login first");
+  return res.status(401).send("Login required");
 }
-
-/* =========================
-   STOCK FORM
-========================= */
-router.get("/stockform", async (req, res) => {
-  try {
-    res.render("stock");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error loading stock form");
-  }
-});
-
-/* =========================
-   CREATE STOCK (FIXED)
-========================= */
-router.post(
-  "/stock",
-  isLoggedIn,
-  upload.array("productImage"),
-  async (req, res) => {
-    try {
-      const {
-        itemName,
-        quantity,
-        supplier,
-        contactPerson,
-        supplierPhone,
-        factoryName,
-        unitCost,
-        unitPrice,
-        paymentMethod,
-        category,
-        specification,
-      } = req.body || {};
-
-      const toArray = (v) => (Array.isArray(v) ? v : [v || ""]);
-
-      const items = toArray(itemName);
-      const qtys = toArray(quantity);
-      const costs = toArray(unitCost);
-      const prices = toArray(unitPrice);
-      const categories = toArray(category);
-      const specs = toArray(specification);
-
-      /* =========================
-         GLOBAL SUPPLIER FIX
-      ========================= */
-      const globalSupplier = supplier || "Unknown";
-      const globalContact = contactPerson || "";
-      const globalPhone = supplierPhone || "";
-      const globalFactory = factoryName || "";
-
-      const methods = toArray(paymentMethod);
-      const images = req.files || [];
-
-      const stocks = items.map((_, i) => {
-        const qty = Number(qtys[i]) || 0;
-        const cost = Number(costs[i]) || 0;
-        const price = Number(prices[i]) || 0;
-
-        const method = (methods[i] || methods[0] || "cash")
-          .toLowerCase()
-          .trim();
-
-        return {
-          itemName: items[i] || "",
-          category: categories[i] || "General",
-          specification: specs[i] || "Pieces",
-
-          quantity: qty,
-          unitCost: cost,
-          unitPrice: price,
-
-          /* ✅ SAME SUPPLIER FOR ALL ITEMS */
-          supplier: globalSupplier,
-          contactPerson: globalContact,
-          supplierPhone: globalPhone,
-          factoryName: globalFactory,
-
-          paymentMethod: method,
-          status: method === "credit" ? "Pending" : "Paid",
-
-          /* ✅ CORRECT TOTAL LOGIC */
-          total: qty * cost,
-          stockCost: qty * cost,
-
-          productImage: images[i] ? images[i].filename : "",
-          Attendant: req.user._id,
-          createdAt: new Date(),
-        };
-      });
-
-      await Stock.insertMany(stocks);
-      res.redirect("/stockDash");
-
-    } catch (error) {
-      console.error("Stock Save Error:", error);
-      res.status(500).render("stock", { error: error.message });
-    }
-  }
-);
 
 /* =========================
    STOCK DASHBOARD
@@ -162,25 +56,33 @@ router.get("/stockDash", async (req, res) => {
         });
       });
 
-      const remainingQty = Math.max(0, stock.quantity - soldQty);
-
       return {
         ...stock.toObject(),
-        remainingQty
+        slug: stock.slug || stock.itemName.toLowerCase().replace(/\s+/g, "-"),
+        currentQuantity: Math.max(
+          0,
+          (stock.quantity ?? 0) - soldQty
+        )
       };
     });
 
     const totalStockValue = allStocks.reduce((sum, s) => {
-      return sum + (Number(s.quantity || 0) * Number(s.unitCost || 0));
+      const qty = Number(s.stockInQuantity || s.quantity || 0);
+      const cost = Number(s.unitCost || 0);
+      return sum + qty * cost;
     }, 0);
+
+    /* 🔥 FIX: CASE INSENSITIVE MATCH */
+    const supplierCredits = await Stock.find({
+      paymentMethod: { $regex: /^credit$/i }
+    });
 
     res.render("stockDash", {
       liveStocks,
       allStocks,
       totalStockValue,
-      lowStockCount: liveStocks.filter(i => i.remainingQty <= 5).length,
-      totalItemsRecorded: allStocks.length,
-      supplierCredits: await Stock.find({ paymentMethod: "credit" })
+      lowStockCount: liveStocks.filter(i => i.currentQuantity <= 5).length,
+      supplierCredits
     });
 
   } catch (err) {
@@ -190,52 +92,52 @@ router.get("/stockDash", async (req, res) => {
       allStocks: [],
       totalStockValue: 0,
       lowStockCount: 0,
-      totalItemsRecorded: 0,
       supplierCredits: []
     });
   }
 });
 
 /* =========================
-   SUPPLIER TABLE (RESTORED + FIXED)
+   SUPPLIER TABLE (FIXED)
 ========================= */
 router.get("/supplierTable", async (req, res) => {
   try {
+    /* 🔥 FIX: CASE INSENSITIVE QUERY */
     const creditStocks = await Stock.find({
-      paymentMethod: "credit"
+      paymentMethod: { $regex: /^credit$/i }
     }).sort({ createdAt: -1 });
 
     const grouped = {};
 
     creditStocks.forEach(item => {
-      const supplierName = item.supplier || "Unknown Supplier";
+      const name = item.supplier || "Unknown Supplier";
 
-      if (!grouped[supplierName]) {
-        grouped[supplierName] = {
-          supplier: supplierName,
+      if (!grouped[name]) {
+        grouped[name] = {
+          _id: name,
+          supplier: name,
           contactPerson: item.contactPerson || "-",
           supplierPhone: item.supplierPhone || "-",
           factoryName: item.factoryName || "-",
           items: [],
+          totalQuantity: 0,
           totalAmount: 0,
-          date: item.createdAt
+          date: item.createdAt,
+          status: "PENDING"
         };
       }
 
-      grouped[supplierName].items.push(item.itemName);
-
-      grouped[supplierName].totalAmount +=
-        Number(item.quantity || 0) * Number(item.unitCost || 0);
+      grouped[name].items.push(item.itemName);
+      grouped[name].totalQuantity += Number(item.quantity || 0);
+      grouped[name].totalAmount += Number(item.quantity || 0) * Number(item.unitCost || 0);
     });
-
-    const supplierCredits = Object.values(grouped);
 
     res.render("supplierTable", {
-      supplierCredits
+      supplierCredits: Object.values(grouped)
     });
 
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.render("supplierTable", {
       supplierCredits: []
     });
@@ -243,32 +145,101 @@ router.get("/supplierTable", async (req, res) => {
 });
 
 /* =========================
-   CONFIRM PAYMENT
+   MARK AS PAID (FIXED)
 ========================= */
-router.get("/supplier/pay/:id", async (req, res) => {
+router.get("/supplier/mark-paid/:id", async (req, res) => {
   try {
-    await Stock.findByIdAndUpdate(req.params.id, {
-      status: "Paid",
-      paymentMethod: "cash"
-    });
+    await Stock.updateMany(
+      {
+        supplier: req.params.id,
+        paymentMethod: { $regex: /^credit$/i }
+      },
+      {
+        status: "PAID",
+        paymentMethod: "cash"
+      }
+    );
 
     res.redirect("/supplierTable");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error updating payment status");
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating supplier");
   }
 });
 
 /* =========================
-   CLEAR DEBT
+   STOCK FORM
 ========================= */
-router.get("/supplier/clear/:id", async (req, res) => {
+router.get("/stockform", isLoggedIn, (req, res) => {
+  res.render("stock");
+});
+
+/* =========================
+   CREATE STOCK
+========================= */
+router.post("/stock", isLoggedIn, upload.array("productImage"), async (req, res) => {
   try {
-    await Stock.findByIdAndDelete(req.params.id);
-    res.redirect("/supplierTable");
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Error clearing debt");
+    const {
+      itemName,
+      quantity,
+      supplier,
+      contactPerson,
+      supplierPhone,
+      factoryName,
+      unitCost,
+      unitPrice,
+      paymentMethod,
+      category
+    } = req.body;
+
+    const toArr = v => (Array.isArray(v) ? v : [v]);
+
+    const items = toArr(itemName);
+    const qtys = toArr(quantity);
+    const costs = toArr(unitCost);
+    const prices = toArr(unitPrice);
+    const cats = toArr(category);
+    const methods = toArr(paymentMethod);
+
+    const images = req.files || [];
+
+    const stocks = items.map((_, i) => {
+      const qty = Number(qtys[i]) || 0;
+      const cost = Number(costs[i]) || 0;
+
+      const method = (methods[i] || "cash").toLowerCase();
+
+      return {
+        itemName: items[i],
+        slug: items[i].toLowerCase().replace(/\s+/g, "-"),
+        category: cats[i] || "General",
+
+        quantity: qty,
+        stockInQuantity: qty,
+
+        unitCost: cost,
+        unitPrice: Number(prices[i]) || 0,
+
+        supplier: (supplier || "Unknown").trim(),
+        contactPerson: contactPerson || "-",
+        supplierPhone: supplierPhone || "-",
+        factoryName: factoryName || "-",
+
+        paymentMethod: method,
+        status: method === "credit" ? "PENDING" : "PAID",
+
+        productImage: images[i] ? images[i].filename : "",
+        createdAt: new Date()
+      };
+    });
+
+    await Stock.insertMany(stocks);
+    res.redirect("/stockDash");
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Stock save error");
   }
 });
 

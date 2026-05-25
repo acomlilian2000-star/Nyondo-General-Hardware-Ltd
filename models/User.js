@@ -13,10 +13,14 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     unique:true,
   },
-  // userName: {
-  //   type: String,
-  //   trim: true
-  // },
+  address: {
+    type: String,
+    trim: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  },
   ugPhoneNumber: {
     type: Number,
     required: true
@@ -42,5 +46,6 @@ const UserSchema = new mongoose.Schema({
 UserSchema.plugin(passportLocalMongoose, {
   usernameField: "email"
 });
+
 
 module.exports = mongoose.model('User', UserSchema);
