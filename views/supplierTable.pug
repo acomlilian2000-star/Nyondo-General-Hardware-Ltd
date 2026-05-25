@@ -52,23 +52,32 @@ html
                 each supplier in supplierCredits
                   tr
 
-                    td strong= supplier.supplier
+                    td
+                      strong= supplier.supplier
+
                     td= supplier.contactPerson || "-"
+
                     td= supplier.supplierPhone ? `+256 ${supplier.supplierPhone}` : "-"
+
                     td= supplier.factoryName || "-"
 
                     td
                       ul
-                        each item in supplier.items
-                          li
-                            = item.itemName + " (" + item.quantity + ")"
+                        // FIX: prevent crash when items is undefined
+                        if supplier.items && supplier.items.length
+                          each item in supplier.items
+                            li
+                              = item.itemName + " (" + item.quantity + ")"
+                        else
+                          li= supplier.itemName + " (" + supplier.quantity + ")"
 
-                    td strong= supplier.totalQuantity || 0
+                    td
+                      strong= supplier.totalQuantity || supplier.quantity || 0
 
-                    // FIXED LINE (THIS WAS THE ERROR)
                     td= supplier.date ? new Date(supplier.date).toDateString() : "-"
 
-                    td strong UGX #{Number(supplier.totalAmount || 0).toLocaleString()}
+                    td
+                      strong UGX #{Number(supplier.totalAmount || 0).toLocaleString()}
 
                     td
                       if supplier.status === "PAID"

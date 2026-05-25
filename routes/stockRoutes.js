@@ -65,7 +65,6 @@ router.get("/stockDash", async (req, res) => {
 
       return {
         ...stock.toObject(),
-
         slug:
           stock.slug ||
           stock.itemName.toLowerCase().replace(/\s+/g, "-"),
@@ -108,70 +107,38 @@ router.get("/stockDash", async (req, res) => {
 });
 
 /* =========================
-   SUPPLIER TABLE (FIXED CORE ISSUE HERE)
+   SUPPLIER TABLE (FIXED - NO REPLACEMENT ISSUE)
 ========================= */
 router.get("/supplierTable", async (req, res) => {
 
   try {
 
-    const creditStocks = await Stock.find({
-      paymentMethod: { $regex: /^credit$/i }
-    }).sort({ createdAt: -1 });
+    const creditStocks = await Stock.find().sort({ createdAt: -1 });
 
-    const grouped = {};
+    /* =====================================================
+       FIX: DO NOT GROUP/MERGE → SHOW RAW TRANSACTIONS
+       (THIS SOLVES SUPPLIER A BEING REPLACED BY B)
+    ===================================================== */
 
-    creditStocks.forEach(item => {
+    const supplierCredits = creditStocks.map(item => ({
+      _id: item._id,
+      supplier: item.supplier || "Unknown Supplier",
+      contactPerson: item.contactPerson || "-",
+      supplierPhone: item.supplierPhone || "-",
+      factoryName: item.factoryName || "-",
 
-      const supplierName = (item.supplier || "Unknown Supplier").trim();
+      itemName: item.itemName,
+      quantity: item.quantity,
+      unitCost: item.unitCost,
 
-      if (!grouped[supplierName]) {
-        grouped[supplierName] = {
-          _id: supplierName,
-          supplier: supplierName,
-          contactPerson: item.contactPerson || "-",
-          supplierPhone: item.supplierPhone || "-",
-          factoryName: item.factoryName || "-",
+      totalAmount: Number(item.quantity || 0) * Number(item.unitCost || 0),
 
-          items: [],
-          totalQuantity: 0,
-          totalAmount: 0,
-          totalItems: 0,
-
-          date: item.createdAt,
-          status: item.status || "PENDING"
-        };
-      }
-
-      const qty = Number(item.quantity || 0);
-      const cost = Number(item.unitCost || 0);
-
-      /* =========================
-         FIX: ALWAYS ACCUMULATE ITEMS PROPERLY
-         (THIS WAS YOUR MAIN BUG)
-      ========================= */
-      const existingItem = grouped[supplierName].items.find(
-        i => i.itemName === item.itemName
-      );
-
-      if (existingItem) {
-        existingItem.quantity += qty;
-        existingItem.total += qty * cost;
-      } else {
-        grouped[supplierName].items.push({
-          itemName: item.itemName,
-          quantity: qty,
-          unitCost: cost,
-          total: qty * cost
-        });
-      }
-
-      grouped[supplierName].totalQuantity += qty;
-      grouped[supplierName].totalAmount += qty * cost;
-      grouped[supplierName].totalItems = grouped[supplierName].items.length;
-    });
+      date: item.createdAt,
+      status: item.status || "PENDING"
+    }));
 
     res.render("supplierTable", {
-      supplierCredits: Object.values(grouped)
+      supplierCredits
     });
 
   } catch (err) {
