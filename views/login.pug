@@ -13,19 +13,22 @@ html
 
       section.login-card
 
+        // ================= BACKEND ERROR DISPLAY =================
+        if error
+          .error-box
+            p= error
+
         h2 Staff Login
         p Welcome back to the portal
 
         form(action="/login", method="post")
 
-
           .form-group
             label Email Address
             input(
-              type="email"
+              type="text"
               name="email"
               placeholder="name@company.com"
-              required
             )
 
           .form-group
@@ -34,11 +37,10 @@ html
               type="password"
               name="password"
               placeholder="••••••••"
-              required
             )
 
           button.btn-login(type="submit")
-            Sign SignIn
+            | Sign In
 
         //- a.forgot-password(href="/secureAcc") Change Password
 

@@ -23,6 +23,23 @@ router.get("/login", (req, res) => {
 });
 
 
+router.post(
+  "/login",
+  passport.authenticate("local", { failureRedirect: "/login" }),
+  (req, res) => {
+    if (req.user.role === "admin") {
+      res.redirect("/adminDash");
+    } else if (req.user.role === "sales-attendant") {
+      res.redirect("/salesDash");
+    } else if (req.user.role === "stock-manager") {
+      res.redirect("/StockDash");
+    } else {
+      res.redirect("/login");
+    }
+  },
+);
+
+
 // 📝 Signup GET
 router.get("/SignUpform", (req, res) => {
   res.render("SignUp");

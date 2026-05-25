@@ -9,6 +9,12 @@ link(rel="stylesheet", href="/css/signup.css")
     NYONDO GENERAL HARDWARE LTD
     
   section.signup-card
+
+    // ================= BACKEND ERROR DISPLAY (ADDED) =================
+    if error
+      .error-box
+        p= error
+
     h2 Staff Signup
     p Enter your details to register
 
@@ -56,6 +62,6 @@ link(rel="stylesheet", href="/css/signup.css")
       button.btn-submit(type="submit") Create Account
 
     //- .footer-text
-    //-   | 
-    //-   Already registered? 
+    //-   |
+    //-   Already registered?
     //-   a(href="/login") Login Here
