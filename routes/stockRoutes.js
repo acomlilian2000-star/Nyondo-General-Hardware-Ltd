@@ -12,7 +12,9 @@ const multer = require("multer");
 ========================= */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "public/uploads"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + "-" + file.originalname),
 });
 
 const upload = multer({ storage });
@@ -21,7 +23,10 @@ const upload = multer({ storage });
    AUTH
 ========================= */
 function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated && req.isAuthenticated()) return next();
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
+
   return res.status(401).send("Login required");
 }
 
@@ -30,6 +35,7 @@ function isLoggedIn(req, res, next) {
 ========================= */
 router.get("/stockDash", async (req, res) => {
   try {
+
     const allStocks = await Stock.find()
       .populate("Attendant")
       .sort({ createdAt: -1 });
@@ -38,6 +44,7 @@ router.get("/stockDash", async (req, res) => {
     const deposits = await Deposit.find();
 
     const liveStocks = allStocks.map(stock => {
+
       let soldQty = 0;
 
       sales.forEach(sale => {
@@ -58,10 +65,14 @@ router.get("/stockDash", async (req, res) => {
 
       return {
         ...stock.toObject(),
-        slug: stock.slug || stock.itemName.toLowerCase().replace(/\s+/g, "-"),
+
+        slug:
+          stock.slug ||
+          stock.itemName.toLowerCase().replace(/\s+/g, "-"),
+
         currentQuantity: Math.max(
           0,
-          (stock.quantity ?? 0) - soldQty
+          (stock.quantity || 0) - soldQty
         )
       };
     });
@@ -72,7 +83,6 @@ router.get("/stockDash", async (req, res) => {
       return sum + qty * cost;
     }, 0);
 
-    /* 🔥 FIX: CASE INSENSITIVE MATCH */
     const supplierCredits = await Stock.find({
       paymentMethod: { $regex: /^credit$/i }
     });
@@ -98,11 +108,12 @@ router.get("/stockDash", async (req, res) => {
 });
 
 /* =========================
-   SUPPLIER TABLE (FIXED)
+   SUPPLIER TABLE (FIXED CORE ISSUE HERE)
 ========================= */
 router.get("/supplierTable", async (req, res) => {
+
   try {
-    /* 🔥 FIX: CASE INSENSITIVE QUERY */
+
     const creditStocks = await Stock.find({
       paymentMethod: { $regex: /^credit$/i }
     }).sort({ createdAt: -1 });
@@ -110,26 +121,53 @@ router.get("/supplierTable", async (req, res) => {
     const grouped = {};
 
     creditStocks.forEach(item => {
-      const name = item.supplier || "Unknown Supplier";
 
-      if (!grouped[name]) {
-        grouped[name] = {
-          _id: name,
-          supplier: name,
+      const supplierName = (item.supplier || "Unknown Supplier").trim();
+
+      if (!grouped[supplierName]) {
+        grouped[supplierName] = {
+          _id: supplierName,
+          supplier: supplierName,
           contactPerson: item.contactPerson || "-",
           supplierPhone: item.supplierPhone || "-",
           factoryName: item.factoryName || "-",
+
           items: [],
           totalQuantity: 0,
           totalAmount: 0,
+          totalItems: 0,
+
           date: item.createdAt,
-          status: "PENDING"
+          status: item.status || "PENDING"
         };
       }
 
-      grouped[name].items.push(item.itemName);
-      grouped[name].totalQuantity += Number(item.quantity || 0);
-      grouped[name].totalAmount += Number(item.quantity || 0) * Number(item.unitCost || 0);
+      const qty = Number(item.quantity || 0);
+      const cost = Number(item.unitCost || 0);
+
+      /* =========================
+         FIX: ALWAYS ACCUMULATE ITEMS PROPERLY
+         (THIS WAS YOUR MAIN BUG)
+      ========================= */
+      const existingItem = grouped[supplierName].items.find(
+        i => i.itemName === item.itemName
+      );
+
+      if (existingItem) {
+        existingItem.quantity += qty;
+        existingItem.total += qty * cost;
+      } else {
+        grouped[supplierName].items.push({
+          itemName: item.itemName,
+          quantity: qty,
+          unitCost: cost,
+          total: qty * cost
+        });
+      }
+
+      grouped[supplierName].totalQuantity += qty;
+      grouped[supplierName].totalAmount += qty * cost;
+      grouped[supplierName].totalItems = grouped[supplierName].items.length;
     });
 
     res.render("supplierTable", {
@@ -145,18 +183,21 @@ router.get("/supplierTable", async (req, res) => {
 });
 
 /* =========================
-   MARK AS PAID (FIXED)
+   MARK SUPPLIER AS PAID
 ========================= */
 router.get("/supplier/mark-paid/:id", async (req, res) => {
   try {
+
     await Stock.updateMany(
       {
         supplier: req.params.id,
         paymentMethod: { $regex: /^credit$/i }
       },
       {
-        status: "PAID",
-        paymentMethod: "cash"
+        $set: {
+          status: "PAID",
+          paymentMethod: "cash"
+        }
       }
     );
 
@@ -179,7 +220,9 @@ router.get("/stockform", isLoggedIn, (req, res) => {
    CREATE STOCK
 ========================= */
 router.post("/stock", isLoggedIn, upload.array("productImage"), async (req, res) => {
+
   try {
+
     const {
       itemName,
       quantity,
@@ -193,7 +236,7 @@ router.post("/stock", isLoggedIn, upload.array("productImage"), async (req, res)
       category
     } = req.body;
 
-    const toArr = v => (Array.isArray(v) ? v : [v]);
+    const toArr = v => Array.isArray(v) ? v : [v];
 
     const items = toArr(itemName);
     const qtys = toArr(quantity);
@@ -204,37 +247,73 @@ router.post("/stock", isLoggedIn, upload.array("productImage"), async (req, res)
 
     const images = req.files || [];
 
-    const stocks = items.map((_, i) => {
+    for (let i = 0; i < items.length; i++) {
+
+      const productName = items[i]?.trim();
+      if (!productName) continue;
+
       const qty = Number(qtys[i]) || 0;
       const cost = Number(costs[i]) || 0;
+      const price = Number(prices[i]) || 0;
 
-      const method = (methods[i] || "cash").toLowerCase();
+      const method = (methods[i] || "cash").toLowerCase().trim();
 
-      return {
-        itemName: items[i],
-        slug: items[i].toLowerCase().replace(/\s+/g, "-"),
-        category: cats[i] || "General",
+      const existingStock = await Stock.findOne({ itemName: productName });
 
-        quantity: qty,
-        stockInQuantity: qty,
+      if (existingStock) {
 
-        unitCost: cost,
-        unitPrice: Number(prices[i]) || 0,
+        existingStock.quantity += qty;
+        existingStock.stockInQuantity += qty;
+        existingStock.originalQuantity += qty;
 
-        supplier: (supplier || "Unknown").trim(),
-        contactPerson: contactPerson || "-",
-        supplierPhone: supplierPhone || "-",
-        factoryName: factoryName || "-",
+        existingStock.supplier = supplier || existingStock.supplier;
+        existingStock.contactPerson = contactPerson || existingStock.contactPerson;
+        existingStock.supplierPhone = supplierPhone || existingStock.supplierPhone;
+        existingStock.factoryName = factoryName || existingStock.factoryName;
 
-        paymentMethod: method,
-        status: method === "credit" ? "PENDING" : "PAID",
+        existingStock.unitCost = cost;
+        existingStock.unitPrice = price;
+        existingStock.category = cats[i] || existingStock.category;
 
-        productImage: images[i] ? images[i].filename : "",
-        createdAt: new Date()
-      };
-    });
+        existingStock.paymentMethod = method;
+        existingStock.status = method === "credit" ? "PENDING" : "PAID";
 
-    await Stock.insertMany(stocks);
+        if (images[i]) {
+          existingStock.productImage = images[i].filename;
+        }
+
+        await existingStock.save();
+
+      } else {
+
+        await Stock.create({
+          itemName: productName,
+          slug: productName.toLowerCase().replace(/\s+/g, "-"),
+          category: cats[i] || "General",
+
+          quantity: qty,
+          stockInQuantity: qty,
+          originalQuantity: qty,
+
+          unitCost: cost,
+          unitPrice: price,
+
+          supplier: (supplier || "Unknown").trim(),
+          contactPerson: contactPerson || "-",
+          supplierPhone: supplierPhone || "-",
+          factoryName: factoryName || "-",
+
+          paymentMethod: method,
+          status: method === "credit" ? "PENDING" : "PAID",
+
+          productImage: images[i] ? images[i].filename : "",
+          Attendant: req.user?._id || null,
+
+          createdAt: new Date()
+        });
+      }
+    }
+
     res.redirect("/stockDash");
 
   } catch (err) {

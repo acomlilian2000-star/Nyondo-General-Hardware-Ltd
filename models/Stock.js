@@ -9,6 +9,7 @@ const StockSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
+      unique: true, // PREVENT DUPLICATE PRODUCTS
     },
 
     category: {
@@ -119,14 +120,20 @@ StockSchema.pre("save", function (next) {
   const cost = Number(this.unitCost || 0);
   const price = Number(this.unitPrice || 0);
 
+  // AUTO CALCULATIONS
   this.stockCost = qty * cost;
   this.total = qty * price;
 
+  // INITIAL STOCK TRACKING
   if (!this.stockInQuantity) {
     this.stockInQuantity = qty;
   }
 
-  next();
+  if (!this.originalQuantity) {
+    this.originalQuantity = qty;
+  }
+
+  // next();
 });
 
 /* =========================
@@ -165,5 +172,16 @@ StockSchema.pre("findOneAndUpdate", function (next) {
 
   next();
 });
+
+
+/* =========================
+   INDEXES
+========================= */
+
+// FAST CATEGORY SEARCH
+StockSchema.index({ category: 1 });
+
+// FAST SUPPLIER SEARCH
+StockSchema.index({ supplier: 1 });
 
 module.exports = mongoose.model("Stock", StockSchema);

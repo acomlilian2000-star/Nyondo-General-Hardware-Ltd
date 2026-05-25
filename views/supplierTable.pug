@@ -12,6 +12,7 @@ html
     nav.navbar
       .brand-container
         .logo-placeholder N
+
         .nav-brand-text
           strong NYONDO GENERAL HARDWARE
           span Supplier Management
@@ -52,26 +53,32 @@ html
                   tr
 
                     td strong= supplier.supplier
-                    td= supplier.contactPerson
-                    td | +256 #{supplier.supplierPhone}
-                    td= supplier.factoryName
+                    td= supplier.contactPerson || "-"
+                    td= supplier.supplierPhone ? `+256 ${supplier.supplierPhone}` : "-"
+                    td= supplier.factoryName || "-"
 
                     td
                       ul
                         each item in supplier.items
-                          li= item
+                          li
+                            = item.itemName + " (" + item.quantity + ")"
 
                     td strong= supplier.totalQuantity || 0
+
+                    // FIXED LINE (THIS WAS THE ERROR)
                     td= supplier.date ? new Date(supplier.date).toDateString() : "-"
 
                     td strong UGX #{Number(supplier.totalAmount || 0).toLocaleString()}
 
                     td
-                      span.status-pending PENDING
+                      if supplier.status === "PAID"
+                        span.status-ok PAID
+                      else
+                        span.status-pending PENDING
 
                     td
                       a.btn.btn-green(
-                        href=`/supplier/mark-paid/${supplier._id || supplier.supplier}`
+                        href=`/supplier/mark-paid/${supplier.supplier}`
                         onclick="return confirm('Mark supplier as PAID?')"
                       ) Mark Paid
 

@@ -48,16 +48,15 @@ html
 
       .container
 
-        // ================= TOTAL STOCK VALUE (ONLY STOCK ADDED) =================
+        // ================= TOTAL STOCK VALUE =================
         -
           let totalStockValue = 0;
 
           if (liveStocks && liveStocks.length > 0) {
             liveStocks.forEach(item => {
-              const stockInQty = Number(item.stockInQuantity || 0);
+              const qty = Number(item.stockInQuantity || item.quantity || 0);
               const cost = Number(item.unitCost || 0);
-
-              totalStockValue += stockInQty * cost;
+              totalStockValue += qty * cost;
             });
           }
 
@@ -66,15 +65,15 @@ html
 
           .stat-card
             h3 Total Stock Items
-            p 11
+            p= liveStocks ? liveStocks.length : 0
 
           .stat-card
             h3 Low Stock Alerts
-            p #{lowStockCount || 0}
+            p= lowStockCount || 0
 
           .stat-card
             h3 Supplier Credits
-            p #{supplierCredits ? supplierCredits.length : 0}
+            p= supplierCredits ? supplierCredits.length : 0
 
           .stat-card
             h3 Total Stock Value
@@ -117,13 +116,24 @@ html
                 each product in products
 
                   -
-                    const stockItem = liveStocks
-                      ? liveStocks.find(i => i.slug === product.key)
-                      : null;
+                    const stockItem =
+                      liveStocks
+                        ? liveStocks.find(i =>
+                            (i.slug || "") === product.key
+                          )
+                        : null;
 
-                    const qty = stockItem ? Number(stockItem.currentQuantity || 0) : 0;
-                    const buy = stockItem ? Number(stockItem.unitCost || 0) : 0;
-                    const sell = stockItem ? Number(stockItem.unitPrice || 0) : 0;
+                    const qty = stockItem
+                      ? Number(stockItem.currentQuantity || 0)
+                      : 0;
+
+                    const buy = stockItem
+                      ? Number(stockItem.unitCost || 0)
+                      : 0;
+
+                    const sell = stockItem
+                      ? Number(stockItem.unitPrice || 0)
+                      : 0;
 
                   tr
 
@@ -148,10 +158,13 @@ html
                         span.status-ok AVAILABLE
 
                     td
-                      a.btn.btn-blue(
-                        href=`/stock/update/${product.key}`
-                      ) Update
-
+                      if stockItem
+                        a.btn.btn-blue(
+                          href=`/stock/update/${stockItem._id}`
+                        ) Update
+                      else
+                        span -
+                        
 
     script.
       function updateClock() {
