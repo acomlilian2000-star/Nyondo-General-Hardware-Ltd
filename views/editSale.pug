@@ -11,6 +11,7 @@ html
 
       form(action=`/sales/edit/${sale._id}` method="POST")
 
+        // ================= CUSTOMER INFO =================
         .form-group
           label Customer Name
           input(type="text" name="customerName" value=sale.customerName)
@@ -23,18 +24,41 @@ html
           label Address
           input(type="text" name="customerAddress" value=sale.customerAddress)
 
-        .form-group
-          label Specification
-          input(type="text" name="specification" value=sale.specification)
+        // ================= MULTI ITEMS (FIXED PART) =================
+        h3 Items
 
-        .form-group
-          label Quantity
-          input(type="number" name="quantity" value=sale.quantity)
+        #itemsContainer
 
-        .form-group
-          label Unit Price
-          input(type="number" name="unitPrice" value=sale.unitPrice)
+          if sale.items && sale.items.length
 
+            each item, i in sale.items
+
+              .item-group
+
+                .form-group
+                  label Product
+
+                  select(name="product[]" required)
+                    option(value=item.product._id selected)
+                      | #{item.product.itemName}
+
+                .form-group
+                  label Specification
+                  input(type="text" name="specification[]" value=item.specification)
+
+                .form-group
+                  label Unit Price
+                  input(type="number" name="unitPrice[]" value=item.unitPrice)
+
+                .form-group
+                  label Quantity
+                  input(type="number" name="quantity[]" value=item.quantity)
+
+          else
+
+            p No items found
+
+        // ================= DELIVERY =================
         .form-group
           label Distance
           input(type="number" name="distance" value=sale.distance)
@@ -43,6 +67,7 @@ html
           label Transport Cost
           input(type="number" name="transportCost" value=sale.transportCost)
 
+        // ================= TOTALS =================
         .form-group
           label Sub Total
           input(type="number" name="subTotal" value=sale.subTotal readonly)
@@ -51,6 +76,7 @@ html
           label Grand Total
           input(type="number" name="grandTotal" value=sale.grandTotal readonly)
 
+        // ================= PAYMENT =================
         .form-group
           label Payment Method
           select(name="paymentMethod")

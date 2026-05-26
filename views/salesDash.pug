@@ -47,15 +47,16 @@ html
 
           .stat-card
             h3 My Sales Today
-            p UGX #{totalSalesToday}
+            p UGX #{totalSalesToday || 0}
 
           .stat-card
             h3 Total Revenue
             p UGX #{(dbSales || []).reduce((a, b) => a + (b.grandTotal || 0), 0)}
 
+          // ================= FIXED LOW STOCK ALERT =================
           .stat-card
             h3 Low Stock Alert
-            p #{lowStockCount || 0}
+            p #{typeof lowStockCount !== 'undefined' ? lowStockCount : 0}
 
 
         // ================= SALES TABLE =================
@@ -83,9 +84,10 @@ html
                 th Actions
 
             tbody
+
               if !dbSales || dbSales.length === 0
                 tr
-                  td(colspan="15") No sales recorded yet
+                  td(colspan="16") No sales recorded yet
 
               else
                 each sale in dbSales
@@ -95,13 +97,10 @@ html
                     each item in sale.items
                       tr
                         td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
-
                         td= item.product && item.product.itemName ? item.product.itemName : 'Deleted Product'
-
                         td= item.specification || '-'
                         td= item.unitPrice || 0
                         td= item.quantity || 0
-
                         td= sale.customerName || '-'
                         td= sale.phoneNumber || '-'
                         td= sale.customerAddress || '-'
@@ -114,19 +113,22 @@ html
 
                         td
                           a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+
                           a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-                          a.btn.btn-green(href=`/sales/mark-updated/${sale._id}` onclick="return confirm('Confirm update?')") Update
+
+                          // ================= FIXED UPDATE BUTTON =================
+                          a.btn.btn-green(href=`/sales/edit/${sale._id}`) Update
+
+                          // ================= RECEIPT BUTTON (ADDED) =================
+                          a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
 
                   else
                     tr
                       td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
-
                       td= sale.product && sale.product.itemName ? sale.product.itemName : 'Deleted Product'
-
                       td= sale.specification || '-'
                       td= sale.unitPrice || 0
                       td= sale.quantity || 0
-
                       td= sale.customerName || '-'
                       td= sale.phoneNumber || '-'
                       td= sale.customerAddress || '-'
@@ -140,7 +142,8 @@ html
                       td
                         a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
                         a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-                        a.btn.btn-green(href=`/sales/mark-updated/${sale._id}` onclick="return confirm('Confirm update?')") Update
+                        //- a.btn.btn-green(href=`/sales/edit/${sale._id}`) Update
+                        a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
 
 
     script.

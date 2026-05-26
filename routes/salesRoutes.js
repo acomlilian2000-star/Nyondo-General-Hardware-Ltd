@@ -10,26 +10,48 @@ function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated || !req.isAuthenticated()) {
     return res.redirect("/login");
   }
-
   next();
 }
 
 /* =========================
-   SALES DASHBOARD
+   SHARED STOCK CALC (FIXED)
+========================= */
+async function getLiveStock() {
+  const stocks = await Stock.find();
+  const sales = await Sales.find();
+
+  return stocks.map((stock) => {
+    let soldQty = 0;
+
+    sales.forEach((sale) => {
+      sale.items?.forEach((i) => {
+        if (i.product?.toString() === stock._id.toString()) {
+          soldQty += Number(i.quantity || 0);
+        }
+      });
+    });
+
+    return {
+      ...stock.toObject(),
+      currentQuantity: Math.max(0, Number(stock.quantity || 0) - soldQty),
+    };
+  });
+}
+
+/* =========================
+   SALES DASHBOARD (CORRECTED)
 ========================= */
 router.get("/salesDash", isLoggedIn, async (req, res) => {
   try {
     let filter = {};
 
+    // Apply month filter for sales list if present
     if (req.query.month) {
       const startDate = new Date(req.query.month + "-01");
       const endDate = new Date(startDate);
       endDate.setMonth(endDate.getMonth() + 1);
 
-      filter.createdAt = {
-        $gte: startDate,
-        $lt: endDate,
-      };
+      filter.createdAt = { $gte: startDate, $lt: endDate };
     }
 
     const dbSales = await Sales.find(filter)
@@ -38,7 +60,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       .sort({ createdAt: -1 });
 
     /* =========================
-       TODAY SALES
+       TOTALS
     ========================= */
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -54,21 +76,23 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
     let totalSalesAllTime = 0;
     let monthlyTotal = 0;
 
-    todaySales.forEach((sale) => {
-      totalSalesToday += Number(sale.grandTotal || 0);
-    });
+    todaySales.forEach((s) => (totalSalesToday += Number(s.grandTotal || 0)));
 
-    dbSales.forEach((sale) => {
-      totalSalesAllTime += Number(sale.grandTotal || 0);
-      monthlyTotal += Number(sale.grandTotal || 0);
+    dbSales.forEach((s) => {
+      totalSalesAllTime += Number(s.grandTotal || 0);
+      monthlyTotal += Number(s.grandTotal || 0);
     });
 
     /* =========================
-       LOW STOCK
+       LOW STOCK (FIX LOGIC)
     ========================= */
-    const lowStockItems = await Stock.find({
-      quantity: { $lte: 5 },
-    });
+    // 1. Get the actual live stock tracking array
+    const liveStock = await getLiveStock();
+
+    // 2. Filter live items where current calculated stock is between 0 and 5
+    const lowStockItems = liveStock.filter(
+      (item) => item.currentQuantity >= 0 && item.currentQuantity <= 5
+    );
 
     res.render("salesDash", {
       dbSales,
@@ -77,7 +101,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       monthlyTotal,
       selectedMonth: req.query.month || "",
       lowStockCount: lowStockItems.length,
-      lowStockItems,
+      lowStockItems, // This now passes the modified items containing 'currentQuantity'
     });
   } catch (err) {
     console.error(err);
@@ -100,10 +124,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
 router.get("/salesform", isLoggedIn, async (req, res) => {
   try {
     const items = await Stock.find({ quantity: { $gt: 0 } });
-
-    res.render("sales", {
-      products: items,
-    });
+    res.render("sales", { products: items });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
@@ -111,13 +132,11 @@ router.get("/salesform", isLoggedIn, async (req, res) => {
 });
 
 /* =========================
-   CREATE SALE (CASH ONLY FIXED)
+   CREATE SALE
 ========================= */
 router.post("/Sales", isLoggedIn, async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).send("User not logged in");
-    }
+    if (!req.user) return res.status(401).send("User not logged in");
 
     let {
       date,
@@ -131,17 +150,12 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
       customerType,
       distance,
       transportCost,
-      paymentMethod,
     } = req.body;
 
     product = Array.isArray(product) ? product : [product];
     specification = Array.isArray(specification) ? specification : [specification];
     quantity = Array.isArray(quantity) ? quantity : [quantity];
     unitPrice = Array.isArray(unitPrice) ? unitPrice : [unitPrice];
-
-    if (!customerName || !product.length) {
-      return res.status(400).send("Missing required fields");
-    }
 
     let items = [];
     let total = 0;
@@ -153,16 +167,15 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
       if (!product[i] || qty <= 0 || price <= 0) continue;
 
       const stockItem = await Stock.findById(product[i]);
-
-      if (!stockItem) {
-        return res.status(404).send("Product not found");
-      }
+      if (!stockItem) return res.status(404).send("Product not found");
 
       if (stockItem.quantity < qty) {
-        return res.status(400).send(`Not enough stock for ${stockItem.itemName}`);
+        return res
+          .status(400)
+          .send(`Not enough stock for ${stockItem.itemName}`);
       }
 
-      stockItem.quantity -= qty;
+      stockItem.quantity = Number(stockItem.quantity) - qty;
       await stockItem.save();
 
       const subTotal = qty * price;
@@ -179,12 +192,6 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
     }
 
     const transport = Number(transportCost || 0);
-    const grandTotal = total + transport;
-
-    /* =========================
-       FORCE CASH ONLY (IMPORTANT FIX)
-    ========================= */
-    const finalPaymentMethod = "cash";
 
     const newSale = new Sales({
       date: date || new Date(),
@@ -194,18 +201,18 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
       customerType: customerType || "individual",
       items,
       subTotal: total,
-      grandTotal,
+      grandTotal: total + transport,
       transportCost: transport,
       distance: Number(distance || 0),
-      paymentMethod: finalPaymentMethod,
-      Attendant: req.user ? req.user._id : null,
+      paymentMethod: "cash",
+      Attendant: req.user._id,
     });
 
     await newSale.save();
 
-    return res.redirect(`/sales/receipt/${newSale._id}`);
+    return res.redirect("/salesDash");
   } catch (error) {
-    console.error("Sales Error:", error);
+    console.error(error);
     return res.status(500).send("Error saving Sales: " + error.message);
   }
 });
@@ -228,30 +235,42 @@ router.get("/sales/edit/:id", isLoggedIn, async (req, res) => {
 });
 
 /* =========================
-   UPDATE SALE (FORCED CASH)
+   UPDATE SALE (FULL FIX)
 ========================= */
 router.post("/sales/edit/:id", isLoggedIn, async (req, res) => {
   try {
-    let {
-      customerName,
-      phoneNumber,
-      customerAddress,
-      customerType,
-      distance,
-      transportCost,
-    } = req.body;
+    const sale = await Sales.findById(req.params.id);
+    if (!sale) return res.status(404).send("Sale not found");
 
-    await Sales.findByIdAndUpdate(req.params.id, {
-      customerName,
-      phoneNumber,
-      customerAddress,
-      customerType,
-      distance: Number(distance || 0),
-      transportCost: Number(transportCost || 0),
-      paymentMethod: "cash",
-    });
+    sale.customerName = req.body.customerName;
+    sale.phoneNumber = req.body.phoneNumber;
+    sale.customerAddress = req.body.customerAddress;
+    sale.customerType = req.body.customerType;
+    sale.distance = Number(req.body.distance || 0);
+    sale.transportCost = Number(req.body.transportCost || 0);
 
-    res.redirect("/salesDash");
+    if (req.body.quantity) {
+      let total = 0;
+
+      sale.items.forEach((item, i) => {
+        const qty = Number(req.body.quantity[i] || item.quantity);
+        const price = Number(req.body.unitPrice[i] || item.unitPrice);
+
+        item.quantity = qty;
+        item.unitPrice = price;
+        item.specification = req.body.specification?.[i] || item.specification;
+
+        item.subTotal = qty * price;
+        total += item.subTotal;
+      });
+
+      sale.subTotal = total;
+      sale.grandTotal = total + sale.transportCost;
+    }
+
+    await sale.save();
+
+    return res.redirect("/salesDash");
   } catch (error) {
     console.error(error);
     res.status(500).send("Error updating sale");

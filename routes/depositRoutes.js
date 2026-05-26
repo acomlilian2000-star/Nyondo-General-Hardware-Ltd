@@ -46,7 +46,9 @@ router.post("/deposit", async (req, res) => {
       return res.status(401).send("User not logged in");
     }
 
-    let products = Array.isArray(data.product) ? data.product : [data.product];
+    let products = Array.isArray(data.product)
+      ? data.product
+      : [data.product];
 
     let specifications = Array.isArray(data.specification)
       ? data.specification
@@ -61,6 +63,7 @@ router.post("/deposit", async (req, res) => {
     let total = 0;
 
     for (let i = 0; i < products.length; i++) {
+
       const product = await Stock.findById(products[i]);
 
       const qty = Number(quantities[i]) || 0;
@@ -68,7 +71,9 @@ router.post("/deposit", async (req, res) => {
       if (!product || qty <= 0) continue;
 
       if (product.quantity < qty) {
-        return res.status(400).send(`Not enough stock for ${product.itemName}`);
+        return res
+          .status(400)
+          .send(`Not enough stock for ${product.itemName}`);
       }
 
       /* =========================
@@ -136,7 +141,10 @@ router.post("/deposit", async (req, res) => {
 
       paymentMethod: data.paymentMethod || "Cash",
 
-      paymentStatus: amountPaid >= totalToPay ? "Finished" : "Pending",
+      paymentStatus:
+        amountPaid >= totalToPay
+          ? "Finished"
+          : "Pending",
     });
 
     const saved = await deposit.save();
@@ -145,6 +153,7 @@ router.post("/deposit", async (req, res) => {
        REDIRECT TO ADMIN DASH
     ========================= */
     return res.redirect("/adminDash");
+
   } catch (err) {
     console.log(err);
 
@@ -157,6 +166,7 @@ router.post("/deposit", async (req, res) => {
 ========================= */
 router.get("/deposit/receipt/:id", async (req, res) => {
   try {
+
     const deposit = await Deposit.findById(req.params.id)
       .populate("attendant", "fullName")
       .populate("items.product", "itemName unitPrice");
@@ -170,6 +180,7 @@ router.get("/deposit/receipt/:id", async (req, res) => {
       items: deposit.items || [],
       payment: deposit,
     });
+
   } catch (err) {
     console.log(err);
 
@@ -182,6 +193,7 @@ router.get("/deposit/receipt/:id", async (req, res) => {
 ========================= */
 router.get("/tempReceipt/:id", async (req, res) => {
   try {
+
     const deposit = await Deposit.findById(req.params.id)
       .populate("attendant", "fullName")
       .populate("items.product", "itemName unitPrice");
@@ -195,6 +207,7 @@ router.get("/tempReceipt/:id", async (req, res) => {
       items: deposit.items || [],
       payment: deposit,
     });
+
   } catch (err) {
     console.log(err);
 
@@ -207,6 +220,7 @@ router.get("/tempReceipt/:id", async (req, res) => {
 ========================= */
 router.get("/deposit/edit/:id", async (req, res) => {
   try {
+
     const deposit = await Deposit.findById(req.params.id);
 
     if (!deposit) {
@@ -216,6 +230,7 @@ router.get("/deposit/edit/:id", async (req, res) => {
     res.render("editDeposit", {
       deposit,
     });
+
   } catch (err) {
     console.log(err);
 
@@ -228,6 +243,7 @@ router.get("/deposit/edit/:id", async (req, res) => {
 ========================= */
 router.post("/deposit/update/:id", async (req, res) => {
   try {
+
     const deposit = await Deposit.findById(req.params.id);
 
     if (!deposit) {
@@ -238,22 +254,27 @@ router.post("/deposit/update/:id", async (req, res) => {
 
     deposit.amountPaid += newPayment;
 
-    deposit.balance = deposit.totalToPay - deposit.amountPaid;
+    deposit.balance =
+      deposit.totalToPay - deposit.amountPaid;
 
     /* =========================
        AUTO COMPLETE PAYMENT
     ========================= */
     if (deposit.balance <= 0) {
+
       deposit.balance = 0;
 
       deposit.paymentStatus = "Finished";
+
     } else {
+
       deposit.paymentStatus = "Pending";
     }
 
     await deposit.save();
 
     return res.redirect("/adminDash");
+
   } catch (err) {
     console.log(err);
 
@@ -266,6 +287,7 @@ router.post("/deposit/update/:id", async (req, res) => {
 ========================= */
 router.post("/deposit/finish/:id", async (req, res) => {
   try {
+
     const deposit = await Deposit.findById(req.params.id);
 
     if (!deposit) {
@@ -278,7 +300,10 @@ router.post("/deposit/finish/:id", async (req, res) => {
 
     await deposit.save();
 
-    return res.redirect("/deposit/receipt/" + deposit._id);
+    return res.redirect(
+      "/deposit/receipt/" + deposit._id
+    );
+
   } catch (err) {
     console.log(err);
 
@@ -290,55 +315,147 @@ router.post("/deposit/finish/:id", async (req, res) => {
    ADMIN DASHBOARD
 ========================= */
 router.get("/adminDash", async (req, res) => {
+
   try {
+
+    /* =========================
+       GET DATA
+    ========================= */
     const stocks = await Stock.find();
 
     const sales = await Sales.find();
 
     const deposits = await Deposit.find();
 
-    const normalize = (val) => (val || "").toString().toLowerCase();
+    const normalize = (val) =>
+      (val || "").toString().toLowerCase();
 
     /* =========================
        CASH SALES ONLY
     ========================= */
     const totalCashSales = sales
-      .filter((s) => normalize(s.paymentMethod) === "cash")
-      .reduce((sum, s) => sum + Number(s.grandTotal || 0), 0);
+      .filter(
+        (s) => normalize(s.paymentMethod) === "cash"
+      )
+      .reduce(
+        (sum, s) =>
+          sum + Number(s.grandTotal || 0),
+        0
+      );
 
     /* =========================
        CREDIT / DEPOSITS
     ========================= */
     const totalCreditSales = deposits.reduce(
-      (sum, d) => sum + Number(d.totalToPay || 0),
-      0,
+      (sum, d) =>
+        sum + Number(d.totalToPay || 0),
+      0
     );
 
     /* =========================
+       SAME LOGIC AS STOCK DASH
        TOTAL STOCK VALUE
     ========================= */
     const totalStockValue = stocks.reduce(
-      (sum, s) => sum + Number(s.quantity || 0) * Number(s.unitCost || 0),
-      0,
+      (sum, s) => {
+
+        const qty = Number(
+          s.stockInQuantity ||
+          s.quantity ||
+          0
+        );
+
+        const cost = Number(
+          s.unitCost || 0
+        );
+
+        return sum + (qty * cost);
+
+      },
+      0
     );
 
     /* =========================
-       LOW STOCK
+       SAME LOGIC AS STOCK DASH
+       LOW STOCK ALERTS
     ========================= */
-    const lowStockCount = await Stock.countDocuments({
-      quantity: { $gt: 0, $lte: 5 },
+    const liveStocks = stocks.map(stock => {
+
+      let soldQty = 0;
+
+      /* =========================
+         SALES REDUCTION
+      ========================= */
+      sales.forEach(sale => {
+
+        sale.items?.forEach(item => {
+
+          if (
+            item.product &&
+            item.product.toString() ===
+            stock._id.toString()
+          ) {
+            soldQty += Number(
+              item.quantity || 0
+            );
+          }
+
+        });
+
+      });
+
+      /* =========================
+         DEPOSIT REDUCTION
+      ========================= */
+      deposits.forEach(dep => {
+
+        dep.items?.forEach(item => {
+
+          if (
+            item.product &&
+            item.product.toString() ===
+            stock._id.toString()
+          ) {
+            soldQty += Number(
+              item.quantity || 0
+            );
+          }
+
+        });
+
+      });
+
+      return {
+        ...stock.toObject(),
+
+        currentQuantity: Math.max(
+          0,
+          Number(stock.quantity || 0) - soldQty
+        )
+      };
+
     });
-    
+
+    const lowStockCount = liveStocks.filter(
+      item => item.currentQuantity <= 5
+    ).length;
+
     /* =========================
        SUPPLIERS OWED
     ========================= */
-    const supplierList = await Stock.distinct("supplier", {
-      paymentMethod: "credit",
-    });
+    const supplierList =
+      await Stock.distinct("supplier", {
+        paymentMethod: "credit",
+      });
 
-    const suppliersOwed = supplierList.length;
+    const suppliersOwed =
+      supplierList.length;
 
+    /* =========================
+       RENDER
+    ========================= */
     res.render("adminDash", {
+
       totalCashSales,
 
       totalCreditSales,
@@ -351,7 +468,9 @@ router.get("/adminDash", async (req, res) => {
 
       deposits,
     });
+
   } catch (err) {
+
     console.log(err);
 
     res.status(500).send("Dashboard error");
