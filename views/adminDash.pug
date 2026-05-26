@@ -31,9 +31,12 @@ html(lang="en")
         
         li
           a(href="/users") user table
+
         li 
           a(href="/reports") 📊 Reports
+
         li 
+        
           a(href="/supplierTable") SupplierTable
 
         li
@@ -47,8 +50,10 @@ html(lang="en")
       .navbar
         div
           strong NYONDO GENERAL HARDWARE LTD
+
         div
           strong Logged in as Administrator
+
         #clock
 
       // ================= KPI CARDS =================
@@ -70,9 +75,10 @@ html(lang="en")
         .kpi-card
           h4 Suppliers Owed
           p #{suppliersOwed || 0} Suppliers
+
         .kpi-card
           h4 Low Stock Alerts
-          p #{lowStockCount || 0}
+          p #{lowStockCount}
 
       // ================= CUSTOMER TABLE =================
       .section-box
@@ -93,7 +99,8 @@ html(lang="en")
               th Paid
               th Balance
               th Status
-              th Action
+              th Receipt
+              th Actions
 
           tbody
 
@@ -104,9 +111,13 @@ html(lang="en")
                 tr
 
                   td= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
+
                   td= deposit.customerName
+
                   td= deposit.ninNumber
+
                   td= deposit.customerPhone
+
                   td= deposit.customerAddress
 
                   // ================= SAFE ITEM DISPLAY =================
@@ -117,7 +128,9 @@ html(lang="en")
                       | N/A
 
                   td UGX #{deposit.totalToPay || 0}
+
                   td UGX #{deposit.amountPaid || 0}
+
                   td UGX #{deposit.balance || 0}
 
                   td
@@ -126,25 +139,51 @@ html(lang="en")
                     else
                       span(style="color:red") Pending
 
-                  // ================= CLEAR DEBT ACTION =================
+                  // ================= RECEIPT BUTTON =================
                   td
+                    a.btn.btn-green(
+                      href=`/deposit/receipt/${deposit._id}`
+                      target="_blank"
+                    ) 🧾 Receipt
+
+                  // ================= ACTIONS =================
+                  td
+
                     if deposit.balance > 0
-                      form(method="POST", action=`/deposit/finish/${deposit._id}`)
+
+                      a.btn.btn-blue(
+                        href=`/deposit/edit/${deposit._id}`
+                      ) Edit Deposit
+
+                      form(
+                        method="POST",
+                        action=`/deposit/finish/${deposit._id}`,
+                        style="display:inline-block"
+                      )
                         button(type="submit") Clear Debt
+
                     else
+
                       span Done
 
             else
+
               tr
-                td(colspan="11", style="text-align:center;color:#94a3b8")
+                td(
+                  colspan="12",
+                  style="text-align:center;color:#94a3b8"
+                )
                   | No customer credit records available
 
     script.
       function updateClock() {
+
           const now = new Date();
+
           document.getElementById("clock").innerText =
               now.toLocaleTimeString();
       }
 
       setInterval(updateClock, 1000);
+
       updateClock();
