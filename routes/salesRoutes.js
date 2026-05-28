@@ -94,6 +94,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       (item) => item.currentQuantity >= 0 && item.currentQuantity <= 5
     );
 
+    // FIXED: Passed flash variables into the salesDash template context layer
     res.render("salesDash", {
       dbSales,
       totalSalesToday,
@@ -101,7 +102,9 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       monthlyTotal,
       selectedMonth: req.query.month || "",
       lowStockCount: lowStockItems.length,
-      lowStockItems, // This now passes the modified items containing 'currentQuantity'
+      lowStockItems, 
+      error_msg: req.flash("error_msg"),
+      success_msg: req.flash("success_msg")
     });
   } catch (err) {
     console.error(err);
@@ -114,6 +117,8 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       selectedMonth: "",
       lowStockCount: 0,
       lowStockItems: [],
+      error_msg: req.flash("error_msg"),
+      success_msg: req.flash("success_msg")
     });
   }
 });
@@ -124,7 +129,13 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
 router.get("/salesform", isLoggedIn, async (req, res) => {
   try {
     const items = await Stock.find({ quantity: { $gt: 0 } });
-    res.render("sales", { products: items });
+    
+    // FIXED: Rendered view profile with explicit flash array references appended
+    res.render("sales", { 
+      products: items,
+      error_msg: req.flash("error_msg"),
+      success_msg: req.flash("success_msg")
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
@@ -132,7 +143,7 @@ router.get("/salesform", isLoggedIn, async (req, res) => {
 });
 
 /* =========================
-   CREATE SALE
+   CREATE SALE (WITH BACKEND VALIDATION & FLASH)
 ========================= */
 router.post("/Sales", isLoggedIn, async (req, res) => {
   try {
@@ -152,6 +163,29 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
       transportCost,
     } = req.body;
 
+    /* =========================================================
+       BACKEND VALIDATION RULES
+       ========================================================= */
+    if (!customerName || customerName.trim() === "") {
+      req.flash("error_msg", "Customer name is required.");
+      return res.redirect("/salesform");
+    }
+
+    if (!phoneNumber || phoneNumber.trim() === "") {
+      req.flash("error_msg", "Phone number is required.");
+      return res.redirect("/salesform");
+    }
+
+    if (!customerAddress || customerAddress.trim() === "") {
+      req.flash("error_msg", "Customer address is required.");
+      return res.redirect("/salesform");
+    }
+
+    if (!product || (Array.isArray(product) && product.length === 0) || product === "") {
+      req.flash("error_msg", "You must add at least one valid product item.");
+      return res.redirect("/salesform");
+    }
+
     product = Array.isArray(product) ? product : [product];
     specification = Array.isArray(specification) ? specification : [specification];
     quantity = Array.isArray(quantity) ? quantity : [quantity];
@@ -161,18 +195,29 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
     let total = 0;
 
     for (let i = 0; i < product.length; i++) {
+      // Catch empty or unselected dynamic product rows
+      if (!product[i] || product[i] === "") {
+        req.flash("error_msg", `Row ${i + 1}: Please select a valid product choice.`);
+        return res.redirect("/salesform");
+      }
+
       const qty = Number(quantity[i] || 0);
       const price = Number(unitPrice[i] || 0);
 
-      if (!product[i] || qty <= 0 || price <= 0) continue;
+      if (qty <= 0) {
+        req.flash("error_msg", `Row ${i + 1}: Item entry quantity must be greater than zero.`);
+        return res.redirect("/salesform");
+      }
 
       const stockItem = await Stock.findById(product[i]);
-      if (!stockItem) return res.status(404).send("Product not found");
+      if (!stockItem) {
+        req.flash("error_msg", "Selected product does not exist in stock profiles.");
+        return res.redirect("/salesform");
+      }
 
       if (stockItem.quantity < qty) {
-        return res
-          .status(400)
-          .send(`Not enough stock for ${stockItem.itemName}`);
+        req.flash("error_msg", `Not enough stock for ${stockItem.itemName}. Available: ${stockItem.quantity}`);
+        return res.redirect("/salesform");
       }
 
       stockItem.quantity = Number(stockItem.quantity) - qty;
@@ -210,10 +255,12 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
 
     await newSale.save();
 
+    req.flash("success_msg", "Sale processed successfully!");
     return res.redirect("/salesDash");
   } catch (error) {
     console.error(error);
-    return res.status(500).send("Error saving Sales: " + error.message);
+    req.flash("error_msg", "Error saving Sales: " + error.message);
+    return res.redirect("/salesform");
   }
 });
 
@@ -227,7 +274,12 @@ router.get("/sales/edit/:id", isLoggedIn, async (req, res) => {
 
     if (!sale) return res.status(404).send("Sale not found");
 
-    res.render("editSale", { sale, products });
+    res.render("editSale", { 
+      sale, 
+      products,
+      error_msg: req.flash("error_msg"),
+      success_msg: req.flash("success_msg")
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error loading sale");
@@ -269,11 +321,12 @@ router.post("/sales/edit/:id", isLoggedIn, async (req, res) => {
     }
 
     await sale.save();
-
+    req.flash("success_msg", "Sales record updated successfully!");
     return res.redirect("/salesDash");
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error updating sale");
+    req.flash("error_msg", "Error updating sale: " + error.message);
+    return res.redirect(`/sales/edit/${req.params.id}`);
   }
 });
 
@@ -283,10 +336,12 @@ router.post("/sales/edit/:id", isLoggedIn, async (req, res) => {
 router.get("/sales/delete/:id", isLoggedIn, async (req, res) => {
   try {
     await Sales.findByIdAndDelete(req.params.id);
+    req.flash("success_msg", "Sales transaction deleted successfully.");
     res.redirect("/salesDash");
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error deleting sale");
+    req.flash("error_msg", "Error removing sales trace record.");
+    res.redirect("/salesDash");
   }
 });
 

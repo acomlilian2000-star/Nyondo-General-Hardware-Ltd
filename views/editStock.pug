@@ -3,20 +3,22 @@ html
   head
     meta(charset='UTF-8')
     meta(name='viewport' content='width=device-width, initial-scale=1.0')
-    title NYONDO Stock Registration
+    title NYONDO | Edit Stock Item
 
     // External CSS
     link(rel='stylesheet' href='/css/stock.css')
+    
+    style.
+      .read-only-highlight { background-color: #f3f4f6; cursor: not-allowed; }
 
   body
-
     .form-container
 
       h1 NYONDO General Hardware LTD
+      p.subtitle Edit Inventory Record: #{stockItem.itemName}
 
-      p.subtitle Official Stock Arrival & Finance Portal
-
-      form#stockForm(action='/Stock' method='POST')
+      // Dynamic action URL mapping the precise database item ID
+      form#stockForm(action=`/stock/update/${stockItem._id}` method='POST')
 
         // ================= PRODUCTS CONTAINER =================
         #itemsContainer
@@ -28,256 +30,81 @@ html
 
             .form-group
               label Product Name
-
-              select.productSelect(
+              input.read-only-highlight(
+                type='text'
                 name='itemName'
-                required
+                value=stockItem.itemName
+                readonly
               )
 
-                option(value='' disabled selected)
-                  | -- Select Product --
-
-                optgroup(label='Construction Materials')
-
-                  option(value='Cement CEM II')
-                    | Cement (CEM II)
-
-                  option(value='Cement CEM III')
-                    | Cement (CEM III)
-
-                  option(value='Iron Bars 10mm')
-                    | Iron Bars (10mm)
-
-                  option(value='Iron Bars 12mm')
-                    | Iron Bars (12mm)
-
-                  option(value='Iron Bars 16mm')
-                    | Iron Bars (16mm)
-
-                optgroup(label='Fasteners & Tools')
-
-                  option(value='Nails Assorted')
-                    | Nails (Assorted)
-
-                  option(value='Roofing Nails')
-                    | Roofing Nails
-
-                  option(value='Wheelbarrow')
-                    | Wheelbarrows
-
-                optgroup(label='Fencing & Roofing')
-
-                  option(value='Barbed Wire')
-                    | Barbed Wire
-
-                  option(value='Wire Mesh')
-                    | Wire Mesh
-
-                  option(value='Iron Sheets')
-                    | Iron Sheets
-
             .input-row
-
               .form-group
                 label Quantity
-
                 input.quantity(
                   type='number'
-                  name='quantity[]'
+                  name='quantity'
+                  value=stockItem.quantity
                   placeholder='Enter Quantity'
                   required
                 )
 
               .form-group
                 label Unit Cost (UGX)
-
                 input.unitCost(
-                  type='Number'
-                  name='unitCost[]'
+                  type='number'
+                  name='unitCost'
+                  value=stockItem.unitCost
                   placeholder='Enter Unit Cost'
                   required
                 )
 
             .input-row
-
               .form-group
                 label Selling Price (UGX)
-
                 input.unitPrice(
-                  type='Number'
-                  name='unitPrice[]'
+                  type='number'
+                  name='unitPrice'
+                  value=stockItem.unitPrice
                   placeholder='Selling Price'
                   required
                 )
-
-                p.helper-text
-                  | Selling price must be greater than unit cost.
+                p.helper-text Selling price must be greater than unit cost.
 
             // ================= SUPPLIER INFO =================
             .input-row
-
               .form-group
                 label Supplier
-
-                select(
+                input(
+                  type='text'
                   name='supplier'
-                  required
+                  value=stockItem.supplier || ''
                 )
-
-                  option(value='' disabled selected)
-                    | -- Select Supplier --
-
-                  option(value='Hima Cement')
-                    | Hima Cement
-
-                  option(value='Tororo Cement')
-                    | Tororo Cement
-
-                  option(value='China Depot')
-                    | China Depot
-
-                  option(value='Uganda Baati')
-                    | Uganda Baati
-
-                  option(value='Roofings Uganda')
-                    | Roofings Uganda
-
-                  option(value='Hardware World')
-                    | Hardware World
-
-                  option(value='Other')
-                    | Other
 
               .form-group
                 label Contact Person
-
                 input(
-                  type='String'
+                  type='text'
                   name='contactPerson'
-                  placeholder='Contact Person'
-                  required
+                  value=stockItem.contactPerson || ''
                 )
-
-            .input-row
-
-              .form-group
-                label Supplier Phone (+256)
-
-                .phone-wrapper(style='display:flex; align-items:center; gap:5px;')
-
-                  span +256
-
-                  input(
-                    type='tel'
-                    name='supplierPhone'
-                    placeholder='7XXXXXXXX'
-                    pattern='[0-9]{9}'
-                    maxlength='9'
-                    required
-                  )
-
-              .form-group
-                label Factory Name
-
-                input(
-                  type='String'
-                  name='factoryName'
-                  placeholder='Factory Name'
-                  required
-                )
-
-        // ================= ADD ITEM BUTTON =================
-        button#addItemBtn(
-          type='button'
-        )
-          | + Add Another Product
-
-        // ================= PAYMENT SECTION =================
-        .section-title Payment Information
-
-        .payment-box
-
-          .form-group
-            label Payment Status
-
-            select(
-              name='paymentMethod'
-              required
-            )
-
-              option(value='' disabled selected)
-                | -- Select Payment Status --
-
-              option(value='cash-at-hand')
-                | Cash At Hand
-
-              option(value='credit')
-                | Credit
 
         // ================= SUBMIT =================
         button.btn-submit(type='submit')
-          | Complete Stock Entry
+          | Save Changes
+
+        .footer-text(style="margin-top: 20px; text-align: center;")
+          a(href="/stockDash") ← Back to Dashboard
 
     script.
-
-      const addItemBtn =
-        document.getElementById('addItemBtn');
-
-      const itemsContainer =
-        document.getElementById('itemsContainer');
-
-      // ================= ADD NEW PRODUCT =================
-      addItemBtn.addEventListener('click', () => {
-
-        const firstItem =
-          document.querySelector('.stock-item');
-
-        const clonedItem =
-          firstItem.cloneNode(true);
-
-        // CLEAR INPUTS
-        clonedItem.querySelectorAll('input')
-          .forEach(input => {
-            input.value = '';
-          });
-
-        // RESET SELECTS
-        clonedItem.querySelectorAll('select')
-          .forEach(select => {
-            select.selectedIndex = 0;
-          });
-
-        itemsContainer.appendChild(clonedItem);
-      });
-
       // ================= VALIDATION =================
       document
         .getElementById('stockForm')
         .addEventListener('submit', function(e) {
+          const cost = Number(document.querySelector('.unitCost').value);
+          const price = Number(document.querySelector('.unitPrice').value);
 
-          const unitCosts =
-            document.querySelectorAll('.unitCost');
-
-          const unitPrices =
-            document.querySelectorAll('.unitPrice');
-
-          for (let i = 0; i < unitCosts.length; i++) {
-
-            const cost =
-              Number(unitCosts[i].value);
-
-            const price =
-              Number(unitPrices[i].value);
-
-            if (price <= cost) {
-
-              e.preventDefault();
-
-              alert(
-                'Selling price must be greater than Unit Cost.'
-              );
-
-              return;
-            }
+          if (price <= cost) {
+            e.preventDefault();
+            alert('Selling price must be greater than Unit Cost.');
           }
         });

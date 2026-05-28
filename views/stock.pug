@@ -19,6 +19,15 @@ html
       h1 NYONDO General Hardware LTD
       p.subtitle Official Stock Arrival & Finance Portal
 
+      // ================= BACKEND VALIDATION FLASH NOTIFICATIONS =================
+      if success_msg && success_msg.length > 0
+        div(style="background-color: #d1fae5; color: #065f46; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #10b981; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
+          | #{success_msg}
+
+      if error_msg && error_msg.length > 0
+        div(style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #ef4444; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
+          | #{error_msg}
+
       form#stockForm(action='/stock' method='POST' enctype='multipart/form-data')
 
         // ================= PRODUCTS CONTAINER =================
@@ -31,7 +40,7 @@ html
 
             .form-group
               label Product Name
-              select.productSelect(name='itemName[]' required)
+              select.productSelect(name='itemName[]')
                 option(value='' disabled selected) -- Select Product --
 
                 optgroup(label='Construction Materials')
@@ -59,7 +68,7 @@ html
             .input-row
               .form-group
                 label Specification
-                select(name='specification[]' required)
+                select(name='specification[]')
                   option(value='' disabled selected) -- Select Specification --
                   option(value='Pieces') Pieces
                   option(value='Kgs') Kilograms (Kgs)
@@ -69,16 +78,16 @@ html
             .input-row
               .form-group
                 label Quantity
-                input.quantity(type='number' name='quantity[]' required)
+                input.quantity(type='number' name='quantity[]')
 
               .form-group
                 label Unit Cost (UGX)
-                input.unitCost(type='number' name='unitCost[]' required)
+                input.unitCost(type='number' name='unitCost[]')
 
             .input-row
               .form-group
                 label Selling Price (UGX)
-                input.unitPrice(type='number' name='unitPrice[]' required)
+                input.unitPrice(type='number' name='unitPrice[]')
 
             .input-row
               .form-group
@@ -94,7 +103,7 @@ html
         .input-row
           .form-group
             label Supplier
-            select(name='supplier' required)
+            select(name='supplier')
               option(value='' disabled selected) -- Select Supplier --
               option(value='Hima Cement') Hima Cement
               option(value='Tororo Cement') Tororo Cement
@@ -106,7 +115,7 @@ html
 
           .form-group
             label Contact Person
-            input(type='text' name='contactPerson' required)
+            input(type='text' name='contactPerson')
 
         .input-row
           .form-group
@@ -114,11 +123,11 @@ html
 
             .phone-wrapper(style='display:flex; align-items:center; gap:5px;')
               span +256
-              input(type='tel' name='supplierPhone' pattern='[0-9]{9}' maxlength='9' required)
+              input(type='tel' name='supplierPhone')
 
           .form-group
             label Factory Name
-            input(type='text' name='factoryName' required)
+            input(type='text' name='factoryName')
 
         // ================= PAYMENT =================
         .section-title Payment Information
@@ -126,7 +135,7 @@ html
         .payment-box
           .form-group
             label Payment Method
-            select(name='paymentMethod' required)
+            select(name='paymentMethod')
               option(value='' disabled selected) -- Select Payment --
               option(value='cash') Cash
               option(value='credit') Credit
@@ -162,20 +171,5 @@ html
           const catInput = parent.querySelector('.category');
 
           if (catInput) catInput.value = category || '';
-        }
-      });
-
-      document.getElementById('stockForm').addEventListener('submit', function(e) {
-
-        const costs = document.querySelectorAll('.unitCost');
-        const prices = document.querySelectorAll('.unitPrice');
-
-        for (let i = 0; i < costs.length; i++) {
-
-          if (Number(prices[i].value) <= Number(costs[i].value)) {
-            e.preventDefault();
-            alert('Selling price must be greater than Unit Cost');
-            return;
-          }
         }
       });

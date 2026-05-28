@@ -8,6 +8,27 @@ html
 
     link(rel="stylesheet", href="/css/signup.css")
 
+    style.
+      /* Internal CSS for clean, high-contrast system validation banners */
+      .alert-box {
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        font-size: 14px;
+        text-align: left;
+      }
+      .alert-success {
+        background-color: #d1fae5;
+        color: #065f46;
+        border-left: 5px solid #10b981;
+      }
+      .alert-error {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border-left: 5px solid #ef4444;
+      }
+
   body
 
     .page-wrapper
@@ -17,10 +38,18 @@ html
 
       section.signup-card
 
-        // ================= BACKEND ERROR DISPLAY =================
-        if error
-          .error-box
-            p= error
+        // ================= FLASH NOTIFICATIONS =================
+        if success_msg && success_msg.length > 0
+          .alert-box.alert-success
+            | #{success_msg}
+
+        if error_msg && error_msg.length > 0
+          .alert-box.alert-error
+            | #{error_msg}
+
+        if error && error.length > 0
+          .alert-box.alert-error
+            | #{error}
 
         h2 Staff Signup
 

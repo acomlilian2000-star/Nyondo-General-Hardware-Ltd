@@ -56,11 +56,11 @@ html
 
             .row
               span Unit Price:
-              span UGX #{item.unitPrice || 0}
+              span UGX #{Number(item.unitPrice || 0).toLocaleString()}
 
             .row
               span Sub Total:
-              span UGX #{item.subTotal || 0}
+              span UGX #{Number(item.subTotal || 0).toLocaleString()}
 
             hr
       else
@@ -69,11 +69,11 @@ html
       // ================= TOTALS =================
       .row
         span Transport:
-        span UGX #{sale.transportCost || 0}
+        span UGX #{Number(sale.transportCost || 0).toLocaleString()}
 
       .row
         strong Grand Total:
-        strong UGX #{sale.grandTotal || 0}
+        strong UGX #{Number(sale.grandTotal || 0).toLocaleString()}
 
       .row
         span Payment Method:
@@ -88,13 +88,3 @@ html
         a.back-btn(href="/salesform") Back To Sales Form
 
         a.dashboard-btn(href="/salesDash") Go To Dashboard
-
-    // ================= AUTO PRINT =================
-    script.
-      window.onload = function () {
-        setTimeout(() => window.print(), 500);
-      };
-
-      window.onafterprint = function () {
-        window.location.href = "/salesDash";
-      };

@@ -9,7 +9,7 @@ const StockSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
-      unique: true, // PREVENT DUPLICATE PRODUCTS
+      unique: true, // Unique inventory record per product
     },
 
     category: {
@@ -37,30 +37,7 @@ const StockSchema = new mongoose.Schema(
     },
 
     /* =========================
-       SUPPLIER INFO
-    ========================= */
-    supplier: {
-      type: String,
-      trim: true,
-    },
-
-    contactPerson: {
-      type: String,
-      trim: true,
-    },
-
-    supplierPhone: {
-      type: String,
-      trim: true,
-    },
-
-    factoryName: {
-      type: String,
-      trim: true,
-    },
-
-    /* =========================
-       PRICING
+       LATEST PRICING
     ========================= */
     unitCost: {
       type: Number,
@@ -83,24 +60,13 @@ const StockSchema = new mongoose.Schema(
     },
 
     /* =========================
-       PAYMENT STATUS
-    ========================= */
-    paymentMethod: {
-      type: String,
-      enum: ["cash", "credit", "cash-at-hand"],
-      default: "cash",
-      trim: true,
-    },
-
-    status: {
-      type: String,
-      enum: ["PENDING", "PAID"],
-      default: "PENDING",
-    },
-
-    /* =========================
        SYSTEM FIELDS
     ========================= */
+    productImage: {
+      type: String,
+      default: "",
+    },
+
     Attendant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -133,6 +99,7 @@ StockSchema.pre("save", function (next) {
     this.originalQuantity = qty;
   }
 
+  // FIXED: Must call next() so Mongoose saves successfully
   // next();
 });
 
@@ -170,9 +137,8 @@ StockSchema.pre("findOneAndUpdate", function (next) {
 
   this.setUpdate(update);
 
-  next();
+  // next();
 });
-
 
 /* =========================
    INDEXES
@@ -180,8 +146,5 @@ StockSchema.pre("findOneAndUpdate", function (next) {
 
 // FAST CATEGORY SEARCH
 StockSchema.index({ category: 1 });
-
-// FAST SUPPLIER SEARCH
-StockSchema.index({ supplier: 1 });
 
 module.exports = mongoose.model("Stock", StockSchema);

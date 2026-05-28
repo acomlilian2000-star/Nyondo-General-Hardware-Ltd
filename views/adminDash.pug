@@ -36,7 +36,6 @@ html(lang="en")
           a(href="/reports") 📊 Reports
 
         li 
-        
           a(href="/supplierTable") SupplierTable
 
         li
@@ -61,15 +60,15 @@ html(lang="en")
 
         .kpi-card
           h4 Total Sales (Cash)
-          p UGX #{totalCashSales || 0}
+          p UGX #{Number(totalCashSales || 0).toLocaleString()}
 
         .kpi-card
           h4 Total Credit Sales
-          p UGX #{totalCreditSales || 0}
+          p UGX #{Number(totalCreditSales || 0).toLocaleString()}
 
         .kpi-card
           h4 Total Stock Value
-          p UGX #{totalStockValue || 0}
+          p UGX #{Number(totalStockValue || 0).toLocaleString()}
 
         // ================= FIXED SUPPLIERS OWE LOGIC =================
         .kpi-card
@@ -94,7 +93,8 @@ html(lang="en")
               th NIN
               th Phone
               th Address
-              th Items
+              th Product Item
+              th Qty
               th Total
               th Paid
               th Balance
@@ -108,69 +108,108 @@ html(lang="en")
 
               each deposit in deposits
 
-                tr
+                if deposit.items && deposit.items.length > 0
+                  
+                  each item, index in deposit.items
+                    if index === 0
+                      tr
+                        td(rowspan=deposit.items.length)= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
+                        td(rowspan=deposit.items.length)
+                          strong= deposit.customerName
+                        td(rowspan=deposit.items.length)= deposit.ninNumber
+                        td(rowspan=deposit.items.length)= deposit.customerPhone
+                        td(rowspan=deposit.items.length)= deposit.customerAddress
+                        
+                        // First item row data content
+                        td= item.itemName || 'N/A'
+                        td(style="text-align: center")
+                          strong= item.quantity || item.itemQuantity || 0
+                        
+                        td(rowspan=deposit.items.length) UGX #{Number(deposit.totalToPay || 0).toLocaleString()}
+                        td(rowspan=deposit.items.length) UGX #{Number(deposit.amountPaid || 0).toLocaleString()}
+                        td(rowspan=deposit.items.length) UGX #{Number(deposit.balance || 0).toLocaleString()}
+                        
+                        td(rowspan=deposit.items.length)
+                          if deposit.paymentStatus === "Finished" || deposit.balance <= 0
+                            span(style="color:green; font-weight:bold") Finished
+                          else
+                            span(style="color:red; font-weight:bold") Pending
 
-                  td= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
+                        // ================= RECEIPT BUTTON =================
+                        td(rowspan=deposit.items.length)
+                          a.btn.btn-green(
+                            href=`/deposit/receipt/${deposit._id}`
+                            target="_blank"
+                          ) 🧾 Receipt
 
-                  td= deposit.customerName
+                        // ================= ACTIONS =================
+                        td(rowspan=deposit.items.length)
+                          if deposit.balance > 0
+                            div(style="display: flex; flex-direction: column; gap: 5px;")
+                              a.btn.btn-blue(
+                                href=`/deposit/edit/${deposit._id}`
+                              ) Edit Deposit
 
-                  td= deposit.ninNumber
-
-                  td= deposit.customerPhone
-
-                  td= deposit.customerAddress
-
-                  // ================= SAFE ITEM DISPLAY =================
-                  td
-                    if deposit.items && deposit.items.length
-                      = deposit.items.map(i => i.itemName).join(", ")
+                              form(
+                                method="POST",
+                                action=`/deposit/finish/${deposit._id}`,
+                                style="margin:0;"
+                              )
+                                button.btn(type="submit" style="background-color:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; width:100%;") Clear Debt
+                          else
+                            span Done
                     else
-                      | N/A
+                      // Extra clean sub-rows for multiple purchases on the same invoice block 
+                      tr
+                        td= item.itemName || 'N/A'
+                        td(style="text-align: center")
+                          strong= item.quantity || item.itemQuantity || 0
 
-                  td UGX #{deposit.totalToPay || 0}
+                else
+                  // Fallback safely if a legacy document profile has a clean or unpopulated items array list
+                  tr
+                    td= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
+                    td
+                      strong= deposit.customerName
+                    td= deposit.ninNumber
+                    td= deposit.customerPhone
+                    td= deposit.customerAddress
+                    td N/A
+                    td(style="text-align: center") 0
+                    td UGX #{Number(deposit.totalToPay || 0).toLocaleString()}
+                    td UGX #{Number(deposit.amountPaid || 0).toLocaleString()}
+                    td UGX #{Number(deposit.balance || 0).toLocaleString()}
+                    td
+                      if deposit.paymentStatus === "Finished" || deposit.balance <= 0
+                        span(style="color:green; font-weight:bold") Finished
+                      else
+                        span(style="color:red; font-weight:bold") Pending
+                    td
+                      a.btn.btn-green(
+                        href=`/deposit/receipt/${deposit._id}`
+                        target="_blank"
+                      ) 🧾 Receipt
+                    td
+                      if deposit.balance > 0
+                        div(style="display: flex; flex-direction: column; gap: 5px;")
+                          a.btn.btn-blue(
+                            href=`/deposit/edit/${deposit._id}`
+                          ) Edit Deposit
 
-                  td UGX #{deposit.amountPaid || 0}
-
-                  td UGX #{deposit.balance || 0}
-
-                  td
-                    if deposit.paymentStatus === "Finished" || deposit.balance <= 0
-                      span(style="color:green") Finished
-                    else
-                      span(style="color:red") Pending
-
-                  // ================= RECEIPT BUTTON =================
-                  td
-                    a.btn.btn-green(
-                      href=`/deposit/receipt/${deposit._id}`
-                      target="_blank"
-                    ) 🧾 Receipt
-
-                  // ================= ACTIONS =================
-                  td
-
-                    if deposit.balance > 0
-
-                      a.btn.btn-blue(
-                        href=`/deposit/edit/${deposit._id}`
-                      ) Edit Deposit
-
-                      form(
-                        method="POST",
-                        action=`/deposit/finish/${deposit._id}`,
-                        style="display:inline-block"
-                      )
-                        button(type="submit") Clear Debt
-
-                    else
-
-                      span Done
+                          form(
+                            method="POST",
+                            action=`/deposit/finish/${deposit._id}`,
+                            style="margin:0;"
+                          )
+                            button.btn(type="submit" style="background-color:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; width:100%;") Clear Debt
+                      else
+                        span Done
 
             else
 
               tr
                 td(
-                  colspan="12",
+                  colspan="13",
                   style="text-align:center;color:#94a3b8"
                 )
                   | No customer credit records available

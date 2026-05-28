@@ -5,6 +5,7 @@ const Deposit = require("../models/Deposit");
 const Stock = require("../models/Stock");
 const User = require("../models/User");
 const Sales = require("../models/Sales");
+const Supplier = require("../models/Supplier"); // FIXED: Required to correctly sync suppliersOwed metric
 
 /* =========================
    GET DEPOSIT FORM
@@ -195,7 +196,7 @@ router.get("/tempReceipt/:id", async (req, res) => {
   try {
 
     const deposit = await Deposit.findById(req.params.id)
-      .populate("attendant", "fullName")
+      .populate("Attendant", "fullName")
       .populate("items.product", "itemName unitPrice");
 
     if (!deposit) {
@@ -276,7 +277,7 @@ router.post("/deposit/update/:id", async (req, res) => {
     return res.redirect("/adminDash");
 
   } catch (err) {
-    console.log(err);
+    console.error(err);
 
     res.status(500).send("Update error");
   }
@@ -440,16 +441,15 @@ router.get("/adminDash", async (req, res) => {
       item => item.currentQuantity <= 5
     ).length;
 
-    /* =========================
-       SUPPLIERS OWED
-    ========================= */
-    const supplierList =
-      await Stock.distinct("supplier", {
-        paymentMethod: "credit",
-      });
+    /* =========================================================
+       FIXED: SUPPLIERS OWED CALCULATED FROM THE CORRECT MODEL
+       ========================================================= */
+    const uniqueSuppliersOwed = await Supplier.distinct("supplier", {
+      paymentMethod: { $regex: /^credit$/i },
+      status: "PENDING"
+    });
 
-    const suppliersOwed =
-      supplierList.length;
+    const suppliersOwed = uniqueSuppliersOwed.length;
 
     /* =========================
        RENDER

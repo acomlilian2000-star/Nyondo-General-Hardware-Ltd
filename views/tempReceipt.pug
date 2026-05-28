@@ -70,8 +70,8 @@ html(lang="en")
                   td= item.product ? item.product.itemName : item.itemName || 'Deleted Product'
                   td= item.specification || '-'
                   td= item.quantity || 0
-                  td UGX #{item.unitPrice || 0}
-                  td UGX #{item.itemTotal || 0}
+                  td UGX #{Number(item.unitPrice || 0).toLocaleString()}
+                  td UGX #{Number(item.itemTotal || 0).toLocaleString()}
             else
               tr
                 td(colspan="5") No items found
@@ -86,23 +86,23 @@ html(lang="en")
 
           .summary-row
             span Total Amount
-            strong UGX #{payment.amount || 0}
+            strong UGX #{Number(payment.amount || 0).toLocaleString()}
 
           .summary-row
             span Transport Cost
-            strong UGX #{payment.transportCost || 0}
+            strong UGX #{Number(payment.transportCost || 0).toLocaleString()}
 
           .summary-row
             span Total To Pay
-            strong UGX #{payment.totalToPay || 0}
+            strong UGX #{Number(payment.totalToPay || 0).toLocaleString()}
 
           .summary-row
             span Amount Paid
-            strong UGX #{payment.amountPaid || 0}
+            strong UGX #{Number(payment.amountPaid || 0).toLocaleString()}
 
           .summary-row.balance
             span Balance
-            strong UGX #{payment.balance || 0}
+            strong UGX #{Number(payment.balance || 0).toLocaleString()}
 
           .summary-row
             span Payment Method
@@ -112,10 +112,31 @@ html(lang="en")
 
       // ================= FOOTER =================
       .receipt-footer
+        // ================= BULLETPROOF DYNAMIC ATTENDANT DATA BLOCK =================
+        div(style="margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 4px; border-left: 4px solid #1e3a8a; text-align: left;")
+          p(style="margin: 0; font-size: 0.95rem; color: #1e293b;")
+            strong Served By: 
+            - const userObj = customer.Attendant || customer.attendant
+            if userObj
+              if userObj.fullName
+                span(style="color: #1e3a8a; font-weight: bold;")= userObj.fullName
+              else if userObj.username
+                span(style="color: #1e3a8a; font-weight: bold;")= userObj.username
+              else if userObj.name
+                span(style="color: #1e3a8a; font-weight: bold;")= userObj.name
+              else
+                span(style="color: #1e3a8a; font-weight: bold;") Employee ##{userObj._id ? userObj._id.toString().slice(-4) : 'Active'}
+            else
+              span(style="color: #64748b; font-style: italic;") System Stock Manager
+
         p Thank you for choosing NYONDO General Hardware LTD.
         p Goods are released after full payment clearance.
 
-      // ================= PRINT =================
-      .print-area
-        button.print-btn(type="button" onclick="window.print()")
+      // ================= NAVIGATION & ACTIONS AREA =================
+      .print-area(style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;")
+        
+        a.back-btn(href="/adminDash" style="background-color: #64748b; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s;")
+          | ⬅ Back to Dashboard
+
+        button.print-btn(type="button" onclick="window.print()" style="margin: 0;")
           | Print Receipt

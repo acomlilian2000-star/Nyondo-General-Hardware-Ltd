@@ -4,66 +4,46 @@ html
     meta(charset="UTF-8")
     meta(name="viewport" content="width=device-width,initial-scale=1")
     title NYONDO | Sales Attendant Dashboard
-
     link(rel="stylesheet" href="/css/salesDash.css")
 
   body
-
     // ================= SIDEBAR =================
     aside.sidebar
-
       .brand
         h2 NYONDO SALES
-
       ul.nav
         li
           a(href="/adminDash") 📊 Dashboard
-
         li
           a(href="/salesform") 📝 Make New Sale
-
         li
           a(href="/logout") 🚪 Logout
 
-
     // ================= MAIN CONTENT =================
     .main-content
-
       nav.navbar
         .nav-left
           span NYONDO GENERAL HARDWARE LTD
-
         .nav-center
-          span Logged in as: Sales Attendant
-
+          span Logged in as: #{currentUser ? currentUser.role : 'User'}
         .nav-right
           span#datetime
 
-
       .container
-
-        // ================= STATS =================
         .stats-grid
-
           .stat-card
             h3 My Sales Today
             p UGX #{totalSalesToday || 0}
-
           .stat-card
             h3 Total Revenue
             p UGX #{(dbSales || []).reduce((a, b) => a + (b.grandTotal || 0), 0)}
-
-          // ================= FIXED LOW STOCK ALERT =================
           .stat-card
             h3 Low Stock Alert
             p #{typeof lowStockCount !== 'undefined' ? lowStockCount : 0}
 
-
         // ================= SALES TABLE =================
         .section-box
-
           h3 📦 Sales Records
-
           table
             thead
               tr
@@ -72,86 +52,73 @@ html
                 th Specification
                 th Unit Price
                 th Quantity
+                th Sub Total
                 th Customer Name
                 th Phone Number
                 th Address
                 th Customer Type
                 th Distance
                 th Transport Cost
-                th Sub Total
                 th Grand Total
                 th Payment Method
                 th Actions
 
             tbody
-
               if !dbSales || dbSales.length === 0
                 tr
-                  td(colspan="16") No sales recorded yet
-
+                  td(colspan="15") No sales recorded yet
               else
                 each sale in dbSales
-
                   if sale.items && sale.items.length > 0
-
-                    each item in sale.items
-                      tr
-                        td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
-                        td= item.product && item.product.itemName ? item.product.itemName : 'Deleted Product'
-                        td= item.specification || '-'
-                        td= item.unitPrice || 0
-                        td= item.quantity || 0
-                        td= sale.customerName || '-'
-                        td= sale.phoneNumber || '-'
-                        td= sale.customerAddress || '-'
-                        td= sale.customerType || '-'
-                        td= sale.distance || 0
-                        td= sale.transportCost || 0
-                        td= item.subTotal || 0
-                        td= sale.grandTotal || 0
-                        td= sale.paymentMethod || '-'
-
-                        td
-                          a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
-
-                          a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-
-                          // ================= FIXED UPDATE BUTTON =================
-                          //- a.btn.btn-green(href=`/sales/edit/${sale._id}`) Update
-
-                          // ================= RECEIPT BUTTON (ADDED) =================
-                          a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
+                    each item, index in sale.items
+                      if index === 0
+                        tr
+                          td(rowspan=sale.items.length)= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
+                          td= item.product && item.product.itemName ? item.product.itemName : (item.itemName || 'Deleted Product')
+                          td= item.specification || '-'
+                          td UGX #{Number(item.unitPrice || 0).toLocaleString()}
+                          td= item.quantity || 0
+                          td UGX #{Number(item.subTotal || 0).toLocaleString()}
+                          td(rowspan=sale.items.length)
+                            strong= sale.customerName || '-'
+                          td(rowspan=sale.items.length)= sale.phoneNumber || '-'
+                          td(rowspan=sale.items.length)= sale.customerAddress || '-'
+                          td(rowspan=sale.items.length)= sale.customerType || '-'
+                          td(rowspan=sale.items.length)= sale.distance || 0
+                          td(rowspan=sale.items.length) UGX #{Number(sale.transportCost || 0).toLocaleString()}
+                          td(rowspan=sale.items.length)
+                            strong UGX #{Number(sale.grandTotal || 0).toLocaleString()}
+                          td(rowspan=sale.items.length)= sale.paymentMethod || '-'
+                          
+                          // ================= ADMIN-ONLY ACTIONS =================
+                          td(rowspan=sale.items.length)
+                            div(style="display: flex; flex-direction: column; gap: 5px;")
+                              if currentUser && currentUser.role === 'admin'
+                                a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+                                a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
+                              a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
+                      else
+                        tr
+                          td= item.product && item.product.itemName ? item.product.itemName : (item.itemName || 'Deleted Product')
+                          td= item.specification || '-'
+                          td UGX #{Number(item.unitPrice || 0).toLocaleString()}
+                          td= item.quantity || 0
+                          td UGX #{Number(item.subTotal || 0).toLocaleString()}
 
                   else
                     tr
-                      td= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
-                      td= sale.product && sale.product.itemName ? sale.product.itemName : 'Deleted Product'
-                      td= sale.specification || '-'
-                      td= sale.unitPrice || 0
-                      td= sale.quantity || 0
-                      td= sale.customerName || '-'
-                      td= sale.phoneNumber || '-'
-                      td= sale.customerAddress || '-'
-                      td= sale.customerType || '-'
-                      td= sale.distance || 0
-                      td= sale.transportCost || 0
-                      td= sale.subTotal || 0
-                      td= sale.grandTotal || 0
-                      td= sale.paymentMethod || '-'
-
+                      // ... (fallback for old entries)
                       td
-                        a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
-                        a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-                        //- a.btn.btn-green(href=`/sales/edit/${sale._id}`) Update
-                        a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
-
+                        div(style="display: flex; flex-direction: column; gap: 5px;")
+                          if currentUser && currentUser.role === 'admin'
+                            a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+                            a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
+                          a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
 
     script.
       function updateTime() {
         const now = new Date();
-        document.getElementById("datetime").innerText =
-          now.toLocaleDateString() + " " + now.toLocaleTimeString();
+        document.getElementById("datetime").innerText = now.toLocaleDateString() + " " + now.toLocaleTimeString();
       }
-
       setInterval(updateTime, 1000);
       updateTime();
