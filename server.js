@@ -48,12 +48,32 @@ passport.use(new LocalStrategy({ usernameField: "email" }, User.authenticate()))
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+// ✅ IMPROVED GLOBAL MIDDLEWARE (User Hydration)
+app.use(async (req, res, next) => {
+  if (req.isAuthenticated()) {
+    try {
+      // Re-fetch full user from DB to ensure 'role' is always present
+      const fullUser = await User.findById(req.user._id);
+      res.locals.currentUser = fullUser;
+    } catch (err) {
+      console.error("Error hydrating user:", err);
+      res.locals.currentUser = req.user;
+    }
+  } else {
+    res.locals.currentUser = null;
+  }
+  
+  res.locals.error_msg = req.flash("error_msg");
+  res.locals.success_msg = req.flash("success_msg");
+  res.locals.error = req.flash("error");
+  next();
+});
+
 // 6. Routes
 app.use("/", require("./routes/userRoutes"));
 app.use("/", require("./routes/salesRoutes"));
 app.use("/", require("./routes/depositRoutes"));
 app.use("/", require("./routes/stockRoutes"));
-
 
 // 7. 404 handler
 app.use((req, res) => {
