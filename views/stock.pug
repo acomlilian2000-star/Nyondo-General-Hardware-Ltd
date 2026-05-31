@@ -4,14 +4,13 @@ html
     meta(charset='UTF-8')
     meta(name='viewport' content='width=device-width, initial-scale=1.0')
     title NYONDO Stock Registration
-
     link(rel='stylesheet' href='/css/stock.css')
+    style.
+      .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+      #errorToast { display: none; background-color: #ef4444; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-weight: bold; }
 
   body
-
     .form-container
-
-      // ================= BACK BUTTON (NOW INSIDE FORM TOP) =================
       .top-bar(style='padding:10px;')
         button(type='button' onclick="window.location.href='/stockDash'" style='padding:8px 15px; cursor:pointer;')
           | ← Back to Dashboard
@@ -19,7 +18,9 @@ html
       h1 NYONDO General Hardware LTD
       p.subtitle Official Stock Arrival & Finance Portal
 
-      // ================= BACKEND VALIDATION FLASH NOTIFICATIONS =================
+      // Error Message Popup
+      #errorToast Empty form cannot be submitted. Please fill in all fields!
+
       if success_msg && success_msg.length > 0
         div(style="background-color: #d1fae5; color: #065f46; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #10b981; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
           | #{success_msg}
@@ -29,32 +30,21 @@ html
           | #{error_msg}
 
       form#stockForm(action='/stock' method='POST' enctype='multipart/form-data')
-
-        // ================= PRODUCTS CONTAINER =================
         #itemsContainer
-
-          // ================= STOCK ITEM =================
           .stock-item
-
             .section-title Product Information
-
             .form-group
               label Product Name
-              select.productSelect(name='itemName[]')
-                option(value='' disabled selected) -- Select Product --
-
+              select.productSelect(name='itemName[]' class=(fieldErrors && fieldErrors.itemName ? 'error-border' : ''))
+                option(value='') -- Select Product --
                 optgroup(label='Construction Materials')
                   option(value='Cement CEM II' data-category='Construction Materials') Cement (CEM II)
                   option(value='Cement CEM III' data-category='Construction Materials') Cement (CEM III)
                   option(value='Iron Bars 10mm' data-category='Construction Materials') Iron Bars (10mm)
-                  option(value='Iron Bars 12mm' data-category='Construction Materials') Iron Bars (12mm)
-                  option(value='Iron Bars 16mm' data-category='Construction Materials') Iron Bars (16mm)
-
                 optgroup(label='Fasteners & Tools')
                   option(value='Nails Assorted' data-category='Fasteners & Tools') Nails (Assorted)
                   option(value='Roofing Nails' data-category='Fasteners & Tools') Roofing Nails
                   option(value='Wheelbarrow' data-category='Fasteners & Tools') Wheelbarrow
-
                 optgroup(label='Fencing & Roofing')
                   option(value='Barbed Wire' data-category='Fencing & Roofing') Barbed Wire
                   option(value='Wire Mesh' data-category='Fencing & Roofing') Wire Mesh
@@ -63,13 +53,11 @@ html
             .input-row
               .form-group
                 label Category
-                input.category(type='text' name='category[]' readonly)
-
-            .input-row
+                input.category(type='text' name='category[]' readonly class=(fieldErrors && fieldErrors.category ? 'error-border' : ''))
               .form-group
                 label Specification
-                select(name='specification[]')
-                  option(value='' disabled selected) -- Select Specification --
+                select(name='specification[]' class=(fieldErrors && fieldErrors.specification ? 'error-border' : ''))
+                  option(value='') -- Select Specification --
                   option(value='Pieces') Pieces
                   option(value='Kgs') Kilograms (Kgs)
                   option(value='Bags') Bags
@@ -78,33 +66,27 @@ html
             .input-row
               .form-group
                 label Quantity
-                input.quantity(type='number' name='quantity[]')
-
+                input.quantity(type='number' name='quantity[]' class=(fieldErrors && fieldErrors.quantity ? 'error-border' : ''))
               .form-group
                 label Unit Cost (UGX)
-                input.unitCost(type='number' name='unitCost[]')
+                input.unitCost(type='number' name='unitCost[]' class=(fieldErrors && fieldErrors.unitCost ? 'error-border' : ''))
 
             .input-row
               .form-group
                 label Selling Price (UGX)
-                input.unitPrice(type='number' name='unitPrice[]')
-
-            .input-row
+                input.unitPrice(type='number' name='unitPrice[]' class=(fieldErrors && fieldErrors.unitPrice ? 'error-border' : ''))
               .form-group
                 label Product Image
-                input(type='file' name='productImage' accept='image/*')
+                input(type='file' name='productImage' class=(fieldErrors && fieldErrors.productImage ? 'error-border' : ''))
 
-        // ================= ADD ITEM BUTTON =================
         button#addItemBtn(type='button') + Add Another Product
-
-        // ================= SUPPLIER INFO (ONLY ONCE) =================
+        
         .section-title Supplier Information
-
         .input-row
           .form-group
             label Supplier
-            select(name='supplier')
-              option(value='' disabled selected) -- Select Supplier --
+            select(name='supplier' class=(fieldErrors && fieldErrors.supplier ? 'error-border' : ''))
+              option(value='') -- Select Supplier --
               option(value='Hima Cement') Hima Cement
               option(value='Tororo Cement') Tororo Cement
               option(value='China Depot') China Depot
@@ -112,64 +94,65 @@ html
               option(value='Roofings Uganda') Roofings Uganda
               option(value='Hardware World') Hardware World
               option(value='Other') Other
-
           .form-group
             label Contact Person
-            input(type='text' name='contactPerson')
+            input(type='text' name='contactPerson' class=(fieldErrors && fieldErrors.contactPerson ? 'error-border' : ''))
 
         .input-row
           .form-group
             label Supplier Phone (+256)
-
-            .phone-wrapper(style='display:flex; align-items:center; gap:5px;')
-              span +256
-              input(type='tel' name='supplierPhone')
-
+            input(type='tel' name='supplierPhone' class=(fieldErrors && fieldErrors.supplierPhone ? 'error-border' : ''))
           .form-group
             label Factory Name
-            input(type='text' name='factoryName')
+            input(type='text' name='factoryName' class=(fieldErrors && fieldErrors.factoryName ? 'error-border' : ''))
 
-        // ================= PAYMENT =================
         .section-title Payment Information
-
         .payment-box
           .form-group
             label Payment Method
-            select(name='paymentMethod')
-              option(value='' disabled selected) -- Select Payment --
+            select(name='paymentMethod' class=(fieldErrors && fieldErrors.paymentMethod ? 'error-border' : ''))
+              option(value='') -- Select Payment --
               option(value='cash') Cash
               option(value='credit') Credit
 
-        // ================= SUBMIT =================
         button.btn-submit(type='submit') Complete Stock Entry
 
-
     script.
+      document.getElementById('stockForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        const allFields = this.querySelectorAll('input:not([type="file"]), select');
+        
+        allFields.forEach(field => {
+          if (!field.value || field.value.trim() === '') {
+            field.classList.add('error-border');
+            isValid = false;
+          } else {
+            field.classList.remove('error-border');
+          }
+        });
 
-      const addItemBtn = document.getElementById('addItemBtn');
-      const itemsContainer = document.getElementById('itemsContainer');
-
-      addItemBtn.addEventListener('click', () => {
-
-        const firstItem = document.querySelector('.stock-item');
-        const clonedItem = firstItem.cloneNode(true);
-
-        clonedItem.querySelectorAll('input').forEach(i => i.value = '');
-        clonedItem.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
-
-        itemsContainer.appendChild(clonedItem);
+        if (!isValid) {
+          e.preventDefault();
+          document.getElementById('errorToast').style.display = 'block';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       });
 
       document.addEventListener('change', function(e) {
-
         if (e.target.classList.contains('productSelect')) {
-
           const option = e.target.options[e.target.selectedIndex];
           const category = option.getAttribute('data-category');
-
           const parent = e.target.closest('.stock-item');
           const catInput = parent.querySelector('.category');
-
           if (catInput) catInput.value = category || '';
         }
+      });
+
+      const addItemBtn = document.getElementById('addItemBtn');
+      addItemBtn.addEventListener('click', () => {
+        const firstItem = document.querySelector('.stock-item');
+        const clonedItem = firstItem.cloneNode(true);
+        clonedItem.querySelectorAll('input').forEach(i => i.value = '');
+        clonedItem.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+        document.getElementById('itemsContainer').appendChild(clonedItem);
       });

@@ -104,3 +104,6 @@ select {
 .btn-submit:hover {
   background-color: #002d4d;
 }
+.error-border {
+  border: 2px solid red !important;
+}

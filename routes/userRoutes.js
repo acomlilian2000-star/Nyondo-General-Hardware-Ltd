@@ -37,7 +37,8 @@ router.post(
   "/login",
   passport.authenticate("local", { 
     failureRedirect: "/login",
-    failureFlash: true
+    failureFlash:true,
+    failureFlash: "Invalid email or password." 
   }),
   (req, res) => {
     if (req.user.role === "admin") {

@@ -7,7 +7,9 @@ html
     link(rel="stylesheet", href="/css/login.css")
 
     style.
-      /* Internal CSS for clean, high-contrast system validation banners */
+      .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+      /* Hide client-side toast by default */
+      #loginErrorToast { display: none; }
       .alert-box {
         padding: 12px 16px;
         border-radius: 4px;
@@ -16,63 +18,80 @@ html
         font-size: 14px;
         text-align: left;
       }
-      .alert-success {
-        background-color: #d1fae5;
-        color: #065f46;
-        border-left: 5px solid #10b981;
-      }
-      .alert-error {
-        background-color: #fee2e2;
-        color: #991b1b;
-        border-left: 5px solid #ef4444;
-      }
+      .alert-success { background-color: #d1fae5; color: #065f46; border-left: 5px solid #10b981; }
+      .alert-error { background-color: #fee2e2; color: #991b1b; border-left: 5px solid #ef4444; }
 
   body
     .page-wrapper
-
       .brand-header NYONDO GENERAL HARDWARE LTD
 
       section.login-card
-
         // ================= FLASH NOTIFICATIONS =================
+        
+        //- 1. Success Message
         if success_msg && success_msg.length > 0
-          .alert-box.alert-success
-            | #{success_msg}
+          .alert-box.alert-success= success_msg
 
-        if error_msg && error_msg.length > 0
-          .alert-box.alert-error
-            | #{error_msg}
+        //- 2. Server-side Error (Wrong Credentials)
+        //- This block shows if Passport sent an error
+        if (error && error.length > 0) || (error_msg && error_msg.length > 0)
+          .alert-box.alert-error= (error || error_msg)
 
-        if error && error.length > 0
-          .alert-box.alert-error
-            | #{error}
+        //- 3. Client-side Error (Empty Fields)
+        //- This block is toggled by JS when fields are empty
+        #loginErrorToast.alert-box.alert-error Invalid email or password.
 
         h2 Staff Login
         p Welcome back to the portal
 
-        form(action="/login", method="post")
-
+        form#loginForm(action="/login", method="post")
           .form-group
             label Email Address
-            input(
-              type="text"
-              name="email"
-              placeholder="name@company.com"
-            )
+            input#email(type="text", name="email", placeholder="name@company.com" class=(error || error_msg ? 'error-border' : ''))
 
           .form-group
             label Password
-            input(
-              type="password"
-              name="password"
-              placeholder="••••••••"
-            )
+            input#password(type="password", name="password", placeholder="••••••••" class=(error || error_msg ? 'error-border' : ''))
 
-          button.btn-login(type="submit")
-            | Sign In
-
-        //- a.forgot-password(href="/secureAcc") Change Password
+          button.btn-login(type="submit") Sign In
 
         .footer-links
-          | New staff member?
+          | New staff member? 
           a(href="/secureAcc") Contact Admin
+
+    script.
+      const form = document.getElementById('loginForm');
+      const toast = document.getElementById('loginErrorToast');
+      const serverError = document.querySelector('.alert-error');
+
+      // 1. Remove red borders and hide toasts on typing
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', function() {
+          this.classList.remove('error-border');
+          // Hide client-side toast
+          toast.style.display = 'none';
+          // Hide server-side error block if present
+          if(serverError) serverError.style.display = 'none';
+        });
+      });
+
+      // 2. Validate empty fields on submission
+      form.addEventListener('submit', function(e) {
+        let hasError = false;
+        const inputs = this.querySelectorAll('input');
+        
+        inputs.forEach(input => {
+          if (!input.value.trim()) {
+            input.classList.add('error-border');
+            hasError = true;
+          }
+        });
+
+        if (hasError) {
+          e.preventDefault();
+          // Hide server-side error if user had a previous failed login
+          if(serverError) serverError.style.display = 'none';
+          // Show client-side toast
+          toast.style.display = 'block'; 
+        }
+      });

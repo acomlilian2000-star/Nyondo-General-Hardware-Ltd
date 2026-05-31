@@ -27,6 +27,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
 // Session
 app.use(
   expressSession({
@@ -48,7 +49,7 @@ passport.use(new LocalStrategy({ usernameField: "email" }, User.authenticate()))
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-// ✅ IMPROVED GLOBAL MIDDLEWARE (User Hydration)
+// ✅ FULLY CORRECTED GLOBAL MIDDLEWARE
 app.use(async (req, res, next) => {
   if (req.isAuthenticated()) {
     try {
@@ -63,9 +64,15 @@ app.use(async (req, res, next) => {
     res.locals.currentUser = null;
   }
   
+  // Flash messages
   res.locals.error_msg = req.flash("error_msg");
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error = req.flash("error");
+  
+  // Persistence: Hydrate formData into locals for Pug
+  const flashData = req.flash("formData");
+  res.locals.formData = flashData.length > 0 ? flashData[0] : {};
+  
   next();
 });
 

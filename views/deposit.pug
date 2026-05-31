@@ -4,14 +4,13 @@ html
     meta(charset="UTF-8")
     meta(name="viewport" content="width=device-width, initial-scale=1.0")
     title Salary Earner Scheme - NYONDO
-
     link(rel="stylesheet" href="/css/deposit.css")
+    style.
+      .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+      #errorToast { display: none; background-color: #ef4444; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-weight: bold; }
 
   body
-
     .container
-
-      // ================= BACK BUTTON (ADDED) =================
       .top-bar(style="margin-bottom:10px;")
         button(type="button" onclick="window.location.href='/adminDash'" style="padding:8px 15px; cursor:pointer;")
           | ← Back to Admin Dashboard
@@ -19,73 +18,42 @@ html
       header
         h1 NYONDO General Hardware LTD
         span.scheme-badge Salary Earner Deposit Scheme Portal
+      
+      // Error Message Popup
+      #errorToast Empty form cannot be submitted. Please fill in all fields!
+
+      if success_msg && success_msg.length > 0
+        div(style="background-color: #d1fae5; color: #065f46; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #10b981; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
+          | #{success_msg}
+
+      if error_msg && error_msg.length > 0
+        div(style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #ef4444; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
+          | #{error_msg}
 
       form#salaryForm(action="/deposit" method="POST")
-
-        // ================= CUSTOMER DETAILS =================
         h3 1. Member Registration
-
         .form-grid
-
           .input-group
-            label Full Name *
-
-            input(
-              type="text"
-              name="customerName"
-              required
-            )
-
+            label Full Name
+            input(type="text" name="customerName" value=(formData.customerName || '') class=(fieldErrors && fieldErrors.customerName ? 'error-border' : ''))
           .input-group
-            label NIN Number *
-
-            input#ninNumber(
-              type="text"
-              name="ninNumber"
-              maxlength="14"
-              minlength="14"
-              required
-            )
-
+            label NIN Number
+            input#ninNumber(type="text" name="ninNumber" value=(formData.ninNumber || '') class=(fieldErrors && fieldErrors.ninNumber ? 'error-border' : ''))
           .input-group
-            label Phone Number *
-
+            label Phone Number
             .phone-wrapper
               span.prefix +256
-
-              input(
-                type="tel"
-                name="customerPhone"
-                maxlength="9"
-                required
-              )
-
+              input(type="tel" name="customerPhone" value=(formData.customerPhone || '') class=(fieldErrors && fieldErrors.customerPhone ? 'error-border' : ''))
           .input-group
-            label Customer Address *
-
-            input(
-              type="text"
-              name="customerAddress"
-              required
-            )
-
+            label Customer Address
+            input(type="text" name="customerAddress" value=(formData.customerAddress || '') class=(fieldErrors && fieldErrors.customerAddress ? 'error-border' : ''))
           .input-group
             label Date of Registration
+            input(type="date" name="regDate" value=(formData.regDate || '') class=(fieldErrors && fieldErrors.regDate ? 'error-border' : ''))
 
-            input(
-              type="date"
-              name="regDate"
-              required
-            )
-
-        // ================= PRODUCTS =================
         h3 2. Products
-
-        .notice-box
-          | Only cement, iron sheets and iron bars are eligible for deposit sales
-
+        .notice-box Only cement, iron sheets and iron bars are eligible for deposit sales
         table
-
           thead
             tr
               th Product
@@ -95,355 +63,159 @@ html
               th Available Stock
               th Unit Price
               th Amount
-
           tbody#itemsBody
-
             tr.itemRow
-
               td
-                select.productSelect(
-                  name="product"
-                  required
-                )
-                  option(value="")
-                    | Select Product
-
+                select.productSelect(name="product" class=(fieldErrors && fieldErrors.product ? 'error-border' : ''))
+                  option(value="") Select Product
                   each item in products
-                    option(
-                      value=item._id
-                      data-price=item.unitPrice
-                      data-stock=item.quantity
-                    )= item.itemName
-
+                    option(value=item._id data-price=item.unitPrice data-stock=item.quantity)= item.itemName
               td
-                input.productName(
-                  type="text"
-                  readonly
-                  placeholder="Selected Item"
-                )
-
+                input.productName(type="text" readonly placeholder="Selected Item")
               td
-                select.specification(
-                  name="specification"
-                  required
-                )
-                  option(value="")
-                    | Select
-                  option(value="Bags")
-                    | Bags
-                  option(value="Pieces")
-                    | Pieces
-
+                select.specification(name="specification" class=(fieldErrors && fieldErrors.specification ? 'error-border' : ''))
+                  option(value="") Select
+                  option(value="Bags") Bags
+                  option(value="Pieces") Pieces
               td
-                input.quantity(
-                  type="number"
-                  name="quantity"
-                  min="1"
-                )
-
+                input.quantity(type="number" name="quantity" class=(fieldErrors && fieldErrors.quantity ? 'error-border' : ''))
               td
-                input.stockAvailable(
-                  type="number"
-                  readonly
-                  placeholder="Stock"
-                )
-
+                input.stockAvailable(type="number" readonly placeholder="Stock")
               td
-                input.unitPrice(
-                  type="number"
-                  name="unitPrice"
-                  readonly
-                )
-
+                input.unitPrice(type="number" name="unitPrice" readonly)
               td
-                input.itemTotal(
-                  type="number"
-                  name="itemTotal"
-                  readonly
-                )
+                input.itemTotal(type="number" name="itemTotal" readonly)
 
-        button#addItemBtn.add-btn(
-          type="button"
-        )
-          | + Add Product
+        button#addItemBtn.add-btn(type="button") + Add Product
 
         h3 Payment Summary
-
         .form-grid
-
           .input-group
             label Distance KM
-
-            input#distance(
-              type="number"
-              name="distance"
-            )
-
+            input#distance(type="number" name="distance" value=(formData.distance || ''))
           .input-group
             label Transport Cost
-
-            input#transportCost(
-              type="number"
-              name="transportCost"
-              readonly
-            )
-
+            input#transportCost(type="number" name="transportCost" readonly value=(formData.transportCost || ''))
           .input-group
             label Total To Pay
-
-            input#totalToPay(
-              type="number"
-              name="totalToPay"
-              readonly
-            )
-
+            input#totalToPay(type="number" name="totalToPay" readonly value=(formData.totalToPay || ''))
           .input-group
             label Amount Paid
-
-            input#amountPaid(
-              type="number"
-              name="amountPaid"
-            )
-
+            input#amountPaid(type="number" name="amountPaid" value=(formData.amountPaid || '') class=(fieldErrors && fieldErrors.amountPaid ? 'error-border' : ''))
           .input-group
             label Balance
-
-            input#balance(
-              type="number"
-              name="balance"
-              readonly
-            )
-
+            input#balance(type="number" name="balance" readonly value=(formData.balance || ''))
           .input-group
             label Payment Method
-
-            select(
-              name="paymentMethod"
-            )
-              option(value="Bank")
-                | Bank
-              option(value="Mobile Money")
-                | Mobile Money
-              option(value="Cash")
-                | Cash
+            select(name="paymentMethod")
+              option(value="Bank") Bank Transfer
+              option(value="Mobile Money") Mobile Money
+              option(value="Cash") Cash
 
         .print-area
-
-          button(
-            type="submit"
-          )
-            | SAVE DEPOSIT
-
-          button.btn-print(
-            type="button"
-            onclick="printReceipt()"
-          )
-            | PRINT RECEIPT
+          button(type="submit") SAVE DEPOSIT
+          button.btn-print(type="button" onclick="printReceipt()") PRINT RECEIPT
 
     script.
+      const form = document.getElementById("salaryForm");
+      const toast = document.getElementById("errorToast");
 
-      // ================= NIN FORMAT =================
-      document
-        .getElementById("ninNumber")
-        .addEventListener("input", function () {
-
-          this.value = this.value
-            .toUpperCase()
-            .replace(/[^A-Z0-9]/g, "")
-            .slice(0, 14);
-
+      // 1. Validation on Submit
+      form.addEventListener("submit", function(e) {
+        let isValid = true;
+        // Check all inputs and selects
+        const fields = this.querySelectorAll('input:not([readonly]), select');
+        
+        fields.forEach(field => {
+          if (!field.value || field.value.trim() === "") {
+            field.classList.add("error-border");
+            isValid = false;
+          } else {
+            field.classList.remove("error-border");
+          }
         });
 
-      // ================= UPDATE PRODUCT =================
+        if (!isValid) {
+          e.preventDefault(); // Stop submission
+          toast.style.display = "block"; // Show toast
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+
+      // 2. Clear errors on interaction
+      document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('error-border')) {
+          e.target.classList.remove('error-border');
+          toast.style.display = 'none';
+        }
+      });
+
+      // Existing Helper Functions
+      document.getElementById("ninNumber").addEventListener("input", function () {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      });
+
       function updatePrice(row) {
-
-        const product =
-          row.querySelector(".productSelect");
-
-        const selected =
-          product.options[product.selectedIndex];
-
+        const product = row.querySelector(".productSelect");
+        const selected = product.options[product.selectedIndex];
         if (!selected || !selected.value) {
           row.querySelector(".productName").value = "";
           row.querySelector(".unitPrice").value = "";
           row.querySelector(".stockAvailable").value = "";
           return;
         }
-
-        const price =
-          selected.getAttribute("data-price") || 0;
-
-        const stock =
-          selected.getAttribute("data-stock") || 0;
-
-        const name =
-          selected.textContent.trim();
-
-        row.querySelector(".unitPrice").value = price;
-        row.querySelector(".productName").value = name;
-        row.querySelector(".stockAvailable").value = stock;
-
+        row.querySelector(".unitPrice").value = selected.getAttribute("data-price") || 0;
+        row.querySelector(".stockAvailable").value = selected.getAttribute("data-stock") || 0;
+        row.querySelector(".productName").value = selected.textContent.trim();
         calcRow(row);
       }
 
-      // ================= CALCULATE ROW =================
       function calcRow(row) {
-
-        const qty =
-          Number(
-            row.querySelector(".quantity").value
-          ) || 0;
-
-        const stock =
-          Number(
-            row.querySelector(".stockAvailable").value
-          ) || 0;
-
-        const price =
-          Number(
-            row.querySelector(".unitPrice").value
-          ) || 0;
-
+        const qty = Number(row.querySelector(".quantity").value) || 0;
+        const stock = Number(row.querySelector(".stockAvailable").value) || 0;
+        const price = Number(row.querySelector(".unitPrice").value) || 0;
         if (qty > stock) {
-
           alert("Quantity exceeds available stock");
-
           row.querySelector(".quantity").value = stock;
-
           return;
         }
-
-        row.querySelector(".itemTotal").value =
-          qty * price;
-
+        row.querySelector(".itemTotal").value = qty * price;
         calcGrand();
       }
 
       function calcGrand() {
-
         let total = 0;
-
-        document
-          .querySelectorAll(".itemRow")
-          .forEach(row => {
-
-            total += Number(
-              row.querySelector(".itemTotal").value
-            ) || 0;
-
-          });
-
+        document.querySelectorAll(".itemRow").forEach(row => {
+          total += Number(row.querySelector(".itemTotal").value) || 0;
+        });
         calcTransport(total);
       }
 
       function calcTransport(total) {
-
-        const distance =
-          Number(
-            document.getElementById("distance").value
-          ) || 0;
-
+        const distance = Number(document.getElementById("distance").value) || 0;
         let transport = 30000;
-
-        if (
-          total >= 500000 &&
-          distance <= 10 &&
-          distance > 0
-        ) {
-          transport = 0;
-        }
-
-        document.getElementById("transportCost").value =
-          transport;
-
-        document.getElementById("totalToPay").value =
-          total + transport;
-
+        if (total >= 500000 && distance <= 10 && distance > 0) transport = 0;
+        document.getElementById("transportCost").value = transport;
+        document.getElementById("totalToPay").value = total + transport;
         calcBalance();
       }
 
       function calcBalance() {
-
-        const total =
-          Number(
-            document.getElementById("totalToPay").value
-          ) || 0;
-
-        const paid =
-          Number(
-            document.getElementById("amountPaid").value
-          ) || 0;
-
-        document.getElementById("balance").value =
-          total - paid;
+        const total = Number(document.getElementById("totalToPay").value) || 0;
+        const paid = Number(document.getElementById("amountPaid").value) || 0;
+        document.getElementById("balance").value = total - paid;
       }
 
-      document
-        .getElementById("addItemBtn")
-        .addEventListener("click", () => {
-
-          const row =
-            document.querySelector(".itemRow");
-
-          const clone =
-            row.cloneNode(true);
-
-          clone
-            .querySelectorAll("input")
-            .forEach(input => {
-              input.value = "";
-            });
-
-          clone
-            .querySelectorAll("select")
-            .forEach(select => {
-              select.selectedIndex = 0;
-            });
-
-          document
-            .getElementById("itemsBody")
-            .appendChild(clone);
-
-        });
-
-      document.addEventListener("change", e => {
-
-        const row =
-          e.target.closest(".itemRow");
-
-        if (!row) return;
-
-        if (
-          e.target.classList.contains("productSelect")
-        ) {
-          updatePrice(row);
-        }
-
+      document.getElementById("addItemBtn").addEventListener("click", () => {
+        const row = document.querySelector(".itemRow");
+        const clone = row.cloneNode(true);
+        clone.querySelectorAll("input").forEach(i => i.value = "");
+        clone.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+        document.getElementById("itemsBody").appendChild(clone);
       });
 
-      document.addEventListener("input", e => {
-
-        const row =
-          e.target.closest(".itemRow");
-
-        if (!row) return;
-
-        if (
-          e.target.classList.contains("quantity")
-        ) {
-          calcRow(row);
-        }
-
-      });
-
-      document
-        .getElementById("distance")
-        .addEventListener("input", calcGrand);
-
-      document
-        .getElementById("amountPaid")
-        .addEventListener("input", calcBalance);
-
-      function printReceipt() {
-        window.print();
-      }
+      document.addEventListener("change", e => { if (e.target.classList.contains("productSelect")) updatePrice(e.target.closest(".itemRow")); });
+      document.addEventListener("input", e => { if (e.target.classList.contains("quantity")) calcRow(e.target.closest(".itemRow")); });
+      document.getElementById("distance").addEventListener("input", calcGrand);
+      document.getElementById("amountPaid").addEventListener("input", calcBalance);
+      function printReceipt() { window.print(); }

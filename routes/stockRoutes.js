@@ -41,16 +41,12 @@ router.get("/stockDash", async (req, res) => {
       let soldQty = 0;
       sales.forEach(sale => {
         sale.items?.forEach(i => {
-          if (i.product?.toString() === stock._id.toString()) {
-            soldQty += Number(i.quantity || 0);
-          }
+          if (i.product?.toString() === stock._id.toString()) soldQty += Number(i.quantity || 0);
         });
       });
       deposits.forEach(dep => {
         dep.items?.forEach(i => {
-          if (i.product?.toString() === stock._id.toString()) {
-            soldQty += Number(i.quantity || 0);
-          }
+          if (i.product?.toString() === stock._id.toString()) soldQty += Number(i.quantity || 0);
         });
       });
 
@@ -61,25 +57,13 @@ router.get("/stockDash", async (req, res) => {
       };
     });
 
-    const totalStockValue = allStocks.reduce((sum, s) => {
-      const qty = Number(s.stockInQuantity || s.quantity || 0);
-      const cost = Number(s.unitCost || 0);
-      return sum + qty * cost;
-    }, 0);
+    const totalStockValue = allStocks.reduce((sum, s) => sum + (Number(s.stockInQuantity || s.quantity || 0) * Number(s.unitCost || 0)), 0);
 
-    const supplierCredits = await Supplier.find({
-      paymentMethod: { $regex: /^credit$/i }
-    });
-
-    const uniqueSuppliersOwed = await Supplier.distinct("supplier", {
-      paymentMethod: { $regex: /^credit$/i },
-      status: "PENDING"
-    });
+    const supplierCredits = await Supplier.find({ paymentMethod: { $regex: /^credit$/i } });
+    const uniqueSuppliersOwed = await Supplier.distinct("supplier", { paymentMethod: { $regex: /^credit$/i }, status: "PENDING" });
 
     res.render("stockDash", {
-      liveStocks,
-      allStocks,
-      totalStockValue,
+      liveStocks, allStocks, totalStockValue,
       lowStockCount: liveStocks.filter(i => i.currentQuantity <= 5).length,
       supplierCredits,
       suppliersOwed: uniqueSuppliersOwed.length,
@@ -87,20 +71,9 @@ router.get("/stockDash", async (req, res) => {
       success_msg: req.flash("success_msg"),
       error: req.flash("error")
     });
-
   } catch (err) {
     console.error(err);
-    res.render("stockDash", {
-      liveStocks: [],
-      allStocks: [],
-      totalStockValue: 0,
-      lowStockCount: 0,
-      supplierCredits: [],
-      suppliersOwed: 0,
-      error_msg: req.flash("error_msg"),
-      success_msg: req.flash("success_msg"),
-      error: req.flash("error")
-    });
+    res.render("stockDash", { liveStocks: [], allStocks: [], totalStockValue: 0, lowStockCount: 0, supplierCredits: [], suppliersOwed: 0, error_msg: req.flash("error_msg"), success_msg: req.flash("success_msg"), error: req.flash("error") });
   }
 });
 
@@ -110,21 +83,12 @@ router.get("/stockDash", async (req, res) => {
 router.get("/stock/update/:id", isLoggedIn, async (req, res) => {
   try {
     const itemToUpdate = await Stock.findById(req.params.id);
-    
     if (!itemToUpdate) {
       req.flash("error_msg", "Operational Error: That stock profile item could not be found.");
       return res.redirect("/stockDash"); 
     }
-
-    res.render("editStock", {
-      title: "Modify Product Inventory Record",
-      stockItem: itemToUpdate,
-      error_msg: req.flash("error_msg"),
-      success_msg: req.flash("success_msg"),
-      error: req.flash("error")
-    });
+    res.render("editStock", { title: "Modify Product Inventory Record", stockItem: itemToUpdate, error_msg: req.flash("error_msg"), success_msg: req.flash("success_msg"), error: req.flash("error") });
   } catch (error) {
-    console.error("Error fetching single stock record:", error);
     res.status(500).send("Internal Server Exception.");
   }
 });
@@ -135,33 +99,27 @@ router.get("/stock/update/:id", isLoggedIn, async (req, res) => {
 router.post("/stock/update/:id", isLoggedIn, async (req, res) => {
   try {
     const { quantity, unitCost, unitPrice, supplier, contactPerson } = req.body;
-
     if (!quantity || isNaN(quantity) || Number(quantity) < 0) {
       req.flash("error_msg", "Validation Error: Invalid quantity.");
       return res.redirect(`/stock/update/${req.params.id}`);
     }
-
-    // Update fields including Supplier and Contact Person
     await Stock.findByIdAndUpdate(req.params.id, {
       quantity: Number(quantity),
       stockInQuantity: Number(quantity), 
       unitCost: Number(unitCost),
       unitPrice: Number(unitPrice),
-      supplier: supplier,           // Added
-      contactPerson: contactPerson  // Added
+      supplier, contactPerson
     });
-
     req.flash("success_msg", "Inventory product records updated successfully!");
     res.redirect("/stockDash"); 
   } catch (error) {
-    console.error("Update error:", error);
     req.flash("error_msg", "System Exception: " + error.message);
     res.redirect(`/stock/update/${req.params.id}`);
   }
 });
 
 /* =========================
-   SUPPLIER TABLE (GROUPED)
+   SUPPLIER TABLE (RESTORED GROUPED VIEW)
 ========================= */
 router.get("/supplierTable", async (req, res) => {
   try {
@@ -229,58 +187,87 @@ router.get("/supplier/mark-paid/:id", async (req, res) => {
 /* =========================
    STOCK FORM / POST CODES
 ========================= */
+/* =========================
+   STOCK FORM / POST CODES
+========================= */
 router.get("/stockform", isLoggedIn, (req, res) => {
-  res.render("stock", { error_msg: req.flash("error_msg"), success_msg: req.flash("success_msg"), error: req.flash("error") });
+  res.render("stock", { 
+    formData: req.flash("formData")[0] || {}, 
+    fieldErrors: req.flash("fieldErrors")[0] || {},
+    error_msg: req.flash("error_msg"), 
+    success_msg: req.flash("success_msg"), 
+    error: req.flash("error") 
+  });
 });
 
 router.post("/stock", isLoggedIn, upload.array("productImage"), async (req, res) => {
   try {
-    const { itemName, quantity, supplier, contactPerson, supplierPhone, factoryName, unitCost, unitPrice, paymentMethod, category } = req.body;
+    const { 
+      itemName, quantity, supplier, contactPerson, supplierPhone, 
+      factoryName, unitCost, unitPrice, paymentMethod, category, specification 
+    } = req.body;
     
-    // Validation
-    if (!supplier || !contactPerson || !supplierPhone || !factoryName || !paymentMethod || !itemName) {
-      req.flash("error_msg", "All fields are required.");
-      return res.redirect("/stockform");
+    // Updated Validation: Now includes all requested fields
+    const fieldErrors = {};
+    const requiredFields = [
+      'itemName', 'quantity', 'unitCost', 'unitPrice', 'category', 
+      'specification', 'supplier', 'contactPerson', 'supplierPhone', 
+      'factoryName', 'paymentMethod'
+    ];
+    
+    requiredFields.forEach(field => {
+      const val = req.body[field];
+      // Check if value is missing, empty string, or an array containing empty strings
+      if (!val || (Array.isArray(val) ? val.some(v => !v || v.toString().trim() === '') : val.toString().trim() === '')) {
+        fieldErrors[field] = true;
+      }
+    });
+
+    if (Object.keys(fieldErrors).length > 0) {
+      req.flash("formData", req.body);
+      req.flash("fieldErrors", fieldErrors);
+      req.flash("error_msg", "Please fill in all required fields marked in red.");
+      return req.session.save(() => res.redirect("/stockform"));
     }
 
     const toArr = v => Array.isArray(v) ? v : [v];
-    const items = toArr(itemName), qtys = toArr(quantity), costs = toArr(unitCost), prices = toArr(unitPrice), cats = toArr(category), methods = toArr(paymentMethod);
+    const items = toArr(itemName), qtys = toArr(quantity), costs = toArr(unitCost), 
+          prices = toArr(unitPrice), cats = toArr(category), specs = toArr(specification);
     const images = req.files || [];
 
     for (let i = 0; i < items.length; i++) {
-      const qty = Number(qtys[i]), cost = Number(costs[i]), price = Number(prices[i]);
-      const method = (methods[i] || methods[0] || "cash").toLowerCase();
-      
       await Supplier.create({
         productName: items[i].trim(),
         category: cats[i] || "General",
-        quantity: qty,
-        unitCost: cost,
+        specification: specs[i], // Saving specification
+        quantity: Number(qtys[i]),
+        unitCost: Number(costs[i]),
         supplier: supplier.trim(),
-        contactPerson: contactPerson,
-        supplierPhone: supplierPhone,
-        factoryName: factoryName,
-        paymentMethod: method,
-        status: method === "credit" ? "PENDING" : "PAID",
+        contactPerson: contactPerson.trim(),
+        supplierPhone: supplierPhone.trim(),
+        factoryName: factoryName.trim(),
+        paymentMethod: paymentMethod.toLowerCase(),
+        status: paymentMethod.toLowerCase() === "credit" ? "PENDING" : "PAID",
         Attendant: req.user?._id || null
       });
 
       const existingStock = await Stock.findOne({ itemName: items[i].trim() });
       if (existingStock) {
-        existingStock.quantity += qty;
-        existingStock.stockInQuantity += qty;
-        existingStock.unitCost = cost;
-        existingStock.unitPrice = price;
+        existingStock.quantity += Number(qtys[i]);
+        existingStock.stockInQuantity += Number(qtys[i]);
+        existingStock.unitCost = Number(costs[i]);
+        existingStock.unitPrice = Number(prices[i]);
         await existingStock.save();
       } else {
         await Stock.create({
           itemName: items[i].trim(),
           slug: items[i].trim().toLowerCase().replace(/\s+/g, "-"),
           category: cats[i] || "General",
-          quantity: qty,
-          stockInQuantity: qty,
-          unitCost: cost,
-          unitPrice: price,
+          specification: specs[i],
+          quantity: Number(qtys[i]),
+          stockInQuantity: Number(qtys[i]),
+          unitCost: Number(costs[i]),
+          unitPrice: Number(prices[i]),
           productImage: images[i] ? images[i].filename : "",
           Attendant: req.user?._id || null
         });
@@ -288,11 +275,11 @@ router.post("/stock", isLoggedIn, upload.array("productImage"), async (req, res)
     }
 
     req.flash("success_msg", "Stock recorded successfully!");
-    res.redirect("/stockDash");
+    req.session.save(() => res.redirect("/stockDash"));
   } catch (err) {
     console.error(err);
     req.flash("error_msg", "System error: " + err.message);
-    res.redirect("/stockform");
+    req.session.save(() => res.redirect("/stockform"));
   }
 });
 

@@ -3,113 +3,61 @@ html
   head
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1")
-
     title NYONDO | Staff Registration
-
     link(rel="stylesheet", href="/css/signup.css")
-
     style.
-      /* Internal CSS for clean, high-contrast system validation banners */
-      .alert-box {
-        padding: 12px 16px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        font-weight: bold;
-        font-size: 14px;
-        text-align: left;
-      }
-      .alert-success {
-        background-color: #d1fae5;
-        color: #065f46;
-        border-left: 5px solid #10b981;
-      }
-      .alert-error {
-        background-color: #fee2e2;
-        color: #991b1b;
-        border-left: 5px solid #ef4444;
-      }
+      .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+      #errorToast { display: none; background-color: #ef4444; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+      .alert-box { padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; font-size: 14px; text-align: left; }
+      .alert-success { background-color: #d1fae5; color: #065f46; border-left: 5px solid #10b981; }
+      .alert-error { background-color: #fee2e2; color: #991b1b; border-left: 5px solid #ef4444; }
+      .back-btn { padding: 8px 15px; cursor: pointer; margin-bottom: 20px; display: inline-block; }
 
   body
-
     .page-wrapper
+      
+      // Back Button Section
+      .top-bar(style='padding:10px;')
+        button.back-btn(type='button' onclick="window.location.href='/adminDash'")
+          | ← Back to Dashboard
 
-      .brand-header
-        | NYONDO GENERAL HARDWARE LTD
-
+      .brand-header NYONDO GENERAL HARDWARE LTD
       section.signup-card
 
-        // ================= FLASH NOTIFICATIONS =================
+        #errorToast All fields are required and must be valid!
+
         if success_msg && success_msg.length > 0
-          .alert-box.alert-success
-            | #{success_msg}
-
+          .alert-box.alert-success #{success_msg}
         if error_msg && error_msg.length > 0
-          .alert-box.alert-error
-            | #{error_msg}
-
+          .alert-box.alert-error #{error_msg}
         if error && error.length > 0
-          .alert-box.alert-error
-            | #{error}
+          .alert-box.alert-error #{error}
 
         h2 Staff Signup
-
         p Enter your details to register
 
-        form(action="/SignUp" method="post")
-
+        form(action="/SignUp" method="post" id="signupForm")
           .form-group
             label(for="fullName") Full Name
-
-            input(
-              type="text"
-              id="fullName"
-              name="fullName"
-              placeholder="e.g. John Musoke"
-            )
+            input(type="text" id="fullName" name="fullName" placeholder="e.g. John Musoke")
 
           .form-group
             label(for="email") Email Address
-
-            input(
-              type="text"
-              id="email"
-              name="email"
-              placeholder="name@company.com"
-            )
+            input(type="email" id="email" name="email" placeholder="name@company.com")
 
           .form-group
             label(for="ninNumber") NIN Number (14 Characters)
-
-            input(
-              type="text"
-              id="ninNumber"
-              name="ninNumber"
-              placeholder="CM000000000000"
-              style="text-transform: uppercase;"
-            )
+            input(type="text" id="ninNumber" name="ninNumber" placeholder="CM000000000000" style="text-transform: uppercase;" maxlength="14")
 
           .form-group
             label(for="phoneNumber") Phone Number
-
             .phone-container
-
               span.phone-prefix +256
+              input(type="text" id="phoneNumber" name="ugPhoneNumber" placeholder="770000000")
 
-              input(
-                type="text"
-                id="phoneNumber"
-                name="ugPhoneNumber"
-                placeholder="770000000"
-              )
-
-          // ================= ROLE SECTION =================
           .form-group
             label(for="role") User Role
-
-            select(
-              id="role"
-              name="role"
-            )
+            select(id="role" name="role")
               option(value="") -- Select Role --
               option(value="admin") Admin
               option(value="stock_manager") Stock Manager
@@ -117,31 +65,40 @@ html
 
           .form-group
             label(for="address") Residential Address
-
-            input(
-              type="text"
-              id="address"
-              name="address"
-              placeholder="Nansana, Wakiso"
-            )
+            input(type="text" id="address" name="address" placeholder="Nansana, Wakiso")
 
           .form-group
             label(for="password") Password
+            small.password-hint Password must be at least 8 characters
+            input(type="password" id="password" name="password" placeholder="••••••••")
 
-            small.password-hint
-              | Password must be at least 8 characters with letters and numbers
+          button.btn-submit(type="submit") Create Account
 
-            input(
-              type="password"
-              id="password"
-              name="password"
-              placeholder="••••••••"
-            )
+    script.
+      document.getElementById('signupForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        const inputs = this.querySelectorAll('input, select');
+        const nin = document.getElementById('ninNumber');
+        const toast = document.getElementById('errorToast');
 
-          button.btn-submit(type="submit")
-            | Create Account
+        inputs.forEach(field => {
+          if (!field.value || field.value.trim() === '') {
+            field.classList.add('error-border');
+            isValid = false;
+          } else {
+            field.classList.remove('error-border');
+          }
+        });
 
-        //- .footer-text
-        //-   |
-        //-   Already registered?
-        //-   a(href="/login") Login Here
+        // Specific NIN length validation
+        if (nin.value.length !== 14) {
+          nin.classList.add('error-border');
+          isValid = false;
+        }
+
+        if (!isValid) {
+          e.preventDefault();
+          toast.style.display = 'block';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
