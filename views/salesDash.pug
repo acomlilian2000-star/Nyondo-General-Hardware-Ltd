@@ -12,10 +12,18 @@ html
       .brand
         h2 NYONDO SALES
       ul.nav
+        if user && user.role === 'admin'
+          li
+            a(href="/adminDash") 📊 Dashboard
+        
+        if user && (user.role === 'admin' || user.role === 'sales_attendant') 
+          li
+            a(href="/salesform") 📝 Make New Sale
+            
+        // Removed the IF condition so all logged-in users see this
         li
-          a(href="/adminDash") 📊 Dashboard
-        li
-          a(href="/salesform") 📝 Make New Sale
+          a(href="/stockDash") Stock
+        
         li
           a(href="/logout") 🚪 Logout
 
@@ -33,13 +41,14 @@ html
         .stats-grid
           .stat-card
             h3 My Sales Today
-            p UGX #{totalSalesToday || 0}
+            p UGX #{Number(totalSalesToday || 0).toLocaleString()}
           .stat-card
             h3 Total Revenue
-            p UGX #{(dbSales || []).reduce((a, b) => a + (b.grandTotal || 0), 0)}
+            p UGX #{(dbSales || []).reduce((a, b) => a + (b.grandTotal || 0), 0).toLocaleString()}
           .stat-card
             h3 Low Stock Alert
-            p #{typeof lowStockCount !== 'undefined' ? lowStockCount : 0}
+            p #{lowStockCount || 0}
+                      
 
         // ================= SALES TABLE =================
         .section-box
@@ -90,13 +99,16 @@ html
                             strong UGX #{Number(sale.grandTotal || 0).toLocaleString()}
                           td(rowspan=sale.items.length)= sale.paymentMethod || '-'
                           
-                          // ================= ADMIN-ONLY ACTIONS =================
+                          // ================= ACTIONS =================
                           td(rowspan=sale.items.length)
                             div(style="display: flex; flex-direction: column; gap: 5px;")
                               if currentUser && currentUser.role === 'admin'
                                 a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
                                 a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-                              a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
+                              
+                              // Receipt hidden from 'stock_manager'
+                              if currentUser && currentUser.role !== 'stock_manager'
+                                a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
                       else
                         tr
                           td= item.product && item.product.itemName ? item.product.itemName : (item.itemName || 'Deleted Product')
@@ -107,13 +119,13 @@ html
 
                   else
                     tr
-                      // ... (fallback for old entries)
-                      td
+                      td(colspan="15")
                         div(style="display: flex; flex-direction: column; gap: 5px;")
                           if currentUser && currentUser.role === 'admin'
                             a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
                             a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-                          a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
+                          if currentUser && currentUser.role !== 'stock_manager'
+                            a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
 
     script.
       function updateTime() {

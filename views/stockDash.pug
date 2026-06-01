@@ -4,50 +4,48 @@ html
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     title NYONDO | Stock Manager Dashboard
-
     link(rel="stylesheet", href="/css/stockDash.css")
 
   body
 
     // ================= SIDEBAR =================
     aside.sidebar
-
       .sidebar-brand
         h2 NYONDO STOCK
 
       ul.sidebar-links
-
-        li.active
-          a(href="/adminDash") 📊 Dashboard
-
+        if user && user.role === 'admin'
+          li.active
+            a(href="/adminDash") 📊 Dashboard
+        
+        if user && (user.role === 'admin' || user.role === 'stock_manager')
+          li
+            a(href="/stockform") ➕ Make New Stock
+        
         li
-          a(href="/stockform") ➕ Make New Stock
+          a(href="/salesDash") Sales
 
-        li
-          a(href="/supplierTable") 💳 Supplier Table
+        if user && (user.role === 'admin' || user.role === 'stock_manager')
+          li
+            a(href="/supplierTable") 💳 Supplier Table
 
         li
           a(href="/logout") 🚪 Logout
 
-
     // ================= MAIN CONTENT =================
     .main-content
-
       nav.navbar
         .brand-container
           .logo-placeholder N
-
           .nav-brand-text
             strong NYONDO GENERAL HARDWARE
             span Quality Equipment • Nansana, Uganda
 
         .nav-right
-          span.user-status Logged in as: Stock Manager
+          span.user-status Logged in as: #{user ? user.role : 'Guest'}
           span#live-time
 
-
       .container
-
         // ================= FLASH NOTIFICATIONS CODES =================
         if success_msg && success_msg.length > 0
           div(style="background-color: #d1fae5; color: #065f46; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #10b981; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
@@ -60,7 +58,6 @@ html
         // ================= TOTAL STOCK VALUE =================
         -
           let totalStockValue = 0;
-
           if (liveStocks && liveStocks.length > 0) {
             liveStocks.forEach(item => {
               const qty = Number(item.stockInQuantity || item.quantity || 0);
@@ -71,7 +68,6 @@ html
 
         // ================= DASHBOARD CARDS =================
         .stats-grid
-
           .stat-card
             h3 Total Stock Items
             p= liveStocks ? liveStocks.length : 0
@@ -80,7 +76,6 @@ html
             h3 Low Stock Alerts
             p= lowStockCount || 0
 
-          // ================= FIXED SUPPLIER CREDITS COUNT =================
           .stat-card
             h3 Supplier Credits
             p= typeof suppliersOwed !== 'undefined' ? suppliersOwed : (supplierCredits ? supplierCredits.length : 0)
@@ -89,14 +84,11 @@ html
             h3 Total Stock Value
             p UGX #{Number(totalStockValue).toLocaleString()}
 
-
         // ================= PRODUCT STOCK TABLE =================
         .section-box
           h3 📦 Product Stock Table
-
           .table-scroll
             table.stock-table
-
               thead
                 tr
                   th Product Name
@@ -105,9 +97,7 @@ html
                   th Selling Price
                   th Status
                   th Actions
-
               tbody
-
                 -
                   const products = [
                     { name: "Cement (CEM II)", key: "cement-cem-ii" },
@@ -124,41 +114,17 @@ html
                   ];
 
                 each product in products
-
                   -
-                    const stockItem =
-                      liveStocks
-                        ? liveStocks.find(i =>
-                            (i.slug || "") === product.key
-                          )
-                        : null;
-
-                    const qty = stockItem
-                      ? Number(stockItem.currentQuantity || 0)
-                      : 0;
-
-                    const buy = stockItem
-                      ? Number(stockItem.unitCost || 0)
-                      : 0;
-
-                    const sell = stockItem
-                      ? Number(stockItem.unitPrice || 0)
-                      : 0;
+                    const stockItem = liveStocks ? liveStocks.find(i => (i.slug || "") === product.key) : null;
+                    const qty = stockItem ? Number(stockItem.currentQuantity || 0) : 0;
+                    const buy = stockItem ? Number(stockItem.unitCost || 0) : 0;
+                    const sell = stockItem ? Number(stockItem.unitPrice || 0) : 0;
 
                   tr
-
-                    td
-                      strong= product.name
-
-                    td
-                      strong= qty
-
-                    td
-                      | UGX #{buy.toLocaleString()}
-
-                    td
-                      | UGX #{sell.toLocaleString()}
-
+                    td: strong= product.name
+                    td: strong= qty
+                    td UGX #{buy.toLocaleString()}
+                    td UGX #{sell.toLocaleString()}
                     td
                       if qty <= 0
                         span.status-low OUT OF STOCK
@@ -166,21 +132,17 @@ html
                         span.status-low LOW STOCK
                       else
                         span.status-ok AVAILABLE
-
                     td
-                      if stockItem
-                        a.btn.btn-blue(
-                          href=`/stock/update/${stockItem._id}`
-                        ) Update
-                      else
-                        span -
-                        
+                      if user && (user.role === 'admin' || user.role === 'stock_manager')
+                        if stockItem
+                          a.btn.btn-blue(href=`/stock/update/${stockItem._id}`) Update
+                        else
+                          span -
 
     script.
       function updateClock() {
         const now = new Date();
         document.getElementById("live-time").innerText = now.toLocaleString();
       }
-
       setInterval(updateClock, 1000);
       updateClock();

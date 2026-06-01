@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Sales = require("../models/Sales");
 const Stock = require("../models/Stock");
+const Deposit = require("../models/Deposit"); // Added Deposit model
 
 /* =========================
    AUTH MIDDLEWARE
@@ -14,17 +15,28 @@ function isLoggedIn(req, res, next) {
 }
 
 /* =========================
-   SHARED STOCK CALC (FIXED)
+   SHARED STOCK CALC (UNIFIED)
 ========================= */
 async function getLiveStock() {
   const stocks = await Stock.find();
   const sales = await Sales.find();
+  const deposits = await Deposit.find(); // Fetching deposits to ensure accuracy
 
   return stocks.map((stock) => {
     let soldQty = 0;
 
+    // Subtract Sales
     sales.forEach((sale) => {
       sale.items?.forEach((i) => {
+        if (i.product?.toString() === stock._id.toString()) {
+          soldQty += Number(i.quantity || 0);
+        }
+      });
+    });
+
+    // Subtract Deposits (If your deposits represent stock outflows)
+    deposits.forEach((dep) => {
+      dep.items?.forEach((i) => {
         if (i.product?.toString() === stock._id.toString()) {
           soldQty += Number(i.quantity || 0);
         }
@@ -45,7 +57,6 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
   try {
     let filter = {};
 
-    // Apply month filter for sales list if present
     if (req.query.month) {
       const startDate = new Date(req.query.month + "-01");
       const endDate = new Date(startDate);
@@ -59,9 +70,6 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       .populate("Attendant", "fullName")
       .sort({ createdAt: -1 });
 
-    /* =========================
-       TOTALS
-    ========================= */
     const start = new Date();
     start.setHours(0, 0, 0, 0);
 
@@ -84,17 +92,13 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
     });
 
     /* =========================
-       LOW STOCK (FIX LOGIC)
+       LOW STOCK (UNIFIED LOGIC)
     ========================= */
-    // 1. Get the actual live stock tracking array
     const liveStock = await getLiveStock();
+    
+    // Using the same universal filter as your stockDash
+    const lowStockItems = liveStock.filter((item) => Number(item.currentQuantity) <= 5);
 
-    // 2. Filter live items where current calculated stock is between 0 and 5
-    const lowStockItems = liveStock.filter(
-      (item) => item.currentQuantity >= 0 && item.currentQuantity <= 5
-    );
-
-    // FIXED: Passed flash variables into the salesDash template context layer
     res.render("salesDash", {
       dbSales,
       totalSalesToday,
@@ -108,7 +112,6 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-
     res.render("salesDash", {
       dbSales: [],
       totalSalesToday: 0,
@@ -130,7 +133,6 @@ router.get("/salesform", isLoggedIn, async (req, res) => {
   try {
     const items = await Stock.find({ quantity: { $gt: 0 } });
     
-    // FIXED: Rendered view profile with explicit flash array references appended
     res.render("sales", { 
       products: items,
       error_msg: req.flash("error_msg"),
@@ -150,22 +152,10 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
     if (!req.user) return res.status(401).send("User not logged in");
 
     let {
-      date,
-      product,
-      specification,
-      quantity,
-      unitPrice,
-      customerName,
-      phoneNumber,
-      customerAddress,
-      customerType,
-      distance,
-      transportCost,
+      date, product, specification, quantity, unitPrice, customerName,
+      phoneNumber, customerAddress, customerType, distance, transportCost,
     } = req.body;
 
-    /* =========================================================
-       BACKEND VALIDATION RULES
-       ========================================================= */
     if (!customerName || customerName.trim() === "") {
       req.flash("error_msg", "Customer name is required.");
       return res.redirect("/salesform");
@@ -195,7 +185,6 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
     let total = 0;
 
     for (let i = 0; i < product.length; i++) {
-      // Catch empty or unselected dynamic product rows
       if (!product[i] || product[i] === "") {
         req.flash("error_msg", `Row ${i + 1}: Please select a valid product choice.`);
         return res.redirect("/salesform");

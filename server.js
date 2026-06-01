@@ -77,6 +77,11 @@ app.use(async (req, res, next) => {
 });
 
 // 6. Routes
+app.use((req, res, next) => {
+  // Makes 'user' available in all Pug/EJS files automatically
+  res.locals.user = req.user; 
+  next();
+});
 app.use("/", require("./routes/userRoutes"));
 app.use("/", require("./routes/salesRoutes"));
 app.use("/", require("./routes/depositRoutes"));

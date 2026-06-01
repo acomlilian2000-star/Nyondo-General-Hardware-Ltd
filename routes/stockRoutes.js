@@ -63,6 +63,7 @@ router.get("/stockDash", async (req, res) => {
     const uniqueSuppliersOwed = await Supplier.distinct("supplier", { paymentMethod: { $regex: /^credit$/i }, status: "PENDING" });
 
     res.render("stockDash", {
+      user: req.user,
       liveStocks, allStocks, totalStockValue,
       lowStockCount: liveStocks.filter(i => i.currentQuantity <= 5).length,
       supplierCredits,
