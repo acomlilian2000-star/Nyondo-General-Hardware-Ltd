@@ -27,14 +27,13 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-
 // Session
 app.use(
   expressSession({
     secret: process.env.SESSION_SECRET || "NyondoStockSecret",
     resave: false,
     saveUninitialized: false,
-  })
+  }),
 );
 
 // Flash
@@ -44,16 +43,17 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ✅ CORRECT PASSPORT SETUP
-passport.use(new LocalStrategy({ usernameField: "email" }, User.authenticate()));
+// PASSPORT SETUP
+passport.use(
+  new LocalStrategy({ usernameField: "email" }, User.authenticate()),
+);
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-// ✅ FULLY CORRECTED GLOBAL MIDDLEWARE
+//  GLOBAL MIDDLEWARE
 app.use(async (req, res, next) => {
   if (req.isAuthenticated()) {
     try {
-      // Re-fetch full user from DB to ensure 'role' is always present
       const fullUser = await User.findById(req.user._id);
       res.locals.currentUser = fullUser;
     } catch (err) {
@@ -63,23 +63,21 @@ app.use(async (req, res, next) => {
   } else {
     res.locals.currentUser = null;
   }
-  
+
   // Flash messages
   res.locals.error_msg = req.flash("error_msg");
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error = req.flash("error");
-  
-  // Persistence: Hydrate formData into locals for Pug
+
   const flashData = req.flash("formData");
   res.locals.formData = flashData.length > 0 ? flashData[0] : {};
-  
+
   next();
 });
 
 // 6. Routes
 app.use((req, res, next) => {
-  // Makes 'user' available in all Pug/EJS files automatically
-  res.locals.user = req.user; 
+  res.locals.user = req.user;
   next();
 });
 app.use("/", require("./routes/userRoutes"));
@@ -93,6 +91,4 @@ app.use((req, res) => {
 });
 
 // 8. Start server
-app.listen(port, () =>
-  console.log(`Listening on port ${port}`)
-);
+app.listen(port, () => console.log(`Listening on port ${port}`));

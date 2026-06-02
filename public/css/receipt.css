@@ -1,24 +1,17 @@
-/* =========================
-   GLOBAL RESET
-========================= */
+/* global */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
-/* =========================
-   BODY
-========================= */
+/* body */
 body {
   font-family: Arial, sans-serif;
   background: #f4f6f8;
   padding: 20px;
 }
 
-/* =========================
-   RECEIPT CONTAINER
-========================= */
+/* receipt container */
 .receipt {
   width: 320px;
   margin: auto;
@@ -26,12 +19,10 @@ body {
   border: 1px solid #ddd;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* =========================
-   HEADER
-========================= */
+/* header */
 h2 {
   text-align: center;
   font-size: 18px;
@@ -46,9 +37,7 @@ hr {
   margin: 10px 0;
 }
 
-/* =========================
-   ROW LAYOUT
-========================= */
+/* row layout */
 .row {
   display: flex;
   justify-content: space-between;
@@ -57,20 +46,16 @@ hr {
   color: #333;
 }
 
-/* labels stronger */
 .row span:first-child {
   font-weight: bold;
 }
 
-/* totals highlight */
 .row strong {
   font-size: 15px;
   color: #000;
 }
 
-/* =========================
-   PRINT BUTTON
-========================= */
+/* print button */
 .print-btn {
   margin-top: 15px;
   width: 100%;
@@ -87,9 +72,7 @@ hr {
   background: #21867a;
 }
 
-/* =========================
-   PRINT MODE (IMPORTANT)
-========================= */
+/* print mode */
 @media print {
   body {
     background: white;

@@ -1,116 +1,115 @@
+:root {
+  --nyondo-blue: #1e3a8a;
+  --accent-cyan: #0ea5e9;
+  --white: #ffffff;
+  --text-silver: #cbd5e1;
+}
 
-      :root {
-        --nyondo-blue: #1e3a8a; /* Deep Enterprise Blue */
-        --accent-cyan: #0ea5e9;
-        --white: #ffffff;
-        --text-silver: #cbd5e1;
-      }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-      }
+body,
+html {
+  height: 100%;
+  width: 100%;
+  background-color: var(--nyondo-blue);
+}
 
-      body,
-      html {
-        height: 100%;
-        width: 100%;
-        background-color: var(--nyondo-blue);
-      }
+/* Hero Container  */
+.hero {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-      /* Hero Container with Industrial Building Materials Background */
-      .hero {
-        height: 100vh;
-        width: 100%;
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        /* Industrial texture background representing raw materials and equipment */
-        background:
-          linear-gradient(rgba(30, 58, 138, 0.8), rgba(30, 58, 138, 0.9)),
-          url("https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=2000");
-        background-size: cover;
-        background-position: center;
-      }
+  background:
+    linear-gradient(rgba(30, 58, 138, 0.8), rgba(30, 58, 138, 0.9)),
+    url("https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=2000");
+  background-size: cover;
+  background-position: center;
+}
 
-      /* Symmetrical Centered Card */
-      .marketing-card {
-        max-width: 500px;
-        width: 90%;
-        padding: 60px 40px;
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        text-align: center;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        color: var(--white);
-      }
+/* Symmetrical Centered Card */
+.marketing-card {
+  max-width: 500px;
+  width: 90%;
+  padding: 60px 40px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  color: var(--white);
+}
 
-      .welcome-badge {
-        display: inline-block;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 4px;
-        color: var(--accent-cyan);
-        margin-bottom: 20px;
-      }
+.welcome-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: var(--accent-cyan);
+  margin-bottom: 20px;
+}
 
-      h1 {
-        font-size: 2.6rem;
-        font-weight: 800;
-        line-height: 1.1;
-        margin-bottom: 24px;
-        letter-spacing: -1px;
-      }
+h1 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  letter-spacing: -1px;
+}
 
-      .sub-message {
-        font-size: 1.1rem;
-        line-height: 1.6;
-        color: var(--text-silver);
-        margin-bottom: 40px;
-        font-weight: 400;
-      }
+.sub-message {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-silver);
+  margin-bottom: 40px;
+  font-weight: 400;
+}
 
-      /* Professional Action Button */
-      .btn-portal {
-        display: block;
-        width: 100%;
-        padding: 18px;
-        background: var(--white);
-        color: var(--nyondo-blue);
-        text-decoration: none;
-        font-weight: 800;
-        font-size: 0.9rem;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
+/*Action button  */
+.btn-portal {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  background: var(--white);
+  color: var(--nyondo-blue);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
-      .btn-portal:hover {
-        background: var(--accent-cyan);
-        color: var(--white);
-        transform: translateY(-2px);
-        box-shadow: 0 15px 30px rgba(14, 165, 233, 0.4);
-      }
+.btn-portal:hover {
+  background: var(--accent-cyan);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(14, 165, 233, 0.4);
+}
 
-      /* Branding Top Left */
-      .brand {
-        position: absolute;
-        top: 40px;
-        left: 40px;
-        font-weight: 900;
-        letter-spacing: 2px;
-        font-size: 1.1rem;
-        color: var(--white);
-      }
-      .button-group {
+/* Branding  */
+.brand {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+  color: var(--white);
+}
+.button-group {
   display: flex;
   gap: 15px;
   justify-content: center;
@@ -140,4 +139,3 @@
 .btn-signup:hover {
   opacity: 0.9;
 }
-    

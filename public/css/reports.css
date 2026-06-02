@@ -1,7 +1,4 @@
-/* ===============================
-   GLOBAL
-================================= */
-
+/* global */
 *{
   margin:0;
   padding:0;
@@ -14,10 +11,7 @@ body{
   color:#222;
 }
 
-/* ===============================
-   SIDEBAR
-================================= */
-
+/* sidebar */
 .sidebar{
   position:fixed;
   top:0;
@@ -64,19 +58,14 @@ body{
   color:#fff;
 }
 
-/* ===============================
-   MAIN CONTENT
-================================= */
-
+/* main content */
 .main-content{
   margin-left:240px;
   min-height:100vh;
   padding:20px;
 }
 
-/* ===============================
-   NAVBAR
-================================= */
+/* Navbar */
 
 .navbar{
   background:#fff;
@@ -96,9 +85,7 @@ body{
   font-weight:600;
 }
 
-/* ===============================
-   PRINT BUTTON
-================================= */
+/* print button */
 
 .print-btn{
   padding:8px 14px;
@@ -115,9 +102,7 @@ body{
   opacity:0.85;
 }
 
-/* ===============================
-   STATS CARDS
-================================= */
+/* stat cards */
 
 .stats-grid{
   display:grid;
@@ -150,9 +135,7 @@ body{
   color:#111827;
 }
 
-/* ===============================
-   CHART ROW
-================================= */
+
 
 .chart-row{
   display:grid;
@@ -160,10 +143,7 @@ body{
   gap:15px;
   margin-bottom:15px;
 }
-
-/* ===============================
-   CHART BOX
-================================= */
+/* chart box */
 
 .chart-box{
   background:#fff;
@@ -179,9 +159,7 @@ body{
   color:#111827;
 }
 
-/* ===============================
-   REDUCED PIE CHART SIZE
-================================= */
+/* pie-charts */
 
 .chart-box canvas{
   max-width:260px !important;
@@ -192,9 +170,7 @@ body{
   display:block;
 }
 
-/* ===============================
-   SECTION BOX
-================================= */
+/* section box */
 
 .section-box{
   background:#fff;
@@ -208,9 +184,7 @@ body{
   color:#111827;
 }
 
-/* ===============================
-   TABLE
-================================= */
+/* table */
 
 table{
   width:100%;
@@ -243,10 +217,7 @@ tbody td{
   color:#374151;
 }
 
-/* ===============================
-   BUTTONS
-================================= */
-
+/* buttons */
 .btn{
   display:inline-block;
   padding:7px 12px;
@@ -274,9 +245,6 @@ tbody td{
   background:#16a34a;
 }
 
-/* ===============================
-   RESPONSIVE
-================================= */
 
 @media(max-width:900px){
 

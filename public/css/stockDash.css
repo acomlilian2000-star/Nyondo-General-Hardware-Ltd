@@ -10,7 +10,7 @@
   --gold: #f77f00;
 }
 
-/* ================= BASE ================= */
+/* base */
 * {
   margin: 0;
   padding: 0;
@@ -23,7 +23,7 @@ body {
   color: white;
 }
 
-/* ================= SIDEBAR ================= */
+/* sideBar */
 .sidebar {
   position: fixed;
   top: 10px;
@@ -35,12 +35,11 @@ body {
   background: var(--sidebar);
 
   border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   padding: 18px;
 }
 
-/* SIDEBAR BRAND */
 .sidebar-brand {
   margin-bottom: 25px;
   text-align: center;
@@ -81,17 +80,17 @@ body {
 
 .sidebar-links a:hover,
 .sidebar-links li.active a {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   transform: translateX(4px);
 }
 
-/* ================= MAIN CONTENT ================= */
+/* MAIN CONTENT  */
 .main-content {
   margin-left: 200px;
   padding: 15px;
 }
 
-/* ================= NAVBAR ================= */
+/* NAVBAR */
 .navbar {
   background: #0f2a4d;
   color: white;
@@ -161,12 +160,12 @@ body {
   font-size: 12px;
 }
 
-/* ================= CONTAINER ================= */
+/*  CONTAINER */
 .container {
   width: 100%;
 }
 
-/* ================= STATS ================= */
+/* STATS */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -198,14 +197,14 @@ body {
   margin-top: 5px;
 }
 
-/* ================= MAIN LAYOUT ================= */
+/* MAIN LAYOUT  */
 .main-layout {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-/* ================= SECTION BOX ================= */
+/* SECTION BOX  */
 .section-box {
   background: var(--card);
   color: var(--text);
@@ -222,7 +221,7 @@ body {
   font-size: 16px;
 }
 
-/* ================= TABLE ================= */
+/* TABLE  */
 .table-scroll {
   overflow-x: auto;
 }
@@ -254,12 +253,12 @@ td {
   white-space: nowrap;
 }
 
-/* ================= IMAGE ================= */
+/* IMAGE  */
 img {
   border-radius: 8px;
 }
 
-/* ================= STATUS ================= */
+/*  STATUS  */
 .status-low {
   color: var(--danger);
   font-weight: bold;
@@ -270,7 +269,7 @@ img {
   font-weight: bold;
 }
 
-/* ================= BUTTONS ================= */
+/*  BUTTONS  */
 .btn {
   display: inline-block;
 
@@ -309,9 +308,7 @@ img {
   opacity: 0.85;
 }
 
-/* ================= RESPONSIVE ================= */
-@media(max-width: 900px) {
-
+@media (max-width: 900px) {
   .sidebar {
     width: 160px;
   }
@@ -329,5 +326,4 @@ img {
     gap: 10px;
     align-items: flex-start;
   }
-
 }

@@ -1,6 +1,6 @@
 :root {
-  --bg: #0b1d39;        /* deep blue background */
-  --sidebar: #0b1d39;   /* blended sidebar */
+  --bg: #0b1d39;
+  --sidebar: #0b1d39;
   --card: #ffffff;
   --text: #0f172a;
   --soft: #e0f2fe;
@@ -9,7 +9,7 @@
   --success: #2a9d8f;
 }
 
-/* ================= BASE ================= */
+/* base */
 * {
   margin: 0;
   padding: 0;
@@ -22,24 +22,23 @@ body {
   color: white;
 }
 
-/* ================= SIDEBAR ================= */
+/* sidebar */
 .sidebar {
   position: fixed;
-  top: 10px;              /* spacing for curve effect */
+  top: 10px;
   left: 10px;
 
   width: 180px;
   height: calc(100vh - 20px);
 
   background: var(--sidebar);
-  border-right: 1px solid rgba(255,255,255,0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 
   padding: 15px;
 
-  /* ✅ CURVED SIDEBAR */
   border-radius: 16px;
 
-  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* Logo */
@@ -60,7 +59,7 @@ body {
   margin-bottom: 10px;
 }
 
-/* ALL BUTTONS INCLUDING LOGOUT NOW LOOK SAME */
+/* all buttons */
 .sidebar .nav a {
   display: block;
   padding: 10px;
@@ -72,16 +71,15 @@ body {
   transition: 0.3s;
   font-size: 12px;
 
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* hover effect */
 .sidebar .nav a:hover {
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.12);
   transform: translateX(3px);
 }
 
-/* ✅ MAKE LOGOUT MATCH OTHER BUTTONS (if you want special red style optional) */
 .sidebar .nav a[href="/logout"] {
   background: rgba(214, 40, 40, 0.2);
   color: #ffb4b4;
@@ -91,13 +89,13 @@ body {
   background: rgba(214, 40, 40, 0.35);
 }
 
-/* ================= MAIN CONTENT ================= */
+/* main content */
 .main-content {
   margin-left: 200px; /* adjusted for curved sidebar */
   padding: 15px;
 }
 
-/* ================= NAVBAR ================= */
+/* navbar */
 .navbar {
   background: #0f2a4d;
   color: white;
@@ -118,7 +116,7 @@ body {
   font-size: 13px;
 }
 
-/* ================= STATS ================= */
+/* stats */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -147,7 +145,7 @@ body {
   margin-top: 5px;
 }
 
-/* ================= TABLE ================= */
+/* table */
 .section-box {
   background: var(--card);
   color: var(--text);
@@ -178,7 +176,7 @@ td {
   white-space: nowrap;
 }
 
-/* ================= BUTTONS ================= */
+/* buttons */
 .btn {
   display: inline-block;
   padding: 5px 8px;
@@ -191,15 +189,21 @@ td {
   margin-right: 4px;
 }
 
-.btn-blue { background: #2563eb; }
-.btn-red { background: var(--danger); }
-.btn-green { background: #0f766e; }
+.btn-blue {
+  background: #2563eb;
+}
+.btn-red {
+  background: var(--danger);
+}
+.btn-green {
+  background: #0f766e;
+}
 
 .btn:hover {
   opacity: 0.85;
 }
 
-/* ================= IMAGE ================= */
+/* image */
 img {
   border-radius: 6px;
 }

@@ -1,108 +1,107 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family:
+    "Inter",
+    -apple-system,
+    sans-serif;
+}
 
-        /* Global Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, sans-serif;
-        }
+body {
+  background-color: #1e3a8a;
+  min-height: 100vh;
+}
 
-        body {
-            background-color: #1e3a8a;
-            min-height: 100vh;
-        }
+/* Layout  */
+.page-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background:
+    linear-gradient(rgba(15, 23, 42, 0.8), rgba(30, 58, 138, 0.9)),
+    url("https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=2000");
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+}
 
-        /* Layout Wrapper */
-        .page-wrapper {
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(30, 58, 138, 0.9)), 
-                        url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=2000');
-            background-size: cover;
-            background-position: center;
-            padding: 20px;
-        }
+.brand-header {
+  font-weight: 500;
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin-bottom: 25px;
+  text-align: center;
+  letter-spacing: 2px;
+}
 
-        /* Centered Brand Header */
-        .brand-header {
-            font-weight: 500;
-            font-size: 1.2rem;
-            color: #ffffff;
-            margin-bottom: 25px;
-            text-align: center;
-            letter-spacing: 2px;
-        }
+/* Logout Card */
+.logout-card {
+  max-width: 400px;
+  width: 100%;
+  padding: 50px 40px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  color: #ffffff;
+}
 
-        /* Logout Card */
-        .logout-card {
-            max-width: 400px;
-            width: 100%;
-            padding: 50px 40px;
-            background: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-            text-align: center;
-            color: #ffffff;
-        }
+/* Success Icon */
+.success-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 2px solid #4ade80;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: #4ade80;
+  font-size: 1.5rem;
+}
 
-        /* Success Icon */
-        .success-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(74, 222, 128, 0.1);
-            border: 2px solid #4ade80;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: #4ade80;
-            font-size: 1.5rem;
-        }
+.logout-card h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
 
-        .logout-card h2 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-        }
+.logout-card p {
+  font-size: 1rem;
+  color: #94a3b8;
+  margin-bottom: 35px;
+  line-height: 1.5;
+}
 
-        .logout-card p {
-            font-size: 1rem;
-            color: #94a3b8;
-            margin-bottom: 35px;
-            line-height: 1.5;
-        }
+.btn-return {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: #ffffff;
+  color: #1e3a8a;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
 
-        /* Return Button */
-        .btn-return {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: #ffffff;
-            color: #1e3a8a;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-        }
+.btn-return:hover {
+  background: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
 
-        .btn-return:hover {
-            background: #38bdf8;
-            color: #ffffff;
-            transform: translateY(-2px);
-        }
-
-        /* Auto-redirect text */
-        .redirect-notice {
-            margin-top: 25px;
-            font-size: 0.8rem;
-            color: #64748b;
-        }
-    
+.redirect-notice {
+  margin-top: 25px;
+  font-size: 0.8rem;
+  color: #64748b;
+}

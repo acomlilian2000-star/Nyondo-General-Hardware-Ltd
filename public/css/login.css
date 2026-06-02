@@ -15,7 +15,7 @@ body {
   min-height: 100vh;
 }
 
-/* Layout Wrapper */
+/* Layout  */
 .page-wrapper {
   width: 100%;
   min-height: 100vh;
@@ -83,7 +83,6 @@ body {
   letter-spacing: 1px;
 }
 
-/* High Visibility Inputs */
 .form-group input {
   width: 100%;
   padding: 14px;

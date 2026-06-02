@@ -55,7 +55,8 @@ label {
   margin-bottom: 5px;
 }
 
-input, select {
+input,
+select {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -98,7 +99,6 @@ td {
   border: 1px solid #ddd;
   padding: 10px;
 
-  /* ✅ FIX: prevents text/input wrapping issues */
   white-space: nowrap;
 }
 
