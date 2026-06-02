@@ -86,13 +86,13 @@ router.post("/deposit", async (req, res) => {
     if (Object.keys(fieldErrors).length > 0) {
       req.flash("fieldErrors", fieldErrors);
       req.flash("formData", data);
-      // This is the specific error message you requested
       req.flash(
         "error_msg",
         "Empty form cannot be submitted. Please fill in all fields!",
       );
       return req.session.save(() => res.redirect("/salary"));
     }
+    // order processor takes row data from the browser and turns it into item lists that can be processed by the system ,calculates and saves
     let products = Array.isArray(data.product) ? data.product : [data.product];
     let specifications = Array.isArray(data.specification)
       ? data.specification
@@ -188,11 +188,13 @@ router.get("/deposit/receipt/:id", async (req, res) => {
 });
 
 router.get("/tempReceipt/:id", async (req, res) => {
+  // Fetching and "Populating" the Data
   try {
     const deposit = await Deposit.findById(req.params.id)
       .populate("Attendant", "fullName")
       .populate("items.product", "itemName unitPrice");
     if (!deposit) return res.status(404).send("Receipt not found");
+    // sends data to the view
     res.render("tempReceipt", {
       customer: deposit,
       items: deposit.items || [],
@@ -217,11 +219,15 @@ router.get("/deposit/edit/:id", async (req, res) => {
 
 router.post("/deposit/update/:id", async (req, res) => {
   try {
+    // Locating the Transaction
     const deposit = await Deposit.findById(req.params.id);
     if (!deposit) return res.status(404).send("Deposit not found");
+    // Updating the Payment
     const newPayment = Number(req.body.amountPaid || 0);
     deposit.amountPaid += newPayment;
+    // Recalculating the Balance
     deposit.balance = deposit.totalToPay - deposit.amountPaid;
+    // Setting the Payment Status
     deposit.balance <= 0
       ? ((deposit.balance = 0), (deposit.paymentStatus = "Finished"))
       : (deposit.paymentStatus = "Pending");
@@ -249,10 +255,12 @@ router.post("/deposit/finish/:id", async (req, res) => {
 
 router.get("/adminDash", async (req, res) => {
   try {
+    // The Data Fetching Block
     const stocks = await Stock.find();
     const sales = await Sales.find();
     const deposits = await Deposit.find();
     const normalize = (val) => (val || "").toString().toLowerCase();
+    // The Financial Aggregation Block
     const totalCashSales = sales
       .filter((s) => normalize(s.paymentMethod) === "cash")
       .reduce((sum, s) => sum + Number(s.grandTotal || 0), 0);
@@ -266,6 +274,7 @@ router.get("/adminDash", async (req, res) => {
         Number(s.stockInQuantity || s.quantity || 0) * Number(s.unitCost || 0),
       0,
     );
+    // The "Live Inventory" Calculation Block
     const liveStocks = stocks.map((stock) => {
       let soldQty = 0;
       sales.forEach((sale) =>
@@ -287,6 +296,7 @@ router.get("/adminDash", async (req, res) => {
         currentQuantity: Math.max(0, Number(stock.quantity || 0) - soldQty),
       };
     });
+    // this is the alert block
     const lowStockCount = liveStocks.filter(
       (item) => item.currentQuantity <= 5,
     ).length;

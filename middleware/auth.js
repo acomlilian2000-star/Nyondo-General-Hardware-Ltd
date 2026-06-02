@@ -1,9 +1,8 @@
-// middleware/auth.js
 
-/**
- * 1. Verification Middleware
- * Ensures the user is logged into the system
- */
+
+
+//   Ensures the user is logged into the system
+ 
 export const isLoggedIn = (req, res, next) => {
     if (req.session && req.session.user) {
         return next();
@@ -12,10 +11,8 @@ export const isLoggedIn = (req, res, next) => {
     res.redirect('/login');
 };
 
-/**
- * 2. General Authorization Middleware
- * Checks if the user's role matches the required permission
- */
+// Checks if the user's role matches the required permission
+ 
 export const authorize = (permittedRoles) => {
     return (req, res, next) => {
         const { user } = req.session;

@@ -9,34 +9,34 @@ const Deposit = require("../models/Deposit");
 const multer = require("multer");
 const Supplier = require("../models/Supplier"); 
 
-/* =========================
-   MULTER
-========================= */
+// multer handles image upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "public/uploads"),
   filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
 });
 const upload = multer({ storage });
 
-/* =========================
-   AUTH
-========================= */
+
+  
+
 function isLoggedIn(req, res, next) {
+// a method provided by passport.js and . It checks the session stored on your server to see if the user has successfully logged in
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   }
   return res.status(401).send("Login required");
 }
 
-/* =========================
-   STOCK DASHBOARD
-========================= */
+
+  
+
 router.get("/stockDash", async (req, res) => {
   try {
+    // fetching data
     const allStocks = await Stock.find().populate("Attendant").sort({ createdAt: -1 });
     const sales = await Sales.find();
     const deposits = await Deposit.find();
-
+// calculating live inventory
     const liveStocks = allStocks.map(stock => {
       let soldQty = 0;
       sales.forEach(sale => {
@@ -56,12 +56,13 @@ router.get("/stockDash", async (req, res) => {
         currentQuantity: Math.max(0, (stock.quantity || 0) - soldQty)
       };
     });
+    // finance and supplier analysis
 
     const totalStockValue = allStocks.reduce((sum, s) => sum + (Number(s.stockInQuantity || s.quantity || 0) * Number(s.unitCost || 0)), 0);
 
     const supplierCredits = await Supplier.find({ paymentMethod: { $regex: /^credit$/i } });
     const uniqueSuppliersOwed = await Supplier.distinct("supplier", { paymentMethod: { $regex: /^credit$/i }, status: "PENDING" });
-
+// rendering and response
     res.render("stockDash", {
       user: req.user,
       liveStocks, allStocks, totalStockValue,
@@ -78,9 +79,9 @@ router.get("/stockDash", async (req, res) => {
   }
 });
 
-/* =========================================================
-   GET - RENDER EDIT STOCK FORM
-   ========================================================= */
+
+  
+  // edit form loader
 router.get("/stock/update/:id", isLoggedIn, async (req, res) => {
   try {
     const itemToUpdate = await Stock.findById(req.params.id);
@@ -94,16 +95,16 @@ router.get("/stock/update/:id", isLoggedIn, async (req, res) => {
   }
 });
 
-/* =========================================================
-   POST - EXECUTE DATABASE INVENTORY MODIFICATION
-   ========================================================= */
+// This is the "Write" operation that saves the changes.
 router.post("/stock/update/:id", isLoggedIn, async (req, res) => {
   try {
     const { quantity, unitCost, unitPrice, supplier, contactPerson } = req.body;
+    // Input Validation
     if (!quantity || isNaN(quantity) || Number(quantity) < 0) {
       req.flash("error_msg", "Validation Error: Invalid quantity.");
       return res.redirect(`/stock/update/${req.params.id}`);
     }
+    // Database Update
     await Stock.findByIdAndUpdate(req.params.id, {
       quantity: Number(quantity),
       stockInQuantity: Number(quantity), 
@@ -113,15 +114,14 @@ router.post("/stock/update/:id", isLoggedIn, async (req, res) => {
     });
     req.flash("success_msg", "Inventory product records updated successfully!");
     res.redirect("/stockDash"); 
+    // error handling
   } catch (error) {
     req.flash("error_msg", "System Exception: " + error.message);
     res.redirect(`/stock/update/${req.params.id}`);
   }
 });
 
-/* =========================
-   SUPPLIER TABLE (RESTORED GROUPED VIEW)
-========================= */
+
 router.get("/supplierTable", async (req, res) => {
   try {
     const groupedSuppliers = await Supplier.aggregate([
@@ -135,13 +135,14 @@ router.get("/supplierTable", async (req, res) => {
           items: { $push: { itemName: "$productName", quantity: "$quantity" } },
           totalQuantity: { $sum: "$quantity" },
           totalAmount: { $sum: { $multiply: [ { $ifNull: ["$quantity", 0] }, { $ifNull: ["$unitCost", 0] } ] } },
+          // This collects all the status flags
           statuses: { $push: "$status" }, 
           date: { $max: "$createdAt" }
         }
       },
       { $sort: { date: -1 } }
     ]);
-
+// Final Data Transformation 
     const supplierCredits = groupedSuppliers.map(group => {
       const finalStatus = group.statuses.includes("PENDING") ? "PENDING" : "PAID";
       return {
@@ -170,9 +171,7 @@ router.get("/supplierTable", async (req, res) => {
   }
 });
 
-/* =========================
-   MARK SUPPLIER AS PAID
-========================= */
+
 router.get("/supplier/mark-paid/:id", async (req, res) => {
   try {
     await Supplier.updateMany({ supplier: req.params.id, status: "PENDING" }, { $set: { status: "PAID", paymentMethod: "cash" } });
@@ -185,12 +184,7 @@ router.get("/supplier/mark-paid/:id", async (req, res) => {
   }
 });
 
-/* =========================
-   STOCK FORM / POST CODES
-========================= */
-/* =========================
-   STOCK FORM / POST CODES
-========================= */
+
 router.get("/stockform", isLoggedIn, (req, res) => {
   res.render("stock", { 
     formData: req.flash("formData")[0] || {}, 
@@ -208,7 +202,7 @@ router.post("/stock", isLoggedIn, upload.array("productImage"), async (req, res)
       factoryName, unitCost, unitPrice, paymentMethod, category, specification 
     } = req.body;
     
-    // Updated Validation: Now includes all requested fields
+    
     const fieldErrors = {};
     const requiredFields = [
       'itemName', 'quantity', 'unitCost', 'unitPrice', 'category', 
@@ -240,7 +234,7 @@ router.post("/stock", isLoggedIn, upload.array("productImage"), async (req, res)
       await Supplier.create({
         productName: items[i].trim(),
         category: cats[i] || "General",
-        specification: specs[i], // Saving specification
+        specification: specs[i], 
         quantity: Number(qtys[i]),
         unitCost: Number(costs[i]),
         supplier: supplier.trim(),

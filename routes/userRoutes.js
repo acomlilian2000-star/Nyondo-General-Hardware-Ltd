@@ -5,10 +5,7 @@ const User = require("../models/User");
 const Stock = require("../models/Stock");
 const Sales = require("../models/Sales");
 const Deposit = require("../models/Deposit");
-
-/* =========================
-   AUTH MIDDLEWARE
-========================= */
+// auth
 function isLoggedIn(req, res, next) {
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
@@ -30,9 +27,7 @@ router.get("/", (req, res) => {
   res.render("index");
 });
 
-/* =========================
-   LOGIN POST ACTION
-========================= */
+// login page
 router.post(
   "/login",
   passport.authenticate("local", { 
@@ -78,9 +73,7 @@ router.get("/SignUpform", (req, res) => {
   });
 });
 
-/* =========================
-   CREATE USER SIGNUP
-========================= */
+// creating a user
 router.post("/SignUp", async (req, res) => {
   try {
     const {
@@ -189,52 +182,46 @@ router.get("/users", isLoggedIn, async (req, res) => {
     res.status(500).send("Failed to fetch users");
   }
 });
-
-/* =========================
-   REPORTS PAGE
-========================= */
+// reports page
 router.get("/reports", isLoggedIn, async (req, res) => {
   try {
-    // ================= DATA FETCHING =================
+    // fetching data
     const sales = await Sales.find().populate("items.product");
     const deposits = await Deposit.find();
     const stocks = await Stock.find();
 
-    // ================= MONTH LABELS =================
+    // Month labels
     const months = [
       "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ];
 
-    // ================= MONTHLY SALES =================
+    //  Monthly Sales
     const monthlySales = new Array(12).fill(0);
     sales.forEach(sale => {
       const month = new Date(sale.date || sale.createdAt).getMonth();
       monthlySales[month] += Number(sale.grandTotal || 0);
     });
 
-    // ================= MONTHLY DEPOSITS =================
+    //  Monthly Deposit
     const monthlyDeposits = new Array(12).fill(0);
     deposits.forEach(dep => {
       const month = new Date(dep.regDate || dep.createdAt).getMonth();
       monthlyDeposits[month] += Number(dep.totalToPay || 0);
     });
 
-    // ================= TOTAL METRICS =================
+    //  Total metrics
     const totalSales = monthlySales.reduce((a, b) => a + b, 0);
     const totalDeposits = monthlyDeposits.reduce((a, b) => a + b, 0);
 
-    /* =========================================================
-       FIXED: COPIED 100% EXACTLY FROM STOCK DASHBOARD LOGIC
-       Value increases when stock is added, but sales never decrease it.
-       ========================================================= */
+    // stock
     const totalStockValue = stocks.reduce((sum, s) => {
       const qty = Number(s.stockInQuantity || s.quantity || 0);
       const cost = Number(s.unitCost || 0);
       return sum + (qty * cost);
     }, 0);
 
-    // ================= PRODUCT MOVEMENT =================
+    //  Product movement
     const productMap = {};
     sales.forEach(sale => {
       if (sale.items && sale.items.length > 0) {
@@ -250,20 +237,20 @@ router.get("/reports", isLoggedIn, async (req, res) => {
       }
     });
 
-    // ================= SORT PRODUCTS =================
+    // Sort products
     const sortedProducts = Object.entries(productMap).sort((a, b) => b[1] - a[1]);
 
-    // ================= MOVING CARDS =================
+    // Moving Cards 
     const fastMovingItem = sortedProducts[0]?.[0] || "No Data";
     const lowMovingItem = sortedProducts[sortedProducts.length - 1]?.[0] || "No Data";
 
-    // ================= CHART BALANCES =================
+    // Chart Balances 
     const fastMovingLabels = sortedProducts.slice(0, 5).map(p => p[0]);
     const fastMovingData = sortedProducts.slice(0, 5).map(p => p[1]);
     const lowMovingLabels = sortedProducts.slice(-5).map(p => p[0]);
     const lowMovingData = sortedProducts.slice(-5).map(p => p[1]);
 
-    // ================= YEARLY SALES =================
+    // Yearly Sales 
     const yearlyMap = {};
     sales.forEach(sale => {
       const year = new Date(sale.date || sale.createdAt).getFullYear();
@@ -274,11 +261,11 @@ router.get("/reports", isLoggedIn, async (req, res) => {
     const yearLabels = Object.keys(yearlyMap);
     const yearlySales = Object.values(yearlyMap);
 
-    // ================= RENDER =================
+    // Render
     res.render("reports", {
       totalSales,
       totalDeposits,
-      totalStockValue, // Guaranteed to perfectly cross-match stockDash and adminDash metrics now!
+      totalStockValue, 
       months,
       monthlySales,
       monthlyDeposits,
