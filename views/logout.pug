@@ -1,31 +1,31 @@
-doctype html
-html
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title NYONDO | Logged Out
-    link(rel="stylesheet", href="/css/logout.css")
+  doctype html
+  html
+    head
+      meta(charset="UTF-8")
+      meta(name="viewport", content="width=device-width, initial-scale=1.0")
+      title NYONDO | Logged Out
+      link(rel="stylesheet", href="/css/logout.css")
 
-  body
+    body
 
-    .page-wrapper
-      .brand-header
-        | NYONDO GENERAL HARDWARE LTD
-        
-      section.logout-card
-        .success-icon ✓
-        h2 Logged Out
-        p You have successfully ended your session. Thank you for your hard work today.
-        
-        //- Corrected from static "login.html" to your active Express authentication endpoint route
-        a.btn-return(href="/login") Login Again
-        
-        .redirect-notice
-          | Securing your connection...
+      .page-wrapper
+        .brand-header
+          | NYONDO GENERAL HARDWARE LTD
+          
+        section.logout-card
+          .success-icon ✓
+          h2 Logged Out
+          p You have successfully ended your session. Thank you for your hard work today.
+          
+          
+          a.btn-return(href="/login") Login Again
+          
+          .redirect-notice
+            | Securing your connection...
 
-    script.
-      // Optional: Auto-redirect to login after 5 seconds
-      setTimeout(() => {
-          console.log("Redirecting to login...");
-          // window.location.href = '/login';
-      }, 5000);
+      script.
+        
+        setTimeout(() => {
+            console.log("Redirecting to login...");
+            
+        }, 5000);

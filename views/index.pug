@@ -1,55 +1,55 @@
-doctype html
-html
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1")
+  doctype html
+  html
+    head
+      meta(charset="UTF-8")
+      meta(name="viewport", content="width=device-width, initial-scale=1")
 
-    title NYONDO General Hardware LTD | Portal
+      title NYONDO General Hardware LTD | Portal
 
-    link(rel="stylesheet", href="/css/index.css")
+      link(rel="stylesheet", href="/css/index.css")
 
-  body
+    body
 
-    main.hero
-      section.marketing-card
+      main.hero
+        section.marketing-card
 
-        span.welcome-badge Operations Portal
+          span.welcome-badge Operations Portal
 
-        h1
-          | Welcome to
-          br
-          | NYONDO General Hardware Ltd
+          h1
+            | Welcome to
+            br
+            | NYONDO General Hardware Ltd
 
-        p.sub-message
-          | Dealers in heavy and light
-          br
-          | building equipment.
+          p.sub-message
+            | Dealers in heavy and light
+            br
+            | building equipment.
 
-        // BUTTONS CONTAINER
-        .button-group
+          // Buttons container 
+          .button-group
 
-          a.btn-portal#loginBtn(href="/login")
-            | Staff Login
+            a.btn-portal#loginBtn(href="/login")
+              | Staff Login
 
-    script.
-      // LOGIN BUTTON
-      document.getElementById("loginBtn").addEventListener("click", function () {
+      script.
+        // Login Button
+        document.getElementById("loginBtn").addEventListener("click", function () {
 
-        this.innerHTML = "Authenticating...";
+          this.innerHTML = "Authenticating...";
 
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 600);
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 600);
 
-      });
+        });
 
-      // SIGNUP BUTTON
-      document.getElementById("signupBtn").addEventListener("click", function () {
+        // Signup button
+        document.getElementById("signupBtn").addEventListener("click", function () {
 
-        this.innerHTML = "Loading...";
+          this.innerHTML = "Loading...";
 
-        setTimeout(() => {
-          window.location.href = "/SignUpform";
-        }, 600);
+          setTimeout(() => {
+            window.location.href = "/SignUpform";
+          }, 600);
 
-      });
+        });

@@ -1,148 +1,148 @@
-doctype html
-html
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title NYONDO | Stock Manager Dashboard
-    link(rel="stylesheet", href="/css/stockDash.css")
+  doctype html
+  html
+    head
+      meta(charset="UTF-8")
+      meta(name="viewport", content="width=device-width, initial-scale=1.0")
+      title NYONDO | Stock Manager Dashboard
+      link(rel="stylesheet", href="/css/stockDash.css")
 
-  body
+    body
 
-    // ================= SIDEBAR =================
-    aside.sidebar
-      .sidebar-brand
-        h2 NYONDO STOCK
+      // ================= SIDEBAR =================
+      aside.sidebar
+        .sidebar-brand
+          h2 NYONDO STOCK
 
-      ul.sidebar-links
-        if user && user.role === 'admin'
-          li.active
-            a(href="/adminDash") 📊 Dashboard
-        
-        if user && (user.role === 'admin' || user.role === 'stock_manager')
+        ul.sidebar-links
+          if user && user.role === 'admin'
+            li.active
+              a(href="/adminDash") 📊 Dashboard
+          
+          if user && (user.role === 'admin' || user.role === 'stock_manager')
+            li
+              a(href="/stockform") ➕ Make New Stock
+          
           li
-            a(href="/stockform") ➕ Make New Stock
-        
-        li
-          a(href="/salesDash") Sales
+            a(href="/salesDash") Sales
 
-        if user && (user.role === 'admin' || user.role === 'stock_manager')
+          if user && (user.role === 'admin' || user.role === 'stock_manager')
+            li
+              a(href="/supplierTable") 💳 Supplier Table
+
           li
-            a(href="/supplierTable") 💳 Supplier Table
+            a(href="/logout") 🚪 Logout
 
-        li
-          a(href="/logout") 🚪 Logout
+      // ================= MAIN CONTENT =================
+      .main-content
+        nav.navbar
+          .brand-container
+            .logo-placeholder N
+            .nav-brand-text
+              strong NYONDO GENERAL HARDWARE
+              span Quality Equipment • Nansana, Uganda
 
-    // ================= MAIN CONTENT =================
-    .main-content
-      nav.navbar
-        .brand-container
-          .logo-placeholder N
-          .nav-brand-text
-            strong NYONDO GENERAL HARDWARE
-            span Quality Equipment • Nansana, Uganda
+          .nav-right
+            span.user-status Logged in as: #{user ? user.role : 'Guest'}
+            span#live-time
 
-        .nav-right
-          span.user-status Logged in as: #{user ? user.role : 'Guest'}
-          span#live-time
+        .container
+          //Flash messages 
+          if success_msg && success_msg.length > 0
+            div(style="background-color: #d1fae5; color: #065f46; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #10b981; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
+              | #{success_msg}
 
-      .container
-        // ================= FLASH NOTIFICATIONS CODES =================
-        if success_msg && success_msg.length > 0
-          div(style="background-color: #d1fae5; color: #065f46; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #10b981; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
-            | #{success_msg}
+          if error_msg && error_msg.length > 0
+            div(style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #ef4444; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
+              | #{error_msg}
 
-        if error_msg && error_msg.length > 0
-          div(style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #ef4444; margin-bottom: 20px; font-weight: bold; font-size: 14px;")
-            | #{error_msg}
+          // Total stock value 
+          -
+            let totalStockValue = 0;
+            if (liveStocks && liveStocks.length > 0) {
+              liveStocks.forEach(item => {
+                const qty = Number(item.stockInQuantity || item.quantity || 0);
+                const cost = Number(item.unitCost || 0);
+                totalStockValue += qty * cost;
+              });
+            }
 
-        // ================= TOTAL STOCK VALUE =================
-        -
-          let totalStockValue = 0;
-          if (liveStocks && liveStocks.length > 0) {
-            liveStocks.forEach(item => {
-              const qty = Number(item.stockInQuantity || item.quantity || 0);
-              const cost = Number(item.unitCost || 0);
-              totalStockValue += qty * cost;
-            });
-          }
+          // Dashboard cards 
+          .stats-grid
+            .stat-card
+              h3 Total Stock Items
+              p= liveStocks ? liveStocks.length : 0
 
-        // ================= DASHBOARD CARDS =================
-        .stats-grid
-          .stat-card
-            h3 Total Stock Items
-            p= liveStocks ? liveStocks.length : 0
+            .stat-card
+              h3 Low Stock Alerts
+              p= lowStockCount || 0
 
-          .stat-card
-            h3 Low Stock Alerts
-            p= lowStockCount || 0
+            .stat-card
+              h3 Supplier Credits
+              p= typeof suppliersOwed !== 'undefined' ? suppliersOwed : (supplierCredits ? supplierCredits.length : 0)
 
-          .stat-card
-            h3 Supplier Credits
-            p= typeof suppliersOwed !== 'undefined' ? suppliersOwed : (supplierCredits ? supplierCredits.length : 0)
+            .stat-card
+              h3 Total Stock Value
+              p UGX #{Number(totalStockValue).toLocaleString()}
 
-          .stat-card
-            h3 Total Stock Value
-            p UGX #{Number(totalStockValue).toLocaleString()}
-
-        // ================= PRODUCT STOCK TABLE =================
-        .section-box
-          h3 📦 Product Stock Table
-          .table-scroll
-            table.stock-table
-              thead
-                tr
-                  th Product Name
-                  th Quantity
-                  th Buying Price
-                  th Selling Price
-                  th Status
-                  th Actions
-              tbody
-                -
-                  const products = [
-                    { name: "Cement (CEM II)", key: "cement-cem-ii" },
-                    { name: "Cement (CEM III)", key: "cement-cem-iii" },
-                    { name: "Iron Bars (10mm)", key: "iron-bars-10mm" },
-                    { name: "Iron Bars (12mm)", key: "iron-bars-12mm" },
-                    { name: "Iron Bars (16mm)", key: "iron-bars-16mm" },
-                    { name: "Nails (Assorted)", key: "nails-assorted" },
-                    { name: "Roofing Nails", key: "roofing-nails" },
-                    { name: "Wheelbarrow", key: "wheelbarrow" },
-                    { name: "Barbed Wire", key: "barbed-wire" },
-                    { name: "Wire Mesh", key: "wire-mesh" },
-                    { name: "Iron Sheets", key: "iron-sheets" }
-                  ];
-
-                each product in products
-                  -
-                    const stockItem = liveStocks ? liveStocks.find(i => (i.slug || "") === product.key) : null;
-                    const qty = stockItem ? Number(stockItem.currentQuantity || 0) : 0;
-                    const buy = stockItem ? Number(stockItem.unitCost || 0) : 0;
-                    const sell = stockItem ? Number(stockItem.unitPrice || 0) : 0;
-
+          // Product stock table 
+          .section-box
+            h3 📦 Product Stock Table
+            .table-scroll
+              table.stock-table
+                thead
                   tr
-                    td: strong= product.name
-                    td: strong= qty
-                    td UGX #{buy.toLocaleString()}
-                    td UGX #{sell.toLocaleString()}
-                    td
-                      if qty <= 0
-                        span.status-low OUT OF STOCK
-                      else if qty <= 5
-                        span.status-low LOW STOCK
-                      else
-                        span.status-ok AVAILABLE
-                    td
-                      if user && (user.role === 'admin' || user.role === 'stock_manager')
-                        if stockItem
-                          a.btn.btn-blue(href=`/stock/update/${stockItem._id}`) Update
-                        else
-                          span -
+                    th Product Name
+                    th Quantity
+                    th Buying Price
+                    th Selling Price
+                    th Status
+                    th Actions
+                tbody
+                  -
+                    const products = [
+                      { name: "Cement (CEM II)", key: "cement-cem-ii" },
+                      { name: "Cement (CEM III)", key: "cement-cem-iii" },
+                      { name: "Iron Bars (10mm)", key: "iron-bars-10mm" },
+                      { name: "Iron Bars (12mm)", key: "iron-bars-12mm" },
+                      { name: "Iron Bars (16mm)", key: "iron-bars-16mm" },
+                      { name: "Nails (Assorted)", key: "nails-assorted" },
+                      { name: "Roofing Nails", key: "roofing-nails" },
+                      { name: "Wheelbarrow", key: "wheelbarrow" },
+                      { name: "Barbed Wire", key: "barbed-wire" },
+                      { name: "Wire Mesh", key: "wire-mesh" },
+                      { name: "Iron Sheets", key: "iron-sheets" }
+                    ];
 
-    script.
-      function updateClock() {
-        const now = new Date();
-        document.getElementById("live-time").innerText = now.toLocaleString();
-      }
-      setInterval(updateClock, 1000);
-      updateClock();
+                  each product in products
+                    -
+                      const stockItem = liveStocks ? liveStocks.find(i => (i.slug || "") === product.key) : null;
+                      const qty = stockItem ? Number(stockItem.currentQuantity || 0) : 0;
+                      const buy = stockItem ? Number(stockItem.unitCost || 0) : 0;
+                      const sell = stockItem ? Number(stockItem.unitPrice || 0) : 0;
+
+                    tr
+                      td: strong= product.name
+                      td: strong= qty
+                      td UGX #{buy.toLocaleString()}
+                      td UGX #{sell.toLocaleString()}
+                      td
+                        if qty <= 0
+                          span.status-low OUT OF STOCK
+                        else if qty <= 5
+                          span.status-low LOW STOCK
+                        else
+                          span.status-ok AVAILABLE
+                      td
+                        if user && (user.role === 'admin' || user.role === 'stock_manager')
+                          if stockItem
+                            a.btn.btn-blue(href=`/stock/update/${stockItem._id}`) Update
+                          else
+                            span -
+
+      script.
+        function updateClock() {
+          const now = new Date();
+          document.getElementById("live-time").innerText = now.toLocaleString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();

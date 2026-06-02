@@ -1,196 +1,196 @@
-doctype html
-html
-  head
-    meta(charset='UTF-8')
-    meta(name='viewport' content='width=device-width, initial-scale=1.0')
-    title NYONDO Sales Desk
-    link(rel='stylesheet' href='/css/sales.css')
-    style.
-      .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
-      #errorToast { display: none; background-color: #ef4444; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-weight: bold; }
-      .alert-box { padding: 12px 20px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; font-size: 14px; }
+  doctype html
+  html
+    head
+      meta(charset='UTF-8')
+      meta(name='viewport' content='width=device-width, initial-scale=1.0')
+      title NYONDO Sales Desk
+      link(rel='stylesheet' href='/css/sales.css')
+      style.
+        .error-border { border: 2px solid #ef4444; background-color: #fef2f2; }
+        #errorToast { display: none; background-color: #ef4444; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        .alert-box { padding: 12px 20px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; font-size: 14px; }
 
-  body
-    .sales-container
-      .top-bar(style='margin-bottom:10px;')
-        button(type='button' onclick="window.location.href='/salesDash'" style='padding:8px 15px; cursor:pointer;')
-          | ← Back to Sales Dashboard
+    body
+      .sales-container
+        .top-bar(style='margin-bottom:10px;')
+          button(type='button' onclick="window.location.href='/salesDash'" style='padding:8px 15px; cursor:pointer;')
+            | ← Back to Sales Dashboard
 
-      h1 Sales Entry 🧾
+        h1 Sales Entry 🧾
 
-      // Error Message Popup (Client-side trigger)
-      #errorToast All fields are required. Please check your entries!
+        // Error Message Popup 
+        #errorToast All fields are required. Please check your entries!
 
-      // Backend Flash
-      if success_msg && success_msg.length > 0
-        div.alert-box(style="background-color: #d1fae5; color: #065f46; border-left: 5px solid #10b981;")
-          | #{success_msg}
+        // Backend Flash
+        if success_msg && success_msg.length > 0
+          div.alert-box(style="background-color: #d1fae5; color: #065f46; border-left: 5px solid #10b981;")
+            | #{success_msg}
 
-      if error_msg && error_msg.length > 0
-        div.alert-box(style="background-color: #fee2e2; color: #991b1b; border-left: 5px solid #ef4444;")
-          | #{error_msg}
+        if error_msg && error_msg.length > 0
+          div.alert-box(style="background-color: #fee2e2; color: #991b1b; border-left: 5px solid #ef4444;")
+            | #{error_msg}
 
-      form#salesForm(action='/Sales' method='POST')
-        .form-section
-          label(for='sale-date') Date of Sale:
-          input#sale-date(type='date' name='date')
-
-        #itemsContainer
-          .item-group
-            .form-section
-              label Product:
-              select.product(name='product[]')
-                option(value='' disabled selected) select product
-                each product in products
-                  option(value=product._id data-price=product.unitPrice)
-                    | #{product.itemName} (Stock: #{product.quantity} | Price: #{product.unitPrice} UGX)
-            .form-section
-              label Specification / Units:
-              input.specification(type='text' name='specification[]' placeholder='e.g 32 Gauge, 16mm, 10 Bags')
-            .form-section
-              label Unit Price:
-              input.unitPrice(type='number' name='unitPrice[]' readonly)
-            .form-section
-              label Quantity:
-              input.quantity(type='number' name='quantity[]')
-
-        button#addItem(type='button') + Add Another Item
-
-        .form-section
-          label Customer Name:
-          input#CustomerName(type='text' name='customerName')
-
-        .form-section
-          label Phone Number:
-          .phone-input-container
-            .country-code +256
-            input#phoneNumber(type='tel' name='phoneNumber' placeholder='7XXXXXXXX')
-
-        .form-section
-          label Customer Address:
-          textarea#customerAddress(name='customerAddress' rows='3')
-
-        .form-section
-          label Category:
-          select#customerType(name='customerType')
-            option(value='individual') Individual
-            option(value='retailer') Retailer
-            option(value='wholesaler') Wholesaler
-
-        .form-section
-          label Delivery Distance (KM):
-          input#distance(type='number' name='distance' value='0')
-
-        .form-section
-          label Transport Cost:
-          input#transportCost(type='number' name='transportCost' readonly)
-
-        .summary-box
+        form#salesForm(action='/Sales' method='POST')
           .form-section
-            label Sub Total:
-            input#subTotal(type='number' name='subTotal' readonly)
+            label(for='sale-date') Date of Sale:
+            input#sale-date(type='date' name='date')
+
+          #itemsContainer
+            .item-group
+              .form-section
+                label Product:
+                select.product(name='product[]')
+                  option(value='' disabled selected) select product
+                  each product in products
+                    option(value=product._id data-price=product.unitPrice)
+                      | #{product.itemName} (Stock: #{product.quantity} | Price: #{product.unitPrice} UGX)
+              .form-section
+                label Specification / Units:
+                input.specification(type='text' name='specification[]' placeholder='e.g 32 Gauge, 16mm, 10 Bags')
+              .form-section
+                label Unit Price:
+                input.unitPrice(type='number' name='unitPrice[]' readonly)
+              .form-section
+                label Quantity:
+                input.quantity(type='number' name='quantity[]')
+
+          button#addItem(type='button') + Add Another Item
+
           .form-section
-            label Grand Total:
-            input#grandTotal(type='number' name='grandTotal' readonly)
+            label Customer Name:
+            input#CustomerName(type='text' name='customerName')
 
-        .form-section
-          label Payment Method:
-          select#paymentMethod(name='paymentMethod')
-            option(value='cash') Cash
-            option(value='mobile-money') Mobile Money
-            option(value='bank-transfer') Bank Transfer
+          .form-section
+            label Phone Number:
+            .phone-input-container
+              .country-code +256
+              input#phoneNumber(type='tel' name='phoneNumber' placeholder='7XXXXXXXX')
 
-        button.btn-submit(type='submit') Process Sale
+          .form-section
+            label Customer Address:
+            textarea#customerAddress(name='customerAddress' rows='3')
 
-    template#rowTemplate
-      .item-group(style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;")
-        .form-section
-          label Product:
-          select.product(name='product[]')
-            option(value='' disabled selected) select product
-            each product in products
-              option(value=product._id data-price=product.unitPrice)
-                | #{product.itemName} (Stock: #{product.quantity} | Price: #{product.unitPrice} UGX)
-        .form-section
-          label Specification / Units:
-          input.specification(type='text' name='specification[]' placeholder='e.g 32 Gauge, 16mm, 10 Bags')
-        .form-section
-          label Unit Price:
-          input.unitPrice(type='number' name='unitPrice[]' readonly)
-        .form-section
-          label Quantity:
-          input.quantity(type='number' name='quantity[]')
+          .form-section
+            label Category:
+            select#customerType(name='customerType')
+              option(value='individual') Individual
+              option(value='retailer') Retailer
+              option(value='wholesaler') Wholesaler
 
-    script.
-      const form = document.getElementById('salesForm');
-      const toast = document.getElementById('errorToast');
-      const addItemBtn = document.getElementById('addItem');
-      const itemsContainer = document.getElementById('itemsContainer');
-      const template = document.getElementById('rowTemplate');
-      const distanceInput = document.getElementById('distance');
+          .form-section
+            label Delivery Distance (KM):
+            input#distance(type='number' name='distance' value='0')
 
-      // 1. Validation on Submit
-      form.addEventListener('submit', (e) => {
-        let hasError = false;
-        // Check all inputs, selects, and textareas inside the form
-        const allFields = form.querySelectorAll('input:not([readonly]), select, textarea');
-        
-        allFields.forEach(field => {
-          if (!field.value || field.value.trim() === "") {
-            field.classList.add('error-border');
-            hasError = true;
+          .form-section
+            label Transport Cost:
+            input#transportCost(type='number' name='transportCost' readonly)
+
+          .summary-box
+            .form-section
+              label Sub Total:
+              input#subTotal(type='number' name='subTotal' readonly)
+            .form-section
+              label Grand Total:
+              input#grandTotal(type='number' name='grandTotal' readonly)
+
+          .form-section
+            label Payment Method:
+            select#paymentMethod(name='paymentMethod')
+              option(value='cash') Cash
+              option(value='mobile-money') Mobile Money
+              option(value='bank-transfer') Bank Transfer
+
+          button.btn-submit(type='submit') Process Sale
+
+      template#rowTemplate
+        .item-group(style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;")
+          .form-section
+            label Product:
+            select.product(name='product[]')
+              option(value='' disabled selected) select product
+              each product in products
+                option(value=product._id data-price=product.unitPrice)
+                  | #{product.itemName} (Stock: #{product.quantity} | Price: #{product.unitPrice} UGX)
+          .form-section
+            label Specification / Units:
+            input.specification(type='text' name='specification[]' placeholder='e.g 32 Gauge, 16mm, 10 Bags')
+          .form-section
+            label Unit Price:
+            input.unitPrice(type='number' name='unitPrice[]' readonly)
+          .form-section
+            label Quantity:
+            input.quantity(type='number' name='quantity[]')
+
+      script.
+        const form = document.getElementById('salesForm');
+        const toast = document.getElementById('errorToast');
+        const addItemBtn = document.getElementById('addItem');
+        const itemsContainer = document.getElementById('itemsContainer');
+        const template = document.getElementById('rowTemplate');
+        const distanceInput = document.getElementById('distance');
+
+        // 1. Validation on Submit
+        form.addEventListener('submit', (e) => {
+          let hasError = false;
+          // Check all inputs, selects, and textareas inside the form
+          const allFields = form.querySelectorAll('input:not([readonly]), select, textarea');
+          
+          allFields.forEach(field => {
+            if (!field.value || field.value.trim() === "") {
+              field.classList.add('error-border');
+              hasError = true;
+            }
+          });
+
+          if (hasError) {
+            e.preventDefault();
+            toast.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         });
 
-        if (hasError) {
-          e.preventDefault();
-          toast.style.display = 'block';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      });
+        
+        form.addEventListener('input', (e) => {
+          if (e.target.classList.contains('error-border')) {
+            e.target.classList.remove('error-border');
+          }
+          
+          if (!form.querySelector('.error-border')) {
+            toast.style.display = 'none';
+          }
+        });
 
-      // 2. Clear red borders globally (Event Delegation)
-      form.addEventListener('input', (e) => {
-        if (e.target.classList.contains('error-border')) {
-          e.target.classList.remove('error-border');
-        }
-        // Hide toast if no errors remain
-        if (!form.querySelector('.error-border')) {
-          toast.style.display = 'none';
-        }
-      });
+        // 3. Dynamic row adding
+        addItemBtn.addEventListener('click', () => {
+          itemsContainer.appendChild(template.content.cloneNode(true));
+          attachEvents();
+        });
 
-      // 3. Dynamic row adding
-      addItemBtn.addEventListener('click', () => {
-        itemsContainer.appendChild(template.content.cloneNode(true));
+        function calculateTotals() {
+          let subTotal = 0;
+          document.querySelectorAll('.item-group').forEach(group => {
+            const prod = group.querySelector('.product');
+            const qty = Number(group.querySelector('.quantity').value) || 0;
+            const price = Number(prod.options[prod.selectedIndex]?.dataset.price || 0);
+            group.querySelector('.unitPrice').value = price;
+            subTotal += price * qty;
+          });
+
+          const dist = Number(distanceInput.value || 0);
+          const transport = (subTotal >= 500000 && dist <= 10) ? 0 : 30000;
+          document.getElementById('transportCost').value = transport;
+          document.getElementById('subTotal').value = subTotal;
+          document.getElementById('grandTotal').value = subTotal + transport;
+        }
+
+        function attachEvents() {
+          document.querySelectorAll('.product, .quantity').forEach(el => {
+            el.removeEventListener('change', calculateTotals);
+            el.addEventListener('change', calculateTotals);
+          });
+          distanceInput.removeEventListener('input', calculateTotals);
+          distanceInput.addEventListener('input', calculateTotals);
+        }
+        
         attachEvents();
-      });
-
-      function calculateTotals() {
-        let subTotal = 0;
-        document.querySelectorAll('.item-group').forEach(group => {
-          const prod = group.querySelector('.product');
-          const qty = Number(group.querySelector('.quantity').value) || 0;
-          const price = Number(prod.options[prod.selectedIndex]?.dataset.price || 0);
-          group.querySelector('.unitPrice').value = price;
-          subTotal += price * qty;
-        });
-
-        const dist = Number(distanceInput.value || 0);
-        const transport = (subTotal >= 500000 && dist <= 10) ? 0 : 30000;
-        document.getElementById('transportCost').value = transport;
-        document.getElementById('subTotal').value = subTotal;
-        document.getElementById('grandTotal').value = subTotal + transport;
-      }
-
-      function attachEvents() {
-        document.querySelectorAll('.product, .quantity').forEach(el => {
-          el.removeEventListener('change', calculateTotals);
-          el.addEventListener('change', calculateTotals);
-        });
-        distanceInput.removeEventListener('input', calculateTotals);
-        distanceInput.addEventListener('input', calculateTotals);
-      }
-      
-      attachEvents();
-      document.getElementById('phoneNumber').addEventListener('input', (e) => e.target.value = e.target.value.replace(/\D/g, ''));
+        document.getElementById('phoneNumber').addEventListener('input', (e) => e.target.value = e.target.value.replace(/\D/g, ''));

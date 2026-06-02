@@ -1,142 +1,142 @@
-doctype html
-html(lang="en")
+  doctype html
+  html(lang="en")
 
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    head
+      meta(charset="UTF-8")
+      meta(name="viewport" content="width=device-width, initial-scale=1.0")
 
-    title NYONDO Receipt
+      title NYONDO Receipt
 
-    link(rel="stylesheet" href="/css/tempReceipt.css")
+      link(rel="stylesheet" href="/css/tempReceipt.css")
 
-  body
+    body
 
-    .receipt-container
+      .receipt-container
 
-      // ================= HEADER =================
-      .receipt-header
-        h1 NYONDO General Hardware LTD
-        h2 Salary Earner Deposit Receipt
-        p Nansana - Uganda
+        //Header 
+        .receipt-header
+          h1 NYONDO General Hardware LTD
+          h2 Salary Earner Deposit Receipt
+          p Nansana - Uganda
 
-      hr
+        hr
 
-      // ================= CUSTOMER DETAILS =================
-      .customer-section
-        h3 Customer Information
+        //Customer details 
+        .customer-section
+          h3 Customer Information
 
-        .details-grid
+          .details-grid
 
-          .detail-box
-            span.label Customer Name
-            p= customer.customerName || '-'
+            .detail-box
+              span.label Customer Name
+              p= customer.customerName || '-'
 
-          .detail-box
-            span.label NIN Number
-            p= customer.ninNumber || '-'
+            .detail-box
+              span.label NIN Number
+              p= customer.ninNumber || '-'
 
-          .detail-box
-            span.label Phone Number
-            p= customer.customerPhone || customer.phoneNumber || '-'
+            .detail-box
+              span.label Phone Number
+              p= customer.customerPhone || customer.phoneNumber || '-'
 
-          .detail-box
-            span.label Registration Date
-            p= customer.regDate ? new Date(customer.regDate).toLocaleDateString() : '-'
+            .detail-box
+              span.label Registration Date
+              p= customer.regDate ? new Date(customer.regDate).toLocaleDateString() : '-'
 
-          .detail-box
-            span.label Distance
-            p #{customer.distance || 0} KM
+            .detail-box
+              span.label Distance
+              p #{customer.distance || 0} KM
 
-      hr
+        hr
 
-      // ================= ITEMS TABLE =================
-      .table-section
-        h3 Purchased Items
+        //Items table 
+        .table-section
+          h3 Purchased Items
 
-        table
-          thead
-            tr
-              th Item
-              th Specification
-              th Quantity
-              th Unit Price
-              th Total
-
-          tbody
-            if items && items.length
-              each item in items
-                tr
-                  // ✅ FIXED: correct product name source
-                  td= item.product ? item.product.itemName : item.itemName || 'Deleted Product'
-                  td= item.specification || '-'
-                  td= item.quantity || 0
-                  td UGX #{Number(item.unitPrice || 0).toLocaleString()}
-                  td UGX #{Number(item.itemTotal || 0).toLocaleString()}
-            else
+          table
+            thead
               tr
-                td(colspan="5") No items found
+                th Item
+                th Specification
+                th Quantity
+                th Unit Price
+                th Total
 
-      hr
-
-      // ================= PAYMENT SUMMARY =================
-      .summary-section
-        h3 Payment Summary
-
-        .summary-grid
-
-          .summary-row
-            span Total Amount
-            strong UGX #{Number(payment.amount || 0).toLocaleString()}
-
-          .summary-row
-            span Transport Cost
-            strong UGX #{Number(payment.transportCost || 0).toLocaleString()}
-
-          .summary-row
-            span Total To Pay
-            strong UGX #{Number(payment.totalToPay || 0).toLocaleString()}
-
-          .summary-row
-            span Amount Paid
-            strong UGX #{Number(payment.amountPaid || 0).toLocaleString()}
-
-          .summary-row.balance
-            span Balance
-            strong UGX #{Number(payment.balance || 0).toLocaleString()}
-
-          .summary-row
-            span Payment Method
-            strong= payment.paymentMethod || '-'
-
-      hr
-
-      // ================= FOOTER =================
-      .receipt-footer
-        // ================= BULLETPROOF DYNAMIC ATTENDANT DATA BLOCK =================
-        div(style="margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 4px; border-left: 4px solid #1e3a8a; text-align: left;")
-          p(style="margin: 0; font-size: 0.95rem; color: #1e293b;")
-            strong Served By: 
-            - const userObj = customer.Attendant || customer.attendant
-            if userObj
-              if userObj.fullName
-                span(style="color: #1e3a8a; font-weight: bold;")= userObj.fullName
-              else if userObj.username
-                span(style="color: #1e3a8a; font-weight: bold;")= userObj.username
-              else if userObj.name
-                span(style="color: #1e3a8a; font-weight: bold;")= userObj.name
+            tbody
+              if items && items.length
+                each item in items
+                  tr
+                    
+                    td= item.product ? item.product.itemName : item.itemName || 'Deleted Product'
+                    td= item.specification || '-'
+                    td= item.quantity || 0
+                    td UGX #{Number(item.unitPrice || 0).toLocaleString()}
+                    td UGX #{Number(item.itemTotal || 0).toLocaleString()}
               else
-                span(style="color: #1e3a8a; font-weight: bold;") Employee ##{userObj._id ? userObj._id.toString().slice(-4) : 'Active'}
-            else
-              span(style="color: #64748b; font-style: italic;") System Stock Manager
+                tr
+                  td(colspan="5") No items found
 
-        p Thank you for choosing NYONDO General Hardware LTD.
-        p Goods are released after full payment clearance.
+        hr
 
-      // ================= NAVIGATION & ACTIONS AREA =================
-      .print-area(style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;")
-        
-        a.back-btn(href="/adminDash" style="background-color: #64748b; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s;")
-          | ⬅ Back to Dashboard
+        //Payment summary 
+        .summary-section
+          h3 Payment Summary
 
-        button.print-btn(type="button" onclick="window.print()" style="margin: 0;")
-          | Print Receipt
+          .summary-grid
+
+            .summary-row
+              span Total Amount
+              strong UGX #{Number(payment.amount || 0).toLocaleString()}
+
+            .summary-row
+              span Transport Cost
+              strong UGX #{Number(payment.transportCost || 0).toLocaleString()}
+
+            .summary-row
+              span Total To Pay
+              strong UGX #{Number(payment.totalToPay || 0).toLocaleString()}
+
+            .summary-row
+              span Amount Paid
+              strong UGX #{Number(payment.amountPaid || 0).toLocaleString()}
+
+            .summary-row.balance
+              span Balance
+              strong UGX #{Number(payment.balance || 0).toLocaleString()}
+
+            .summary-row
+              span Payment Method
+              strong= payment.paymentMethod || '-'
+
+        hr
+
+        //footer 
+        .receipt-footer
+          
+          div(style="margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 4px; border-left: 4px solid #1e3a8a; text-align: left;")
+            p(style="margin: 0; font-size: 0.95rem; color: #1e293b;")
+              strong Served By: 
+              - const userObj = customer.Attendant || customer.attendant
+              if userObj
+                if userObj.fullName
+                  span(style="color: #1e3a8a; font-weight: bold;")= userObj.fullName
+                else if userObj.username
+                  span(style="color: #1e3a8a; font-weight: bold;")= userObj.username
+                else if userObj.name
+                  span(style="color: #1e3a8a; font-weight: bold;")= userObj.name
+                else
+                  span(style="color: #1e3a8a; font-weight: bold;") Employee ##{userObj._id ? userObj._id.toString().slice(-4) : 'Active'}
+              else
+                span(style="color: #64748b; font-style: italic;") System Stock Manager
+
+          p Thank you for choosing NYONDO General Hardware LTD.
+          p Goods are released after full payment clearance.
+
+        // Actions 
+        .print-area(style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;")
+          
+          a.back-btn(href="/adminDash" style="background-color: #64748b; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s;")
+            | ⬅ Back to Dashboard
+
+          button.print-btn(type="button" onclick="window.print()" style="margin: 0;")
+            | Print Receipt

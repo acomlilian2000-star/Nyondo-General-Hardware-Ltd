@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Sales = require("../models/Sales");
 const Stock = require("../models/Stock");
-const Deposit = require("../models/Deposit"); 
+const Deposit = require("../models/Deposit");
 
-
-  //  Auth middleware checks if the user loggedin
+//  Auth middleware checks if the user loggedin
 
 function isLoggedIn(req, res, next) {
   if (!req.isAuthenticated || !req.isAuthenticated()) {
@@ -17,11 +16,11 @@ function isLoggedIn(req, res, next) {
 async function getLiveStock() {
   const stocks = await Stock.find();
   const sales = await Sales.find();
-  const deposits = await Deposit.find(); 
-// live inventory logic
+  const deposits = await Deposit.find();
+  // live inventory logic
   return stocks.map((stock) => {
     let soldQty = 0;
-// subtraction loops
+    // subtraction loops
 
     // Subtract Sales
     sales.forEach((sale) => {
@@ -40,7 +39,7 @@ async function getLiveStock() {
         }
       });
     });
-// final calculation and return
+    // final calculation and return
     return {
       ...stock.toObject(),
       currentQuantity: Math.max(0, Number(stock.quantity || 0) - soldQty),
@@ -68,7 +67,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
       .populate("items.product", "itemName image unitPrice")
       .populate("Attendant", "fullName")
       .sort({ createdAt: -1 });
-// time window block
+    // time window block
     const start = new Date();
     start.setHours(0, 0, 0, 0);
 
@@ -78,7 +77,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
     const todaySales = await Sales.find({
       createdAt: { $gte: start, $lte: end },
     });
-// calculation block
+    // calculation block
     let totalSalesToday = 0;
     let totalSalesAllTime = 0;
     let monthlyTotal = 0;
@@ -91,7 +90,7 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
     });
 
     //  LOW STOCK
-// inventory analysis
+    // inventory analysis
     const liveStock = await getLiveStock();
 
     const lowStockItems = liveStock.filter(
@@ -125,10 +124,9 @@ router.get("/salesDash", isLoggedIn, async (req, res) => {
   }
 });
 
+//  SALES FORM PAGE
 
-  //  SALES FORM PAGE
-
-  // form loader
+// form loader
 router.get("/salesform", isLoggedIn, async (req, res) => {
   try {
     const items = await Stock.find({ quantity: { $gt: 0 } });
@@ -144,9 +142,7 @@ router.get("/salesform", isLoggedIn, async (req, res) => {
   }
 });
 
-
-  
-  // sales processor
+// sales processor
 router.post("/Sales", isLoggedIn, async (req, res) => {
   try {
     if (!req.user) return res.status(401).send("User not logged in");
@@ -164,7 +160,7 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
       distance,
       transportCost,
     } = req.body;
-// Input Verification
+    // Input Verification
     if (!customerName || customerName.trim() === "") {
       req.flash("error_msg", "Customer name is required.");
       return res.redirect("/salesform");
@@ -188,7 +184,7 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
       req.flash("error_msg", "You must add at least one valid product item.");
       return res.redirect("/salesform");
     }
-// array normalisation ensures that even if one item or multiple items are sold data is treated as an array
+    // array normalisation ensures that even if one item or multiple items are sold data is treated as an array
     product = Array.isArray(product) ? product : [product];
     specification = Array.isArray(specification)
       ? specification
@@ -227,7 +223,7 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
         );
         return res.redirect("/salesform");
       }
-// compares the requested quantity against the available stock
+      // compares the requested quantity against the available stock
       if (stockItem.quantity < qty) {
         req.flash(
           "error_msg",
@@ -235,10 +231,10 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
         );
         return res.redirect("/salesform");
       }
-// deducts stock immediately for item inside the loop and saves
+      // deducts stock immediately for item inside the loop and saves
       stockItem.quantity = Number(stockItem.quantity) - qty;
       await stockItem.save();
-// financial calculation
+      // financial calculation
       const subTotal = qty * price;
       total += subTotal;
 
@@ -251,9 +247,9 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
         subTotal,
       });
     }
-// transport calculations &ensures it is anumber
+    // transport calculations &ensures it is anumber
     const transport = Number(transportCost || 0);
-// creating a new sales record based on a model
+    // creating a new sales record based on a model
     const newSale = new Sales({
       date: date || new Date(),
       customerName,
@@ -280,8 +276,7 @@ router.post("/Sales", isLoggedIn, async (req, res) => {
   }
 });
 
-
-  //  EDIT PAGE
+//  EDIT PAGE
 
 router.get("/sales/edit/:id", isLoggedIn, async (req, res) => {
   try {
@@ -303,15 +298,14 @@ router.get("/sales/edit/:id", isLoggedIn, async (req, res) => {
   }
 });
 
-
-  //  UPDATE SALE 
+//  UPDATE SALE
 
 router.post("/sales/edit/:id", isLoggedIn, async (req, res) => {
   try {
     // It verifies that the record exists before doing anything else.
     const sale = await Sales.findById(req.params.id);
     if (!sale) return res.status(404).send("Sale not found");
-// Updating Customer & Transport Details
+    // Updating Customer & Transport Details
     sale.customerName = req.body.customerName;
     sale.phoneNumber = req.body.phoneNumber;
     sale.customerAddress = req.body.customerAddress;
@@ -321,7 +315,7 @@ router.post("/sales/edit/:id", isLoggedIn, async (req, res) => {
 
     if (req.body.quantity) {
       let total = 0;
-//  updates the subTotal for each item, calculates the new grandTotal, and assigns these new values to the sale object.
+      //  updates the subTotal for each item, calculates the new grandTotal, and assigns these new values to the sale object.
       sale.items.forEach((item, i) => {
         const qty = Number(req.body.quantity[i] || item.quantity);
         const price = Number(req.body.unitPrice[i] || item.unitPrice);
@@ -348,8 +342,7 @@ router.post("/sales/edit/:id", isLoggedIn, async (req, res) => {
   }
 });
 
-
-  //  DELETE SALE
+//  DELETE SALE
 router.get("/sales/delete/:id", isLoggedIn, async (req, res) => {
   try {
     await Sales.findByIdAndDelete(req.params.id);
@@ -362,8 +355,7 @@ router.get("/sales/delete/:id", isLoggedIn, async (req, res) => {
   }
 });
 
-
-  //  RECEIPT
+//  RECEIPT
 
 router.get("/sales/receipt/:id", isLoggedIn, async (req, res) => {
   try {
