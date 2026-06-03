@@ -1,92 +1,94 @@
-  doctype html
-  html
-    head
-      meta(charset="UTF-8")
-      meta(name="viewport", content="width=device-width, initial-scale=1")
-      title NYONDO | Staff Login
-      link(rel="stylesheet", href="/css/login.css")
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    title NYONDO | Staff Login
+    link(rel="stylesheet", href="/css/login.css")
 
-      style.
-        .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
-        #loginErrorToast { display: none; }
-        .alert-box {
-          padding: 12px 16px;
-          border-radius: 4px;
-          margin-bottom: 20px;
-          font-weight: bold;
-          font-size: 14px;
-          text-align: left;
-        }
-        .alert-success { background-color: #d1fae5; color: #065f46; border-left: 5px solid #10b981; }
-        .alert-error { background-color: #fee2e2; color: #991b1b; border-left: 5px solid #ef4444; }
+    style.
+      .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+      #loginErrorToast { display: none; }
+      .alert-box {
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        font-size: 14px;
+        text-align: left;
+      }
+      .alert-success { background-color: #d1fae5; color: #065f46; border-left: 5px solid #10b981; }
+      .alert-error { background-color: #fee2e2; color: #991b1b; border-left: 5px solid #ef4444; }
 
-    body
-      .page-wrapper
-        .brand-header NYONDO GENERAL HARDWARE LTD
+  body
+    .page-wrapper
+      .brand-header NYONDO GENERAL HARDWARE LTD
 
-        section.login-card
-          // Flash notifications 
+      section.login-card
+        //- Flash notifications
+        if success_msg && success_msg.length > 0
+          .alert-box.alert-success= success_msg
+
+        if (error && error.length > 0) || (error_msg && error_msg.length > 0)
+          .alert-box.alert-error= (error || error_msg)
           
-          //- 1. Success Message
-          if success_msg && success_msg.length > 0
-            .alert-box.alert-success= success_msg
+        #loginErrorToast.alert-box.alert-error Please fill in all required fields.
 
-          //- This block shows if Passport sent an error
-          if (error && error.length > 0) || (error_msg && error_msg.length > 0)
-            .alert-box.alert-error= (error || error_msg)
-            
-          #loginErrorToast.alert-box.alert-error Invalid email or password.
+        h2 Staff Login
+        p Welcome back to the portal
 
-          h2 Staff Login
-          p Welcome back to the portal
+        form#loginForm(action="/login", method="post")
+          .form-group
+            label Email Address
+            input#email(type="email", name="email", placeholder="name@company.com", class=(error || error_msg ? 'error-border' : ''))
 
-          form#loginForm(action="/login", method="post")
-            .form-group
-              label Email Address
-              input#email(type="text", name="email", placeholder="name@company.com" class=(error || error_msg ? 'error-border' : ''))
+          .form-group
+            label Password
+            input#password(type="password", name="password", placeholder="••••••••", class=(error || error_msg ? 'error-border' : ''))
 
-            .form-group
-              label Password
-              input#password(type="password", name="password", placeholder="••••••••" class=(error || error_msg ? 'error-border' : ''))
+          button.btn-login(type="submit") Sign In
 
-            button.btn-login(type="submit") Sign In
+        .footer-links
+          | New staff member? 
+          a(href="#") Contact Admin
 
-          .footer-links
-            | New staff member? 
-            a(href="/secureAcc") Contact Admin
+    script.
+      const form = document.getElementById('loginForm');
+      const toast = document.getElementById('loginErrorToast');
+      const serverError = document.querySelector('.alert-error');
 
-      script.
-        const form = document.getElementById('loginForm');
-        const toast = document.getElementById('loginErrorToast');
-        const serverError = document.querySelector('.alert-error');
-
-        document.querySelectorAll('input').forEach(input => {
-          input.addEventListener('input', function() {
-            this.classList.remove('error-border');
-          
-            toast.style.display = 'none';
-            
-            if(serverError) serverError.style.display = 'none';
-          });
-        });
-
-        // 2. Validate empty fields on submission
-        form.addEventListener('submit', function(e) {
-          let hasError = false;
-          const inputs = this.querySelectorAll('input');
-          
-          inputs.forEach(input => {
-            if (!input.value.trim()) {
-              input.classList.add('error-border');
-              hasError = true;
-            }
-          });
-
-          if (hasError) {
-            e.preventDefault();
-            
-            if(serverError) serverError.style.display = 'none';
-            
-            toast.style.display = 'block'; 
+      // Clear errors when user starts typing
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', function() {
+          this.classList.remove('error-border');
+          toast.style.display = 'none';
+          if (serverError && !serverError.id) {
+            serverError.style.display = 'none';
           }
         });
+      });
+
+      // Enhanced form validation
+      form.addEventListener('submit', function(e) {
+        let hasError = false;
+        
+        // Check for empty fields
+        this.querySelectorAll('input').forEach(input => {
+          if (!input.value.trim()) {
+            input.classList.add('error-border');
+            hasError = true;
+          }
+        });
+
+        if (hasError) {
+          e.preventDefault();
+          // Hide existing server error message if local validation fails
+          if (serverError) serverError.style.display = 'none';
+          toast.style.display = 'block';
+        } else {
+          // Provide visual feedback during submission
+          const btn = this.querySelector('button');
+          btn.innerHTML = "Authenticating...";
+          btn.style.pointerEvents = "none";
+        }
+      });

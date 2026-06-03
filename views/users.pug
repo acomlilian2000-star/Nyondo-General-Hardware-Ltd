@@ -1,55 +1,51 @@
-    doctype html
-    html
-      head
-        meta(charset="UTF-8")
-        meta(name="viewport", content="width=device-width, initial-scale=1")
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
 
-        title NYONDO | Users
+    title NYONDO | Users
 
-        link(rel="stylesheet", href="/css/users.css")
+    link(rel="stylesheet", href="/css/users.css")
 
-      body
+  body
+    .container
+      // Back button 
+      .top-bar(style='padding:10px;')
+        button(type='button' onclick="window.location.href='/adminDash'" style='padding:8px 15px; cursor:pointer;')
+          | ← Back to Dashboard
 
-        .container
-          // Back button 
-          .top-bar(style='padding:10px;')
-            button(type='button' onclick="window.location.href='/stockDash'" style='padding:8px 15px; cursor:pointer;')
-              | ← Back to Dashboard
+      h1 Registered Users
 
-          h1 Registered Users
+      table
+        thead
+          tr
+            th Full Name
+            th Email
+            th NIN Number
+            th Phone Number
+            th Address
+            th Role
+            th Date Joined
+            th Action
 
-          table
-
-            thead
+        tbody
+          if users.length > 0
+            each user in users
               tr
-                th Full Name
-                th Email
-                th NIN Number
-                th Phone Number
-                th Address
-                th Role
-                th Date Joined
-                th Action
+                td= user.fullName || "No Name"
+                td= user.email || "No Email"
+                td= user.ninNumber || "No NIN"
+                td= user.ugPhoneNumber || "No Phone"
+                td= user.address || "No Address"
+                td= user.role || "No Role"
+                td= user.date ? new Date(user.date).toDateString() : "No Date"
 
-            tbody
+                td
+                  form(action=`/deleteUser/${user._id}` method="POST")
+                    button.delete-btn(type="submit")
+                      | Delete
 
-              if users.length > 0
-
-                each user in users
-                  tr
-                    td= user.fullName || "No Name"
-                    td= user.email || "No Email"
-                    td= user.ninNumber || "No NIN"
-                    td= user.ugPhoneNumber || "No Phone"
-                    td= user.address || "No Address"
-                    td= user.role || "No Role"
-                    td= user.date ? new Date(user.date).toDateString() : "No Date"
-
-                    td
-                      form(action=`/deleteUser/${user._id}` method="POST")
-                        button.delete-btn(type="submit")
-                          | Delete
-
-              else
-                tr
-                  td(colspan="8") No users found
+          else
+            tr
+              td(colspan="8") No users found

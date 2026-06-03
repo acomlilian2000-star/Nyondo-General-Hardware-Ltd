@@ -1,228 +1,212 @@
-  doctype html
-  html(lang="en")
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
 
-    head
-      meta(charset="UTF-8")
-      meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title NYONDO ADMIN Dashboard
 
-      title NYONDO ADMIN Dashboard
+    link(rel="stylesheet" href="/css/admin.css")
 
-      link(rel="stylesheet" href="/css/admin.css")
+  body
+    aside
+      h2 NYONDO ADMIN
 
-    body
+      ul.nav-links
+        li.active
+          a(href="/adminDash") Dashboard
 
-      aside
+        li
+          a(href="/SignUpform") Register
 
-        h2 NYONDO ADMIN
+        li
+          a(href="/salesDash") Sales
 
-        ul.nav-links
-
-          li.active
-            a(href="/adminDash") Dashboard
-
-          li
-            a(href="/SignUpform") Register
-
-          li
-            a(href="/salesDash") Sales
-
-          li
-            a(href="/stockDash") Stock
-          
-          li
-            a(href="/users") user table
-
-          li 
-            a(href="/reports") 📊 Reports
-
-          li 
-            a(href="/supplierTable") SupplierTable
-
-          li
-            a(href="/salary") Deposit
-
-          li
-            a(href="/logout") Logout
+        li
+          a(href="/stockDash") Stock
         
-      main
+        li
+          a(href="/users") user table
 
-        .navbar
-          div
-            strong NYONDO GENERAL HARDWARE LTD
+        li 
+          a(href="/reports") 📊 Reports
 
-          div
-            strong Logged in as Administrator
+        li 
+          a(href="/supplierTable") SupplierTable
 
-          #clock
+        li
+          a(href="/salary") Deposit
 
-        // kpi (key importance indicator cards)
-        .kpi-grid
+        li
+          a(href="/logout") Logout
+      
+    main
+      .navbar
+        div
+          strong NYONDO GENERAL HARDWARE LTD
 
-          .kpi-card
-            h4 Total Sales (Cash)
-            p UGX #{Number(totalCashSales || 0).toLocaleString()}
+        div
+          strong Logged in as Administrator
 
-          .kpi-card
-            h4 Total Credit Sales
-            p UGX #{Number(totalCreditSales || 0).toLocaleString()}
+        #clock
 
-          .kpi-card
-            h4 Total Stock Value
-            p UGX #{Number(totalStockValue || 0).toLocaleString()}
+      // kpi (key importance indicator cards)
+      .kpi-grid
+        .kpi-card
+          h4 Total Sales (Cash)
+          p UGX #{Number(totalCashSales || 0).toLocaleString()}
 
-          
-          .kpi-card
-            h4 Suppliers Owed
-            p #{suppliersOwed || 0} Suppliers
+        .kpi-card
+          h4 Total Credit Sales
+          p UGX #{Number(totalCreditSales || 0).toLocaleString()}
 
-          .kpi-card
-            h4 Low Stock Alerts
-            p #{lowStockCount}
+        .kpi-card
+          h4 Total Stock Value
+          p UGX #{Number(totalStockValue || 0).toLocaleString()}
 
-        // customer table
-        .section-box
+        .kpi-card
+          h4 Suppliers Owed
+          p #{suppliersOwed || 0} Suppliers
 
-          h3 Customer Credit / Deposit Records
+        .kpi-card
+          h4 Low Stock Alerts
+          p #{lowStockCount}
 
-          table
+      // customer table
+      .section-box
+        h3 Customer Credit / Deposit Records
 
-            thead
-              tr
-                th Date
-                th Customer
-                th NIN
-                th Phone
-                th Address
-                th Product Item
-                th Qty
-                th Total
-                th Paid
-                th Balance
-                th Status
-                th Receipt
-                th Actions
+        table
+          thead
+            tr
+              th Date
+              th Customer
+              th NIN
+              th Phone
+              th Address
+              th Product Item
+              th Qty
+              th Total
+              th Paid
+              th Balance
+              th Status
+              th Receipt
+              th Actions
 
-            tbody
+          tbody
+            if deposits && deposits.length
+              each deposit in deposits
+                if deposit.items && deposit.items.length > 0
+                  each item, index in deposit.items
+                    if index === 0
+                      tr
+                        td(rowspan=deposit.items.length)= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
+                        td(rowspan=deposit.items.length)
+                          strong= deposit.customerName
+                        td(rowspan=deposit.items.length)= deposit.ninNumber
+                        td(rowspan=deposit.items.length)= deposit.customerPhone
+                        td(rowspan=deposit.items.length)= deposit.customerAddress
+                        
+                        // First item row data content
+                        td= item.itemName || 'N/A'
+                        td(style="text-align: center")
+                          strong= item.quantity || item.itemQuantity || 0
+                        
+                        td(rowspan=deposit.items.length) UGX #{Number(deposit.totalToPay || 0).toLocaleString()}
+                        td(rowspan=deposit.items.length) UGX #{Number(deposit.amountPaid || 0).toLocaleString()}
+                        td(rowspan=deposit.items.length) UGX #{Number(deposit.balance || 0).toLocaleString()}
+                        
+                        td(rowspan=deposit.items.length)
+                          if deposit.paymentStatus === "Finished" || deposit.balance <= 0
+                            span(style="color:green; font-weight:bold") Finished
+                          else
+                            span(style="color:red; font-weight:bold") Pending
 
-              if deposits && deposits.length
+                        // Receipt button 
+                        td(rowspan=deposit.items.length)
+                          a.btn.btn-green(
+                            href=`/deposit/receipt/${deposit._id}`
+                            target="_blank"
+                          ) 🧾 Receipt
 
-                each deposit in deposits
+                        // Actions 
+                        td(rowspan=deposit.items.length)
+                          if deposit.balance > 0
+                            div(style="display: flex; flex-direction: column; gap: 5px;")
+                              a.btn.btn-blue(
+                                href=`/deposit/edit/${deposit._id}`
+                              ) Edit Deposit
 
-                  if deposit.items && deposit.items.length > 0
-                    
-                    each item, index in deposit.items
-                      if index === 0
-                        tr
-                          td(rowspan=deposit.items.length)= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
-                          td(rowspan=deposit.items.length)
-                            strong= deposit.customerName
-                          td(rowspan=deposit.items.length)= deposit.ninNumber
-                          td(rowspan=deposit.items.length)= deposit.customerPhone
-                          td(rowspan=deposit.items.length)= deposit.customerAddress
-                          
-                          // First item row data content
-                          td= item.itemName || 'N/A'
-                          td(style="text-align: center")
-                            strong= item.quantity || item.itemQuantity || 0
-                          
-                          td(rowspan=deposit.items.length) UGX #{Number(deposit.totalToPay || 0).toLocaleString()}
-                          td(rowspan=deposit.items.length) UGX #{Number(deposit.amountPaid || 0).toLocaleString()}
-                          td(rowspan=deposit.items.length) UGX #{Number(deposit.balance || 0).toLocaleString()}
-                          
-                          td(rowspan=deposit.items.length)
-                            if deposit.paymentStatus === "Finished" || deposit.balance <= 0
-                              span(style="color:green; font-weight:bold") Finished
-                            else
-                              span(style="color:red; font-weight:bold") Pending
+                              form(
+                                method="POST",
+                                action=`/deposit/finish/${deposit._id}`,
+                                style="margin:0;"
+                              )
+                                button.btn(type="submit" style="background-color:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; width:100%;") Clear Debt
+                          else
+                            span Done
+                    else
+                      // Extra  purchases in the invoice block 
+                      tr
+                        td= item.itemName || 'N/A'
+                        td(style="text-align: center")
+                          strong= item.quantity || item.itemQuantity || 0
 
-                          // Receipt button 
-                          td(rowspan=deposit.items.length)
-                            a.btn.btn-green(
-                              href=`/deposit/receipt/${deposit._id}`
-                              target="_blank"
-                            ) 🧾 Receipt
-
-                          // Actions 
-                          td(rowspan=deposit.items.length)
-                            if deposit.balance > 0
-                              div(style="display: flex; flex-direction: column; gap: 5px;")
-                                a.btn.btn-blue(
-                                  href=`/deposit/edit/${deposit._id}`
-                                ) Edit Deposit
-
-                                form(
-                                  method="POST",
-                                  action=`/deposit/finish/${deposit._id}`,
-                                  style="margin:0;"
-                                )
-                                  button.btn(type="submit" style="background-color:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; width:100%;") Clear Debt
-                            else
-                              span Done
+                else
+                  // Fallback safely if a legacy document profile has a clean or unpopulated items array list
+                  tr
+                    td= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
+                    td
+                      strong= deposit.customerName
+                    td= deposit.ninNumber
+                    td= deposit.customerPhone
+                    td= deposit.customerAddress
+                    td N/A
+                    td(style="text-align: center") 0
+                    td UGX #{Number(deposit.totalToPay || 0).toLocaleString()}
+                    td UGX #{Number(deposit.amountPaid || 0).toLocaleString()}
+                    td UGX #{Number(deposit.balance || 0).toLocaleString()}
+                    td
+                      if deposit.paymentStatus === "Finished" || deposit.balance <= 0
+                        span(style="color:green; font-weight:bold") Finished
                       else
-                        // Extra  purchases in the invoice block 
-                        tr
-                          td= item.itemName || 'N/A'
-                          td(style="text-align: center")
-                            strong= item.quantity || item.itemQuantity || 0
+                        span(style="color:red; font-weight:bold") Pending
+                    td
+                      a.btn.btn-green(
+                        href=`/deposit/receipt/${deposit._id}`
+                        target="_blank"
+                      ) 🧾 Receipt
+                    td
+                      if deposit.balance > 0
+                        div(style="display: flex; flex-direction: column; gap: 5px;")
+                          a.btn.btn-blue(
+                            href=`/deposit/edit/${deposit._id}`
+                          ) Edit Deposit
 
-                  else
-                    // Fallback safely if a legacy document profile has a clean or unpopulated items array list
-                    tr
-                      td= deposit.createdAt ? new Date(deposit.createdAt).toLocaleDateString() : '-'
-                      td
-                        strong= deposit.customerName
-                      td= deposit.ninNumber
-                      td= deposit.customerPhone
-                      td= deposit.customerAddress
-                      td N/A
-                      td(style="text-align: center") 0
-                      td UGX #{Number(deposit.totalToPay || 0).toLocaleString()}
-                      td UGX #{Number(deposit.amountPaid || 0).toLocaleString()}
-                      td UGX #{Number(deposit.balance || 0).toLocaleString()}
-                      td
-                        if deposit.paymentStatus === "Finished" || deposit.balance <= 0
-                          span(style="color:green; font-weight:bold") Finished
-                        else
-                          span(style="color:red; font-weight:bold") Pending
-                      td
-                        a.btn.btn-green(
-                          href=`/deposit/receipt/${deposit._id}`
-                          target="_blank"
-                        ) 🧾 Receipt
-                      td
-                        if deposit.balance > 0
-                          div(style="display: flex; flex-direction: column; gap: 5px;")
-                            a.btn.btn-blue(
-                              href=`/deposit/edit/${deposit._id}`
-                            ) Edit Deposit
+                          form(
+                            method="POST",
+                            action=`/deposit/finish/${deposit._id}`,
+                            style="margin:0;"
+                          )
+                            button.btn(type="submit" style="background-color:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; width:100%;") Clear Debt
+                      else
+                        span Done
 
-                            form(
-                              method="POST",
-                              action=`/deposit/finish/${deposit._id}`,
-                              style="margin:0;"
-                            )
-                              button.btn(type="submit" style="background-color:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; width:100%;") Clear Debt
-                        else
-                          span Done
+            else
+              tr
+                td(
+                  colspan="13",
+                  style="text-align:center;color:#94a3b8"
+                )
+                  | No customer credit records available
 
-              else
+    script.
+      function updateClock() {
+          const now = new Date();
+          document.getElementById("clock").innerText =
+              now.toLocaleTimeString();
+      }
 
-                tr
-                  td(
-                    colspan="13",
-                    style="text-align:center;color:#94a3b8"
-                  )
-                    | No customer credit records available
+      setInterval(updateClock, 1000);
 
-      script.
-        function updateClock() {
-
-            const now = new Date();
-
-            document.getElementById("clock").innerText =
-                now.toLocaleTimeString();
-        }
-
-        setInterval(updateClock, 1000);
-
-        updateClock();
+      updateClock();

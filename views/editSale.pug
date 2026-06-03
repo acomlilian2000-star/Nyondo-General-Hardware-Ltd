@@ -1,87 +1,79 @@
-  doctype html
-  html
-    head
-      title Edit Sale
-      link(rel="stylesheet" href="/css/edit.css")
+doctype html
+html
+  head
+    title Edit Sale
+    link(rel="stylesheet" href="/css/edit.css")
 
-    body
+  body
+    .container
+      h2 Edit Sale
 
-      .container
-        h2 Edit Sale
+      form(action=`/sales/edit/${sale._id}` method="POST")
+        // Customer information
+        .form-group
+          label Customer Name
+          input(type="text" name="customerName" value=sale.customerName)
 
-        form(action=`/sales/edit/${sale._id}` method="POST")
+        .form-group
+          label Phone Number
+          input(type="text" name="phoneNumber" value=sale.phoneNumber)
 
-          // Customer information
-          .form-group
-            label Customer Name
-            input(type="text" name="customerName" value=sale.customerName)
+        .form-group
+          label Address
+          input(type="text" name="customerAddress" value=sale.customerAddress)
 
-          .form-group
-            label Phone Number
-            input(type="text" name="phoneNumber" value=sale.phoneNumber)
+        // For multiple items 
+        h3 Items
 
-          .form-group
-            label Address
-            input(type="text" name="customerAddress" value=sale.customerAddress)
+        #itemsContainer
+          if sale.items && sale.items.length
+            each item, i in sale.items
+              .item-group
+                .form-group
+                  label Product
+                  select(name="product[]" required)
+                    option(value=item.product._id selected)
+                      | #{item.product.itemName}
 
-          // For multiple items 
-          h3 Items
+                .form-group
+                  label Specification
+                  input(type="text" name="specification[]" value=item.specification)
 
-          #itemsContainer
+                .form-group
+                  label Unit Price
+                  input(type="number" name="unitPrice[]" value=item.unitPrice)
 
-            if sale.items && sale.items.length
+                .form-group
+                  label Quantity
+                  input(type="number" name="quantity[]" value=item.quantity)
 
-              each item, i in sale.items
+          else
+            p No items found
 
-                .item-group
+        // Delivery information 
+        .form-group
+          label Distance
+          input(type="number" name="distance" value=sale.distance)
 
-                  .form-group
-                    label Product
+        .form-group
+          label Transport Cost
+          input(type="number" name="transportCost" value=sale.transportCost)
 
-                    select(name="product[]" required)
-                      option(value=item.product._id selected)
-                        | #{item.product.itemName}
+        // Totals
+        .form-group
+          label Sub Total
+          input(type="number" name="subTotal" value=sale.subTotal readonly)
 
-                  .form-group
-                    label Specification
-                    input(type="text" name="specification[]" value=item.specification)
+        .form-group
+          label Grand Total
+          input(type="number" name="grandTotal" value=sale.grandTotal readonly)
 
-                  .form-group
-                    label Unit Price
-                    input(type="number" name="unitPrice[]" value=item.unitPrice)
+        // Payment 
+        .form-group
+          label Payment Method
+          select(name="paymentMethod")
+            option(value="cash" selected=sale.paymentMethod === "cash") Cash
+            option(value="mobile-money" selected=sale.paymentMethod === "mobile-money") Mobile Money
+            option(value="bank-transfer" selected=sale.paymentMethod === "bank-transfer") Bank Transfer
 
-                  .form-group
-                    label Quantity
-                    input(type="number" name="quantity[]" value=item.quantity)
-
-            else
-
-              p No items found
-
-          // Delivery information 
-          .form-group
-            label Distance
-            input(type="number" name="distance" value=sale.distance)
-
-          .form-group
-            label Transport Cost
-            input(type="number" name="transportCost" value=sale.transportCost)
-
-          // Totals
-          .form-group
-            label Sub Total
-            input(type="number" name="subTotal" value=sale.subTotal readonly)
-
-          .form-group
-            label Grand Total
-            input(type="number" name="grandTotal" value=sale.grandTotal readonly)
-
-          // Payment 
-          .form-group
-            label Payment Method
-            select(name="paymentMethod")
-              option(value="cash" selected=sale.paymentMethod === "cash") Cash
-              option(value="mobile-money" selected=sale.paymentMethod === "mobile-money") Mobile Money
-              option(value="bank-transfer" selected=sale.paymentMethod === "bank-transfer") Bank Transfer
-
-          button(type="submit") Update Sale
+        button(type="submit") Update Sale

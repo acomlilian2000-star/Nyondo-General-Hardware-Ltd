@@ -1,185 +1,170 @@
-  doctype html
-  html
-    head
-      meta(charset="UTF-8")
-      meta(name="viewport" content="width=device-width,initial-scale=1")
-      title NYONDO SYSTEM REPORTS
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width,initial-scale=1")
+    title NYONDO SYSTEM REPORTS
 
-      link(rel="stylesheet" href="/css/reports.css")
-      script(src="https://cdn.jsdelivr.net/npm/chart.js")
+    link(rel="stylesheet" href="/css/reports.css")
+    script(src="https://cdn.jsdelivr.net/npm/chart.js")
 
-      // ================= PRINT STYLES =================
-      style.
-        @media print {
-          .sidebar,
-          .navbar .nav-right button,
-          .print-btn {
-            display: none !important;
-          }
-
-          body {
-            background: white;
-          }
-
-          .chart-box, .stats-grid {
-            page-break-inside: avoid;
-          }
+    // ================= PRINT STYLES =================
+    style.
+      @media print {
+        .sidebar,
+        .navbar .nav-right button,
+        .print-btn {
+          display: none !important;
         }
 
-
-    body
-
-      aside.sidebar
-        .brand
-          h2 NYONDO REPORTS
-
-        ul.nav
-          li
-            a(href="/adminDash") 📊 Dashboard
-          li
-            a(href="/stockDash") 📦 Stock
-          li
-            a(href="/salesDash") 🧾 Sales
-          li
-            a(href="/reports") 📈 Reports
-          li
-            a(href="/logout") 🚪 Logout
-
-
-      .main-content
-
-        nav.navbar
-          .nav-left
-            span NYONDO GENERAL HARDWARE LTD
-
-          .nav-center
-            span Business Analytics & Reports
-
-          .nav-right
-
-            button.print-btn(
-              type="button"
-              onclick="window.print()"
-              style="padding:8px 15px; cursor:pointer; background:#2d6cdf; color:white; border:none; border-radius:5px;"
-            )
-              | 🖨 Print Report
-
-            span#datetime
-
-
-        // Stats
-        .stats-grid
-
-          .stat-card
-            h3 Total Sales
-            p UGX #{Number(totalSales || 0).toLocaleString()}
-
-          .stat-card
-            h3 Total Deposits
-            p UGX #{Number(totalDeposits || 0).toLocaleString()}
-
-          .stat-card
-            h3 Total Stock Value
-            p UGX #{Number(totalStockValue || 0).toLocaleString()}
-
-          .stat-card
-            h3 Fast Moving Item
-            p #{fastMovingItem || "No Data"}
-
-          .stat-card
-            h3 Low Moving Item
-            p #{lowMovingItem || "No Data"}
-
-
-        //Charts
-
-        .chart-box
-          h2 🥧 Monthly Sales Distribution
-          canvas#monthlySalesPie
-
-        .chart-box
-          h2 🥧 Yearly Sales Distribution
-          canvas#yearlySalesPie
-
-        .chart-box
-          h2 🥧 Monthly Deposit Distribution
-          canvas#monthlyDepositPie
-
-        .chart-box
-          h2 🚀 Fast Moving Products
-          canvas#fastMovingChart
-
-        .chart-box
-          h2 🐢 Low Moving Products
-          canvas#lowMovingChart
-
-
-      script.
-        function updateTime() {
-          const now = new Date();
-          document.getElementById("datetime").innerText =
-            now.toLocaleDateString() + " " + now.toLocaleTimeString();
+        body {
+          background: white;
         }
 
-        setInterval(updateTime, 1000);
-        updateTime();
+        .chart-box, .stats-grid {
+          page-break-inside: avoid;
+        }
+      }
 
+  body
+    aside.sidebar
+      .brand
+        h2 NYONDO REPORTS
 
-        // MOnthly sales
-        new Chart(document.getElementById('monthlySalesPie'), {
-          type: 'pie',
-          data: {
-            labels: !{JSON.stringify(months)},
-            datasets: [{
-              data: !{JSON.stringify(monthlySales)}
-            }]
-          }
-        });
+      ul.nav
+        li
+          a(href="/adminDash") 📊 Dashboard
+        li
+          a(href="/stockDash") 📦 Stock
+        li
+          a(href="/salesDash") 🧾 Sales
+        li
+          a(href="/reports") 📈 Reports
+        li
+          a(href="/logout") 🚪 Logout
 
+    .main-content
+      nav.navbar
+        .nav-left
+          span NYONDO GENERAL HARDWARE LTD
 
-        //Yearly 
-        new Chart(document.getElementById('yearlySalesPie'), {
-          type: 'pie',
-          data: {
-            labels: !{JSON.stringify(yearLabels)},
-            datasets: [{
-              data: !{JSON.stringify(yearlySales)}
-            }]
-          }
-        });
+        .nav-center
+          span Business Analytics & Reports
 
+        .nav-right
+          button.print-btn(
+            type="button"
+            onclick="window.print()"
+            style="padding:8px 15px; cursor:pointer; background:#2d6cdf; color:white; border:none; border-radius:5px;"
+          )
+            | 🖨 Print Report
 
-        //Monthly Deposits 
-        new Chart(document.getElementById('monthlyDepositPie'), {
-          type: 'pie',
-          data: {
-            labels: !{JSON.stringify(months)},
-            datasets: [{
-              data: !{JSON.stringify(monthlyDeposits)}
-            }]
-          }
-        });
+          span#datetime
 
+      // Stats
+      .stats-grid
+        .stat-card
+          h3 Total Sales
+          p UGX #{Number(totalSales || 0).toLocaleString()}
 
-        // Fast movers 
-        new Chart(document.getElementById('fastMovingChart'), {
-          type: 'doughnut',
-          data: {
-            labels: !{JSON.stringify(fastMovingLabels)},
-            datasets: [{
-              data: !{JSON.stringify(fastMovingData)}
-            }]
-          }
-        });
+        .stat-card
+          h3 Total Deposits
+          p UGX #{Number(totalDeposits || 0).toLocaleString()}
 
+        .stat-card
+          h3 Total Stock Value
+          p UGX #{Number(totalStockValue || 0).toLocaleString()}
 
-        //Low movers 
-        new Chart(document.getElementById('lowMovingChart'), {
-          type: 'doughnut',
-          data: {
-            labels: !{JSON.stringify(lowMovingLabels)},
-            datasets: [{
-              data: !{JSON.stringify(lowMovingData)}
-            }]
-          }
-        });
+        .stat-card
+          h3 Fast Moving Item
+          p #{fastMovingItem || "No Data"}
+
+        .stat-card
+          h3 Low Moving Item
+          p #{lowMovingItem || "No Data"}
+
+      // Charts
+      .chart-box
+        h2 🥧 Monthly Sales Distribution
+        canvas#monthlySalesPie
+
+      .chart-box
+        h2 🥧 Yearly Sales Distribution
+        canvas#yearlySalesPie
+
+      .chart-box
+        h2 🥧 Monthly Deposit Distribution
+        canvas#monthlyDepositPie
+
+      .chart-box
+        h2 🚀 Fast Moving Products
+        canvas#fastMovingChart
+
+      .chart-box
+        h2 🐢 Low Moving Products
+        canvas#lowMovingChart
+
+    script.
+      function updateTime() {
+        const now = new Date();
+        document.getElementById("datetime").innerText =
+          now.toLocaleDateString() + " " + now.toLocaleTimeString();
+      }
+
+      setInterval(updateTime, 1000);
+      updateTime();
+
+      // Monthly sales
+      new Chart(document.getElementById('monthlySalesPie'), {
+        type: 'pie',
+        data: {
+          labels: !{JSON.stringify(months)},
+          datasets: [{
+            data: !{JSON.stringify(monthlySales)}
+          }]
+        }
+      });
+
+      // Yearly 
+      new Chart(document.getElementById('yearlySalesPie'), {
+        type: 'pie',
+        data: {
+          labels: !{JSON.stringify(yearLabels)},
+          datasets: [{
+            data: !{JSON.stringify(yearlySales)}
+          }]
+        }
+      });
+
+      // Monthly Deposits 
+      new Chart(document.getElementById('monthlyDepositPie'), {
+        type: 'pie',
+        data: {
+          labels: !{JSON.stringify(months)},
+          datasets: [{
+            data: !{JSON.stringify(monthlyDeposits)}
+          }]
+        }
+      });
+
+      // Fast movers 
+      new Chart(document.getElementById('fastMovingChart'), {
+        type: 'doughnut',
+        data: {
+          labels: !{JSON.stringify(fastMovingLabels)},
+          datasets: [{
+            data: !{JSON.stringify(fastMovingData)}
+          }]
+        }
+      });
+
+      // Low movers 
+      new Chart(document.getElementById('lowMovingChart'), {
+        type: 'doughnut',
+        data: {
+          labels: !{JSON.stringify(lowMovingLabels)},
+          datasets: [{
+            data: !{JSON.stringify(lowMovingData)}
+          }]
+        }
+      });

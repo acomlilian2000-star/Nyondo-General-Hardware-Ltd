@@ -1,136 +1,135 @@
-  doctype html
-  html
-    head
-      meta(charset="UTF-8")
-      meta(name="viewport" content="width=device-width,initial-scale=1")
-      title NYONDO | Sales Attendant Dashboard
-      link(rel="stylesheet" href="/css/salesDash.css")
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width,initial-scale=1")
+    title NYONDO | Sales Attendant Dashboard
+    link(rel="stylesheet" href="/css/salesDash.css")
 
-    body
-      // Sidebar 
-      aside.sidebar
-        .brand
-          h2 NYONDO SALES
-        ul.nav
-          if user && user.role === 'admin'
-            li
-              a(href="/adminDash") 📊 Dashboard
-          
-          if user && (user.role === 'admin' || user.role === 'sales_attendant') 
-            li
-              a(href="/salesform") 📝 Make New Sale
-              
-          
+  body
+    // Sidebar 
+    aside.sidebar
+      .brand
+        h2 NYONDO SALES
+      ul.nav
+        if user && user.role === 'admin'
           li
-            a(href="/stockDash") Stock
-          
+            a(href="/adminDash") 📊 Dashboard
+        
+        if user && (user.role === 'admin' || user.role === 'sales_attendant') 
           li
-            a(href="/logout") 🚪 Logout
+            a(href="/salesform") 📝 Make New Sale
+            
+        li
+          a(href="/stockDash") Stock
+        
+        li
+          a(href="/logout") 🚪 Logout
 
-      // Main content 
-      .main-content
-        nav.navbar
-          .nav-left
-            span NYONDO GENERAL HARDWARE LTD
-          .nav-center
-            span Logged in as: #{currentUser ? currentUser.role : 'User'}
-          .nav-right
-            span#datetime
+    // Main content 
+    .main-content
+      nav.navbar
+        .nav-left
+          span NYONDO GENERAL HARDWARE LTD
+        .nav-center
+          span Logged in as: #{currentUser ? currentUser.role : 'User'}
+        .nav-right
+          span#datetime
 
-        .container
-          .stats-grid
-            .stat-card
-              h3 My Sales Today
-              p UGX #{Number(totalSalesToday || 0).toLocaleString()}
-            .stat-card
-              h3 Total Revenue
-              p UGX #{(dbSales || []).reduce((a, b) => a + (b.grandTotal || 0), 0).toLocaleString()}
-            .stat-card
-              h3 Low Stock Alert
-              p #{lowStockCount || 0}
-                        
+      .container
+        .stats-grid
+          .stat-card
+            h3 My Sales Today
+            p UGX #{Number(totalSalesToday || 0).toLocaleString()}
+          .stat-card
+            h3 Total Revenue
+            p UGX #{(dbSales || []).reduce((a, b) => a + (b.grandTotal || 0), 0).toLocaleString()}
+          .stat-card
+            h3 Low Stock Alert
+            p #{lowStockCount || 0}
+                      
 
-          //Sales Table 
-          .section-box
-            h3 📦 Sales Records
-            table
-              thead
+        //Sales Table 
+        .section-box
+          h3 📦 Sales Records
+          table
+            thead
+              tr
+                th Date
+                th Product
+                th Specification
+                th Unit Price
+                th Quantity
+                th Sub Total
+                th Customer Name
+                th Phone Number
+                th Address
+                th Customer Type
+                th Distance
+                th Transport Cost
+                th Grand Total
+                th Payment Method
+                th Actions
+
+            tbody
+              if !dbSales || dbSales.length === 0
                 tr
-                  th Date
-                  th Product
-                  th Specification
-                  th Unit Price
-                  th Quantity
-                  th Sub Total
-                  th Customer Name
-                  th Phone Number
-                  th Address
-                  th Customer Type
-                  th Distance
-                  th Transport Cost
-                  th Grand Total
-                  th Payment Method
-                  th Actions
+                  td(colspan="15") No sales recorded yet
+              else
+                each sale in dbSales
+                  if sale.items && sale.items.length > 0
+                    each item, index in sale.items
+                      if index === 0
+                        tr
+                          td(rowspan=sale.items.length)= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
+                          td= item.product && item.product.itemName ? item.product.itemName : (item.itemName || 'Deleted Product')
+                          td= item.specification || '-'
+                          td UGX #{Number(item.unitPrice || 0).toLocaleString()}
+                          td= item.quantity || 0
+                          td UGX #{Number(item.subTotal || 0).toLocaleString()}
+                          td(rowspan=sale.items.length)
+                            strong= sale.customerName || '-'
+                          td(rowspan=sale.items.length)= sale.phoneNumber || '-'
+                          td(rowspan=sale.items.length)= sale.customerAddress || '-'
+                          td(rowspan=sale.items.length)= sale.customerType || '-'
+                          td(rowspan=sale.items.length)= sale.distance || 0
+                          td(rowspan=sale.items.length) UGX #{Number(sale.transportCost || 0).toLocaleString()}
+                          td(rowspan=sale.items.length)
+                            strong UGX #{Number(sale.grandTotal || 0).toLocaleString()}
+                          td(rowspan=sale.items.length)= sale.paymentMethod || '-'
+                          
+                          // Actions 
+                          td(rowspan=sale.items.length)
+                            div(style="display: flex; flex-direction: column; gap: 5px;")
+                              if currentUser && currentUser.role === 'admin'
+                                a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+                                a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
+                              
+                              // Receipt hidden from 'stock_manager'
+                              if currentUser && currentUser.role !== 'stock_manager'
+                                a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
+                      else
+                        tr
+                          td= item.product && item.product.itemName ? item.product.itemName : (item.itemName || 'Deleted Product')
+                          td= item.specification || '-'
+                          td UGX #{Number(item.unitPrice || 0).toLocaleString()}
+                          td= item.quantity || 0
+                          td UGX #{Number(item.subTotal || 0).toLocaleString()}
 
-              tbody
-                if !dbSales || dbSales.length === 0
-                  tr
-                    td(colspan="15") No sales recorded yet
-                else
-                  each sale in dbSales
-                    if sale.items && sale.items.length > 0
-                      each item, index in sale.items
-                        if index === 0
-                          tr
-                            td(rowspan=sale.items.length)= sale.date ? new Date(sale.date).toLocaleDateString() : '-'
-                            td= item.product && item.product.itemName ? item.product.itemName : (item.itemName || 'Deleted Product')
-                            td= item.specification || '-'
-                            td UGX #{Number(item.unitPrice || 0).toLocaleString()}
-                            td= item.quantity || 0
-                            td UGX #{Number(item.subTotal || 0).toLocaleString()}
-                            td(rowspan=sale.items.length)
-                              strong= sale.customerName || '-'
-                            td(rowspan=sale.items.length)= sale.phoneNumber || '-'
-                            td(rowspan=sale.items.length)= sale.customerAddress || '-'
-                            td(rowspan=sale.items.length)= sale.customerType || '-'
-                            td(rowspan=sale.items.length)= sale.distance || 0
-                            td(rowspan=sale.items.length) UGX #{Number(sale.transportCost || 0).toLocaleString()}
-                            td(rowspan=sale.items.length)
-                              strong UGX #{Number(sale.grandTotal || 0).toLocaleString()}
-                            td(rowspan=sale.items.length)= sale.paymentMethod || '-'
-                            
-                            // Actions 
-                            td(rowspan=sale.items.length)
-                              div(style="display: flex; flex-direction: column; gap: 5px;")
-                                if currentUser && currentUser.role === 'admin'
-                                  a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
-                                  a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-                                
-                                // Receipt hidden from 'stock_manager'
-                                if currentUser && currentUser.role !== 'stock_manager'
-                                  a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
-                        else
-                          tr
-                            td= item.product && item.product.itemName ? item.product.itemName : (item.itemName || 'Deleted Product')
-                            td= item.specification || '-'
-                            td UGX #{Number(item.unitPrice || 0).toLocaleString()}
-                            td= item.quantity || 0
-                            td UGX #{Number(item.subTotal || 0).toLocaleString()}
+                  else
+                    tr
+                      td(colspan="15")
+                        div(style="display: flex; flex-direction: column; gap: 5px;")
+                          if currentUser && currentUser.role === 'admin'
+                            a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
+                            a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
+                          if currentUser && currentUser.role !== 'stock_manager'
+                            a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
 
-                    else
-                      tr
-                        td(colspan="15")
-                          div(style="display: flex; flex-direction: column; gap: 5px;")
-                            if currentUser && currentUser.role === 'admin'
-                              a.btn.btn-blue(href=`/sales/edit/${sale._id}`) Edit
-                              a.btn.btn-red(href=`/sales/delete/${sale._id}` onclick="return confirm('Delete this sale?')") Delete
-                            if currentUser && currentUser.role !== 'stock_manager'
-                              a.btn.btn-blue(href=`/sales/receipt/${sale._id}` target="_blank") Receipt
-
-      script.
-        function updateTime() {
-          const now = new Date();
-          document.getElementById("datetime").innerText = now.toLocaleDateString() + " " + now.toLocaleTimeString();
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
+    script.
+      function updateTime() {
+        const now = new Date();
+        document.getElementById("datetime").innerText = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+      }
+      setInterval(updateTime, 1000);
+      updateTime();

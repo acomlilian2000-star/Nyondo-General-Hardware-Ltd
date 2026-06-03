@@ -1,70 +1,69 @@
-  doctype html
-  html
-    head
-      meta(charset='UTF-8')
-      meta(name='viewport' content='width=device-width, initial-scale=1.0')
-      title NYONDO | Edit #{stockItem.itemName}
-      link(rel='stylesheet' href='/css/stock.css')
-      style.
-        .read-only-highlight { background-color: #f3f4f6; cursor: not-allowed; }
+doctype html
+html
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title NYONDO | Edit #{stockItem.itemName}
+    link(rel='stylesheet' href='/css/stock.css')
+    style.
+      .read-only-highlight { background-color: #f3f4f6; cursor: not-allowed; }
+      .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+
+  body
+    .form-container
+      .top-bar(style='padding:10px;')
+        button(type='button' onclick="window.location.href='/stockDash'" style='padding:8px 15px; cursor:pointer;')
+          | ← Back to Dashboard
+
+      h1 NYONDO General Hardware LTD
+      p.subtitle Edit Inventory Record: #{stockItem.itemName}
+
+      // Flash messages
+      if error_msg && error_msg.length > 0
+        div(style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #ef4444; margin-bottom: 20px; font-weight: bold;")
+          | #{error_msg}
+
+      form#stockForm(action=`/stock/update/${stockItem._id}` method='POST')
         
-        .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+        .section-title Product Information
+        .form-group
+          label Product Name
+          input.read-only-highlight(type='text' name='itemName' value=stockItem.itemName readonly)
 
-    body
-      .form-container
-        .top-bar(style='padding:10px;')
-          button(type='button' onclick="window.location.href='/stockDash'" style='padding:8px 15px; cursor:pointer;')
-            | ← Back to Dashboard
-
-        h1 NYONDO General Hardware LTD
-        p.subtitle Edit Inventory Record: #{stockItem.itemName}
-
-        // Flash messages
-        if error_msg && error_msg.length > 0
-          div(style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 4px; border-left: 5px solid #ef4444; margin-bottom: 20px; font-weight: bold;")
-            | #{error_msg}
-
-        form#stockForm(action=`/stock/update/${stockItem._id}` method='POST')
-          
-          .section-title Product Information
+        .input-row
           .form-group
-            label Product Name
-            input.read-only-highlight(type='text' name='itemName' value=stockItem.itemName readonly)
-
-          .input-row
-            .form-group
-              label Category
-              input.category(type='text' name='category' value=(stockItem.category || '') class=(fieldErrors && fieldErrors.category ? 'error-border' : ''))
-            .form-group
-              label Specification
-              select(name='specification' class=(fieldErrors && fieldErrors.specification ? 'error-border' : ''))
-                option(value='Pieces' selected=(stockItem.specification === 'Pieces')) Pieces
-                option(value='Kgs' selected=(stockItem.specification === 'Kgs')) Kilograms (Kgs)
-                option(value='Bags' selected=(stockItem.specification === 'Bags')) Bags
-                option(value='Rolls' selected=(stockItem.specification === 'Rolls')) Rolls
-
-          .input-row
-            .form-group
-              label Quantity
-              input.quantity(type='number' name='quantity' value=stockItem.quantity class=(fieldErrors && fieldErrors.quantity ? 'error-border' : ''))
-            .form-group
-              label Unit Cost (UGX)
-              input.unitCost(type='number' name='unitCost' value=stockItem.unitCost class=(fieldErrors && fieldErrors.unitCost ? 'error-border' : ''))
-
+            label Category
+            input.category(type='text' name='category' value=(stockItem.category || '') class=(fieldErrors && fieldErrors.category ? 'error-border' : ''))
           .form-group
-            label Selling Price (UGX)
-            input.unitPrice(type='number' name='unitPrice' value=stockItem.unitPrice class=(fieldErrors && fieldErrors.unitPrice ? 'error-border' : ''))
+            label Specification
+            select(name='specification' class=(fieldErrors && fieldErrors.specification ? 'error-border' : ''))
+              option(value='Pieces' selected=(stockItem.specification === 'Pieces')) Pieces
+              option(value='Kgs' selected=(stockItem.specification === 'Kgs')) Kilograms (Kgs)
+              option(value='Bags' selected=(stockItem.specification === 'Bags')) Bags
+              option(value='Rolls' selected=(stockItem.specification === 'Rolls')) Rolls
 
-          button.btn-submit(type='submit' style='width: 100%; margin-top: 20px;') Save Changes
+        .input-row
+          .form-group
+            label Quantity
+            input.quantity(type='number' name='quantity' value=stockItem.quantity class=(fieldErrors && fieldErrors.quantity ? 'error-border' : ''))
+          .form-group
+            label Unit Cost (UGX)
+            input.unitCost(type='number' name='unitCost' value=stockItem.unitCost class=(fieldErrors && fieldErrors.unitCost ? 'error-border' : ''))
 
-      script.
-        document.getElementById('stockForm').addEventListener('submit', function(e) {
-          const cost = Number(document.querySelector('.unitCost').value);
-          const price = Number(document.querySelector('.unitPrice').value);
+        .form-group
+          label Selling Price (UGX)
+          input.unitPrice(type='number' name='unitPrice' value=stockItem.unitPrice class=(fieldErrors && fieldErrors.unitPrice ? 'error-border' : ''))
 
-          if (price <= cost) {
-            e.preventDefault();
-            alert('Error: Selling price must be greater than Unit Cost.');
-            document.querySelector('.unitPrice').classList.add('error-border');
-          }
-        });
+        button.btn-submit(type='submit' style='width: 100%; margin-top: 20px;') Save Changes
+
+    script.
+      document.getElementById('stockForm').addEventListener('submit', function(e) {
+        const cost = Number(document.querySelector('.unitCost').value);
+        const price = Number(document.querySelector('.unitPrice').value);
+
+        if (price <= cost) {
+          e.preventDefault();
+          alert('Error: Selling price must be greater than Unit Cost.');
+          document.querySelector('.unitPrice').classList.add('error-border');
+        }
+      });

@@ -1,55 +1,39 @@
-  doctype html
-  html
-    head
-      meta(charset="UTF-8")
-      meta(name="viewport", content="width=device-width, initial-scale=1")
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    title NYONDO General Hardware LTD | Portal
+    link(rel="stylesheet", href="/css/index.css")
 
-      title NYONDO General Hardware LTD | Portal
+  body
+    main.hero
+      section.marketing-card
+        span.welcome-badge Operations Portal
 
-      link(rel="stylesheet", href="/css/index.css")
+        h1
+          | Welcome to
+          br
+          | NYONDO General Hardware Ltd
 
-    body
+        p.sub-message
+          | Dealers in heavy and light
+          br
+          | building equipment.
 
-      main.hero
-        section.marketing-card
+        // Buttons container 
+        .button-group
+          a.btn-portal#loginBtn(href="/login") Staff Login
 
-          span.welcome-badge Operations Portal
-
-          h1
-            | Welcome to
-            br
-            | NYONDO General Hardware Ltd
-
-          p.sub-message
-            | Dealers in heavy and light
-            br
-            | building equipment.
-
-          // Buttons container 
-          .button-group
-
-            a.btn-portal#loginBtn(href="/login")
-              | Staff Login
-
-      script.
-        // Login Button
-        document.getElementById("loginBtn").addEventListener("click", function () {
-
-          this.innerHTML = "Authenticating...";
-
-          setTimeout(() => {
-            window.location.href = "/login";
-          }, 600);
-
-        });
-
-        // Signup button
-        document.getElementById("signupBtn").addEventListener("click", function () {
-
-          this.innerHTML = "Loading...";
-
-          setTimeout(() => {
-            window.location.href = "/SignUpform";
-          }, 600);
-
-        });
+    script.
+      // Login Button
+      document.getElementById("loginBtn").addEventListener("click", function (e) {
+        e.preventDefault(); // Ensures the button text update is visible before navigation
+        
+        this.innerHTML = "Authenticating...";
+        this.style.pointerEvents = "none"; // Prevents double-clicking while loading
+        
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 600);
+      });

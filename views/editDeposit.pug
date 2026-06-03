@@ -1,36 +1,37 @@
-  doctype html
-  html(lang="en")
-    head
-      meta(charset="UTF-8")
-      meta(name="viewport" content="width=device-width, initial-scale=1.0")
-      title NYONDO | Edit Customer Deposit
-      link(rel="stylesheet" href="/css/admin.css")
-    body
-      main(style="max-width: 600px; margin: 40px auto; padding: 20px;")
-        .section-box
-          h3 📝 Update Payment for #{deposit.customerName}
-          p(style="color: #64748b; margin-bottom: 20px;") Update collected funds for this customer credit profile.
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title NYONDO | Edit Customer Deposit
+    link(rel="stylesheet" href="/css/admin.css")
 
-          form(method="POST" action=`/deposit/update/${deposit._id}`)
-            
-            .form-group(style="margin-bottom: 15px;")
-              label(style="display: block; margin-bottom: 5px; font-weight: bold;") Total Amount Due
-              input(type="text" value=`UGX ${Number(deposit.totalToPay || 0).toLocaleString()}` disabled style="width: 100%; padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;")
+  body
+    main(style="max-width: 600px; margin: 40px auto; padding: 20px;")
+      .section-box
+        h3 📝 Update Payment for #{deposit.customerName}
+        p(style="color: #64748b; margin-bottom: 20px;") Update collected funds for this customer credit profile.
 
-            .form-group(style="margin-bottom: 15px;")
-              label(style="display: block; margin-bottom: 5px; font-weight: bold;") Total Amount Paid So Far
-              input(type="text" value=`UGX ${Number(deposit.amountPaid || 0).toLocaleString()}` disabled style="width: 100%; padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;")
+        form(method="POST" action=`/deposit/update/${deposit._id}`)
+          
+          .form-group(style="margin-bottom: 15px;")
+            label(style="display: block; margin-bottom: 5px; font-weight: bold;") Total Amount Due
+            input(type="text" value=`UGX ${Number(deposit.totalToPay || 0).toLocaleString()}` disabled style="width: 100%; padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;")
 
-            .form-group(style="margin-bottom: 15px;")
-              label(style="display: block; margin-bottom: 5px; font-weight: bold; color: #ef4444;") Remaining Balance
-              input(type="text" value=`UGX ${Number(deposit.balance || 0).toLocaleString()}` disabled style="width: 100%; padding: 10px; background: #fef2f2; border: 1px solid #fee2e2; color: #b91c1c; font-weight: bold; border-radius: 4px;")
+          .form-group(style="margin-bottom: 15px;")
+            label(style="display: block; margin-bottom: 5px; font-weight: bold;") Total Amount Paid So Far
+            input(type="text" value=`UGX ${Number(deposit.amountPaid || 0).toLocaleString()}` disabled style="width: 100%; padding: 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;")
 
-            hr(style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;")
+          .form-group(style="margin-bottom: 15px;")
+            label(style="display: block; margin-bottom: 5px; font-weight: bold; color: #ef4444;") Remaining Balance
+            input(type="text" value=`UGX ${Number(deposit.balance || 0).toLocaleString()}` disabled style="width: 100%; padding: 10px; background: #fef2f2; border: 1px solid #fee2e2; color: #b91c1c; font-weight: bold; border-radius: 4px;")
 
-            .form-group(style="margin-bottom: 20px;")
-              label(for="amountPaid" style="display: block; margin-bottom: 5px; font-weight: bold; color: #1e3a8a;") New Installment Amount (UGX)
-              input(type="number" id="amountPaid" name="amountPaid" placeholder="Enter amount customer is paying now" min="1" max=deposit.balance required style="width: 100%; padding: 10px; border: 2px solid #1e3a8a; border-radius: 4px; font-size: 1rem;")
+          hr(style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;")
 
-            div(style="display: flex; gap: 10px;")
-              a.btn(href="/adminDash" style="background-color: #64748b; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; text-align: center; flex: 1; font-weight: bold;") Cancel
-              button.btn.btn-blue(type="submit" style="flex: 1; font-weight: bold; cursor: pointer; border: none; padding: 10px 20px; border-radius: 4px;") Save Installment
+          .form-group(style="margin-bottom: 20px;")
+            label(for="amountPaid" style="display: block; margin-bottom: 5px; font-weight: bold; color: #1e3a8a;") New Installment Amount (UGX)
+            input(type="number" id="amountPaid" name="amountPaid" placeholder="Enter amount customer is paying now" min="1" max=deposit.balance required style="width: 100%; padding: 10px; border: 2px solid #1e3a8a; border-radius: 4px; font-size: 1rem;")
+
+          div(style="display: flex; gap: 10px;")
+            a.btn(href="/adminDash" style="background-color: #64748b; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; text-align: center; flex: 1; font-weight: bold;") Cancel
+            button.btn.btn-blue(type="submit" style="flex: 1; font-weight: bold; cursor: pointer; border: none; padding: 10px 20px; border-radius: 4px;") Save Installment

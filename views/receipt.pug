@@ -1,90 +1,86 @@
-  doctype html
-  html
-    head
-      meta(charset="UTF-8")
-      meta(name="viewport" content="width=device-width, initial-scale=1.0")
-      title Sales Receipt
-      link(rel="stylesheet" href="/css/receipt.css")
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Sales Receipt
+    link(rel="stylesheet" href="/css/receipt.css")
 
-    body
+  body
+    .receipt
+      h2 NYONDO GENERAL HARDWARE
+      p.text-center Official Sales Receipt
+      hr
 
-      .receipt
-        h2 NYONDO GENERAL HARDWARE
-        p.text-center Official Sales Receipt
-        hr
+      // Sale information 
+      .row
+        span Date:
+        span= sale.date ? new Date(sale.date).toLocaleString() : '-'
 
-        //Sale informtion 
-        .row
-          span Date:
-          span= sale.date ? new Date(sale.date).toLocaleString() : '-'
+      .row
+        span Customer:
+        span= sale.customerName || '-'
 
-        .row
-          span Customer:
-          span= sale.customerName || '-'
+      .row
+        span Phone:
+        span= sale.phoneNumber || '-'
 
-        .row
-          span Phone:
-          span= sale.phoneNumber || '-'
+      .row
+        span Address:
+        span= sale.customerAddress || '-'
 
-        .row
-          span Address:
-          span= sale.customerAddress || '-'
+      .row
+        span Attendant:
+        span= sale.Attendant ? sale.Attendant.fullName : '-'
 
-        .row
-          span Attendant:
-          span= sale.Attendant ? sale.Attendant.fullName : '-'
+      .row
+        span Distance:
+        span= sale.distance || 0
 
-        .row
-          span Distance:
-          span= sale.distance || 0
+      hr
 
-        hr
+      // Products 
+      h3 Products Sold
 
-        //Products 
-        h3 Products Sold
+      if sale.items && sale.items.length
+        each item in sale.items
+          .item-box
+            .row
+              span Product:
+              span= item.product ? item.product.itemName : 'Deleted Product'
 
-        if sale.items && sale.items.length
-          each item in sale.items
-            .item-box
-              .row
-                span Product:
-                span= item.product ? item.product.itemName : 'Deleted Product'
+            .row
+              span Quantity:
+              span= item.quantity || 0
 
-              .row
-                span Quantity:
-                span= item.quantity || 0
+            .row
+              span Unit Price:
+              span UGX #{Number(item.unitPrice || 0).toLocaleString()}
 
-              .row
-                span Unit Price:
-                span UGX #{Number(item.unitPrice || 0).toLocaleString()}
+            .row
+              span Sub Total:
+              span UGX #{Number(item.subTotal || 0).toLocaleString()}
 
-              .row
-                span Sub Total:
-                span UGX #{Number(item.subTotal || 0).toLocaleString()}
+            hr
+      else
+        p No items found
 
-              hr
-        else
-          p No items found
+      // Totals 
+      .row
+        span Transport:
+        span UGX #{Number(sale.transportCost || 0).toLocaleString()}
 
-        // Totals 
-        .row
-          span Transport:
-          span UGX #{Number(sale.transportCost || 0).toLocaleString()}
+      .row
+        strong Grand Total:
+        strong UGX #{Number(sale.grandTotal || 0).toLocaleString()}
 
-        .row
-          strong Grand Total:
-          strong UGX #{Number(sale.grandTotal || 0).toLocaleString()}
+      .row
+        span Payment Method:
+        span= sale.paymentMethod || '-'
 
-        .row
-          span Payment Method:
-          span= sale.paymentMethod || '-'
+      hr
 
-        hr
-
-        // Actions
-        .receipt-actions
-          button.print-btn(onclick="window.print()") Print Receipt
-
-          
-
-          a.dashboard-btn(href="/salesDash") Go To Dashboard
+      // Actions
+      .receipt-actions
+        button.print-btn(onclick="window.print()") Print Receipt
+        a.dashboard-btn(href="/salesDash") Go To Dashboard
