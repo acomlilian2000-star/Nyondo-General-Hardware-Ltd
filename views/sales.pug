@@ -122,7 +122,6 @@ html
           input.quantity(type='number' name='quantity[]')
 
     script.
-    //- event selectors stores references to the html elements
       const form = document.getElementById('salesForm');
       const toast = document.getElementById('errorToast');
       const addItemBtn = document.getElementById('addItem');
@@ -133,7 +132,6 @@ html
       // 1. Validation on Submit
       form.addEventListener('submit', (e) => {
         let hasError = false;
-        // Check all inputs, selects, and textareas inside the form
         const allFields = form.querySelectorAll('input:not([readonly]), select, textarea');
         
         allFields.forEach(field => {
@@ -154,18 +152,19 @@ html
         if (e.target.classList.contains('error-border')) {
           e.target.classList.remove('error-border');
         }
-        
         if (!form.querySelector('.error-border')) {
           toast.style.display = 'none';
         }
       });
 
-      // 3. Dynamic row adding
+      // 2. Dynamic row adding
       addItemBtn.addEventListener('click', () => {
-        itemsContainer.appendChild(template.content.cloneNode(true));
-        attachEvents();
+        const clone = template.content.cloneNode(true);
+        itemsContainer.appendChild(clone);
+        attachEvents(); // Re-attach so new inputs are detected
       });
-      //- calculation logic
+
+      // 3. Calculation Engine
       function calculateTotals() {
         let subTotal = 0;
         document.querySelectorAll('.item-group').forEach(group => {
@@ -184,13 +183,14 @@ html
       }
 
       function attachEvents() {
-        document.querySelectorAll('.product, .quantity').forEach(el => {
+        // Find all inputs in the itemsContainer to ensure new rows are included
+        itemsContainer.querySelectorAll('.product, .quantity').forEach(el => {
           el.removeEventListener('change', calculateTotals);
           el.addEventListener('change', calculateTotals);
         });
-        distanceInput.removeEventListener('input', calculateTotals);
-        distanceInput.addEventListener('input', calculateTotals);
       }
       
+      // Initialize events and listeners
       attachEvents();
+      distanceInput.addEventListener('input', calculateTotals);
       document.getElementById('phoneNumber').addEventListener('input', (e) => e.target.value = e.target.value.replace(/\D/g, ''));

@@ -6,7 +6,7 @@ html
     title NYONDO Stock Registration
     link(rel='stylesheet' href='/css/stock.css')
     style.
-      .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+      .error-border { border: 2px solid #ef4444 ; background-color: #fef2f2 ; }
       #errorToast { display: none; background-color: #ef4444; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-weight: bold; }
 
   body
@@ -18,7 +18,6 @@ html
       h1 NYONDO General Hardware LTD
       p.subtitle Official Stock Arrival & Finance Portal
 
-      // Error Message Popup
       #errorToast Empty form cannot be submitted. Please fill in all fields!
 
       if success_msg && success_msg.length > 0
@@ -120,7 +119,7 @@ html
         button.btn-submit(type='submit') Complete Stock Entry
 
     script.
-    //- form validations
+      // 1. Validation Logic
       document.getElementById('stockForm').addEventListener('submit', function(e) {
         let isValid = true;
         const allFields = this.querySelectorAll('input:not([type="file"]), select');
@@ -140,7 +139,8 @@ html
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       });
-    //- auto-populating category
+
+      // 2. Auto-populating Category 
       document.addEventListener('change', function(e) {
         if (e.target.classList.contains('productSelect')) {
           const option = e.target.options[e.target.selectedIndex];
@@ -150,12 +150,19 @@ html
           if (catInput) catInput.value = category || '';
         }
       });
-      //- adding new lows
+
+      // 3. Adding New Rows
       const addItemBtn = document.getElementById('addItemBtn');
       addItemBtn.addEventListener('click', () => {
         const firstItem = document.querySelector('.stock-item');
         const clonedItem = firstItem.cloneNode(true);
+        
+       
         clonedItem.querySelectorAll('input').forEach(i => i.value = '');
         clonedItem.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+        
+        
+        clonedItem.querySelectorAll('.error-border').forEach(el => el.classList.remove('error-border'));
+        
         document.getElementById('itemsContainer').appendChild(clonedItem);
       });
