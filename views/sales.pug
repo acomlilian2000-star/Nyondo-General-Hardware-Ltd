@@ -122,6 +122,7 @@ html
           input.quantity(type='number' name='quantity[]')
 
     script.
+    //- event selectors stores references to the html elements
       const form = document.getElementById('salesForm');
       const toast = document.getElementById('errorToast');
       const addItemBtn = document.getElementById('addItem');
@@ -164,7 +165,7 @@ html
         itemsContainer.appendChild(template.content.cloneNode(true));
         attachEvents();
       });
-
+      //- calculation logic
       function calculateTotals() {
         let subTotal = 0;
         document.querySelectorAll('.item-group').forEach(group => {

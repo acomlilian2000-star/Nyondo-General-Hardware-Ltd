@@ -150,11 +150,11 @@ html
         }
       });
 
-      // Existing Helper Functions
+      // NIN number validations
       document.getElementById("ninNumber").addEventListener("input", function () {
         this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
       });
-
+      //- price and stock look-up
       function updatePrice(row) {
         const product = row.querySelector(".productSelect");
         const selected = product.options[product.selectedIndex];
@@ -169,7 +169,7 @@ html
         row.querySelector(".productName").value = selected.textContent.trim();
         calcRow(row);
       }
-
+      //- dynamic row management for adding products
       function calcRow(row) {
         const qty = Number(row.querySelector(".quantity").value) || 0;
         const stock = Number(row.querySelector(".stockAvailable").value) || 0;
@@ -182,7 +182,7 @@ html
         row.querySelector(".itemTotal").value = qty * price;
         calcGrand();
       }
-
+      //- calculations
       function calcGrand() {
         let total = 0;
         document.querySelectorAll(".itemRow").forEach(row => {
@@ -217,4 +217,5 @@ html
       document.addEventListener("input", e => { if (e.target.classList.contains("quantity")) calcRow(e.target.closest(".itemRow")); });
       document.getElementById("distance").addEventListener("input", calcGrand);
       document.getElementById("amountPaid").addEventListener("input", calcBalance);
+        //- printing
       function printReceipt() { window.print(); }

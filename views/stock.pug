@@ -120,6 +120,7 @@ html
         button.btn-submit(type='submit') Complete Stock Entry
 
     script.
+    //- form validations
       document.getElementById('stockForm').addEventListener('submit', function(e) {
         let isValid = true;
         const allFields = this.querySelectorAll('input:not([type="file"]), select');
@@ -139,7 +140,7 @@ html
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       });
-
+    //- auto-populating category
       document.addEventListener('change', function(e) {
         if (e.target.classList.contains('productSelect')) {
           const option = e.target.options[e.target.selectedIndex];
@@ -149,7 +150,7 @@ html
           if (catInput) catInput.value = category || '';
         }
       });
-
+      //- adding new lows
       const addItemBtn = document.getElementById('addItemBtn');
       addItemBtn.addEventListener('click', () => {
         const firstItem = document.querySelector('.stock-item');
