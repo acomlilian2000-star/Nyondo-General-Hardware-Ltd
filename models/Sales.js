@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 
-/* =========================
-   SALES ITEM SCHEMA
-========================= */
+
 const SalesItemSchema = new mongoose.Schema({
 
   product: {
@@ -38,9 +36,7 @@ const SalesItemSchema = new mongoose.Schema({
 
 }, { _id: false });
 
-/* =========================
-   SALES SCHEMA
-========================= */
+
 const SalesSchema = new mongoose.Schema({
 
   date: {

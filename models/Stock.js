@@ -2,14 +2,12 @@ const mongoose = require("mongoose");
 
 const StockSchema = new mongoose.Schema(
   {
-    /* =========================
-       BASIC PRODUCT INFO
-    ========================= */
+   
     itemName: {
       type: String,
       trim: true,
       required: true,
-      unique: true, // Unique inventory record per product
+      unique: true, 
     },
 
     category: {
@@ -18,9 +16,7 @@ const StockSchema = new mongoose.Schema(
       default: "General",
     },
 
-    /* =========================
-       STOCK QUANTITY
-    ========================= */
+   
     quantity: {
       type: Number,
       default: 0,
@@ -36,9 +32,7 @@ const StockSchema = new mongoose.Schema(
       default: 0,
     },
 
-    /* =========================
-       LATEST PRICING
-    ========================= */
+   
     unitCost: {
       type: Number,
       default: 0,
@@ -59,9 +53,6 @@ const StockSchema = new mongoose.Schema(
       default: 0,
     },
 
-    /* =========================
-       SYSTEM FIELDS
-    ========================= */
     productImage: {
       type: String,
       default: "",
@@ -78,9 +69,7 @@ const StockSchema = new mongoose.Schema(
   }
 );
 
-/* =========================
-   AUTO CALCULATION (SAVE)
-========================= */
+
 StockSchema.pre("save", function (next) {
   const qty = Number(this.quantity || 0);
   const cost = Number(this.unitCost || 0);
@@ -99,13 +88,8 @@ StockSchema.pre("save", function (next) {
     this.originalQuantity = qty;
   }
 
-  // FIXED: Must call next() so Mongoose saves successfully
-  // next();
 });
 
-/* =========================
-   AUTO CALCULATION (UPDATE)
-========================= */
 StockSchema.pre("findOneAndUpdate", function (next) {
   const update = this.getUpdate() || {};
 
@@ -137,14 +121,10 @@ StockSchema.pre("findOneAndUpdate", function (next) {
 
   this.setUpdate(update);
 
-  // next();
+  next();
 });
 
-/* =========================
-   INDEXES
-========================= */
 
-// FAST CATEGORY SEARCH
 StockSchema.index({ category: 1 });
 
 module.exports = mongoose.model("Stock", StockSchema);

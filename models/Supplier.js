@@ -23,9 +23,7 @@ const SupplierSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
-    /* =========================
-       SUPPLIER TRACKING DETAILS
-    ========================= */
+    
     supplier: {
       type: String,
       trim: true,
@@ -46,9 +44,7 @@ const SupplierSchema = new mongoose.Schema(
       trim: true,
       default: "-",
     },
-    /* =========================
-       FINANCIALS & STATUS
-    ========================= */
+    
     paymentMethod: {
       type: String,
       enum: ["cash", "credit"],
@@ -66,11 +62,11 @@ const SupplierSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Captures exact delivery dates automatically via createdAt
+    timestamps: true, 
   }
 );
 
-// Optimize search queries by supplier name
+
 SupplierSchema.index({ supplier: 1 });
 
 module.exports = mongoose.model("Supplier", SupplierSchema);
